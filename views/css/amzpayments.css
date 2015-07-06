@@ -1,0 +1,126 @@
+@CHARSET "UTF-8";
+
+body#module-amzpayments-amzpayments #center_column {width: 100%; margin-bottom: 15px;}
+
+#payWithAmazonCartDiv {
+	clear: both;
+	padding-top: 5px;
+	margin-top: 5px;
+	display: block;
+	text-align: right;	
+}
+
+.amz_widgets {
+	float: left;
+	width: 450px;	
+}
+.amz_cart_widgets {
+	float: right;
+	width: 450px;
+}
+
+#carrier_area h2 {
+	display:none;
+}
+
+.amz_cart_widgets textarea#message {
+	width: 420px;
+	height: 100px;
+}
+.amz_cart_widgets  #gift_div #gift_message {
+	width: 400px;
+	height: 100px;
+}
+
+body#module-amzpayments-amzpayments .delivery_options_address h3 {
+	background: url("../../../themes/default/img/bg_table_th.png") repeat-x scroll 0 -15px #999999;
+	padding: 10px;
+	color: #fff;
+	text-shadow: 0 1px 0 #666666;
+}
+
+body#module-amzpayments-amzpayments .order_carrier_content {
+	margin-bottom: 15px;
+}
+
+body#module-amzpayments-amzpayments .delivery_option {
+	clear: both;	
+	padding: 3px;
+}
+body#module-amzpayments-amzpayments .delivery_option input[type=radio],
+body#module-amzpayments-amzpayments .delivery_option label {
+	display: inline-block;
+	vertical-align: middle;
+}
+body#module-amzpayments-amzpayments .delivery_option label {
+	margin-left: 20px;
+}
+
+#amzOverlay {
+	position: absolute;
+	top: 0; left: 0;
+	height: 100%;
+	width: 100%;
+	background: rgba(99,99,99,0.5);
+	z-index: 200;
+	text-align: center;
+	display: none;
+	vertical-align: middle;
+}
+#amzOverlay img {
+	position: relative;
+	top: 50%;
+}
+
+#module-amzpayments-amzpayments #order_step {
+	display: none;
+}
+#amz_carriers .breadcrumb,
+#amz_cart_widgets_summary .order_delivery {
+	display: none;
+}
+
+input.disabled {
+	background: #efefef;
+	border-color: #ccc;
+	opacity: .5;
+}
+
+.amzSetAddressWr{
+    margin:20px 0;
+    text-align:center;
+    height:250px;
+    width: 100%;
+}
+
+#amazonLogin {
+	float: right;
+	margin-top: 2px;
+	margin-right: 2px;
+}
+#payWithAmazonCartDiv {
+	text-align: center;
+	margin-bottom: 5px;
+}
+
+#payWithAmazonDiv {
+	float: right;
+	margin-bottom: 4px;
+}
+#payWithAmazonMainDiv:after {
+    content:'';
+    display:block;
+    clear: both;
+}
+p.payment_module a.amzPayments::after {
+    color: #777;
+    display: block;
+    font-family: "FontAwesome";
+    font-size: 25px;
+    height: 22px;
+    margin-top: -11px;
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    width: 14px;
+}

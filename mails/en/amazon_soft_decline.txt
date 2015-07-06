@@ -1,0 +1,8 @@
+
+Dear customer,
+
+Thank you for your order {$ORDER_NR} from {$ORDER_DATE}.
+Unfortunately your payment was rejected by Amazon Payments.
+You can update the payment information for your order at https://payments.amazon.co.uk/overview by selecting or entering a different payment method.
+We will try to authorize the payment again, and you will receive a confirmation email.
+

@@ -1,0 +1,197 @@
+/*
+* Amazon Advanced Payment APIs Modul
+* for Support please visit www.patworx.de
+*
+*  @author patworx multimedia GmbH <service@patworx.de>
+*  In collaboration with alkim media
+*  @copyright  2013-2015 patworx multimedia GmbH
+*  @license    Released under the GNU General Public License
+*/
+
+function getURLParameter(name, source) {
+	return decodeURIComponent((new RegExp('[?|&|#]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(source)||[,""])[1].replace(/\+/g,'%20'))||null; 
+}
+
+function amazonLogout(){
+    amazon.Login.logout();
+	document.cookie = "amazon_Login_accessToken=; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+}
+
+var authRequest;    
+
+jQuery(document).ready(function($){
+	initAmazon();
+    $('.logout').click(function() {
+		amazonLogout();
+	});
+});
+
+function initAmazon(){
+
+	if($('.amazonLoginWr').length > 0){
+	   $('.amazonLoginWr').each(function(){
+	        OffAmazonPayments.Button($(this).attr('id'), AMZSELLERID, {
+	                type: AMZ_BUTTON_TYPE_LOGIN, 
+	                size: AMZ_BUTTON_SIZE_LPA,
+	                color: AMZ_BUTTON_COLOR_LPA,
+	                authorization: function() {
+	                loginOptions =  {scope: 'profile postal_code payments:widget payments:shipping_address', popup: !useRedirect };
+	                authRequest = amazon.Login.authorize (loginOptions, useRedirect ? LOGINREDIRECTAMZ : null);
+	            },    
+	            onSignIn: function(orderReference) {
+	                var amazonOrderReferenceId = orderReference.getAmazonOrderReferenceId();
+	                $.ajax({
+	                    type: 'GET',
+	                    url: SETUSERAJAX,
+	                    data: 'ajax=true&method=setusertoshop&access_token=' + authRequest.access_token + '&amazon_id=' + amazonOrderReferenceId,
+	                    success: function(htmlcontent){
+	                        if (htmlcontent == 'error') {
+	                            alert('An error occured - please try again or contact our support');
+	                        } else {
+	                            window.location = htmlcontent;
+	                        }					   
+	                    }
+	                });				
+	            },
+	            onError: function(error) {
+	                console.log(error); 
+	            }
+	        });
+	        
+	        
+	  });
+	}
+	if (LPA_MODE == 'login_pay') {
+		if($('#payWithAmazonDiv').length > 0){			
+		    OffAmazonPayments.Button("payWithAmazonDiv", AMZSELLERID, {
+		            type: AMZ_BUTTON_TYPE_PAY,
+		            size: AMZ_BUTTON_SIZE_LPA,
+		            color: AMZ_BUTTON_COLOR_LPA,
+		            authorization: function() {
+		            loginOptions =  {scope: 'profile postal_code payments:widget payments:shipping_address', popup: !useRedirect };
+	                authRequest = amazon.Login.authorize (loginOptions, (useRedirect ? LOGINREDIRECTAMZ_CHECKOUT : null));
+		        },
+		        onSignIn: function(orderReference) {
+		            amazonOrderReferenceId = orderReference.getAmazonOrderReferenceId();		            
+		            $('#payWithAmazonDiv').html('');
+		            $.ajax({
+		                    type: 'GET',
+		                    url: REDIRECTAMZ,
+		                    data: 'ajax=true&method=setsession&access_token=' + authRequest.access_token + '&amazon_id=' + amazonOrderReferenceId,
+		                    success: function(htmlcontent){
+		                    	window.location = REDIRECTAMZ + amazonOrderReferenceId;
+		                    }
+		            });
+		        },
+		        onError: function(error) {
+		            console.log(error); 
+		        }
+		    });
+		}
+		if ($('#button_order_cart').length > 0 && $('#amz_cart_widgets_summary').length == 0) {
+			$('#button_order_cart').before('<div id="payWithAmazonCartDiv"></div>');
+		    OffAmazonPayments.Button("payWithAmazonCartDiv", AMZSELLERID, {
+		            type: AMZ_BUTTON_TYPE_PAY,
+		            size: AMZ_BUTTON_SIZE_LPA,
+		            color: AMZ_BUTTON_COLOR_LPA,
+		            authorization: function() {
+		            loginOptions =  {scope: 'profile postal_code payments:widget payments:shipping_address', popup: !useRedirect };
+	                authRequest = amazon.Login.authorize (loginOptions, (useRedirect ? LOGINREDIRECTAMZ_CHECKOUT : null));
+		        },
+		        onSignIn: function(orderReference) {
+		            amazonOrderReferenceId = orderReference.getAmazonOrderReferenceId();		            
+		            $('#payWithAmazonCartDiv').html('');
+		            $.ajax({
+		                    type: 'GET',
+		                    url: REDIRECTAMZ,
+		                    data: 'ajax=true&method=setsession&access_token=' + authRequest.access_token + '&amazon_id=' + amazonOrderReferenceId,
+		                    success: function(htmlcontent){
+		                    	window.location = REDIRECTAMZ + amazonOrderReferenceId;
+		                    }
+		            });
+		        },
+		        onError: function(error) {
+		            console.log(error); 
+		        }
+		    });
+		}
+		
+
+		if ($("#pay_with_amazon_list_button").length > 0) {
+			$("#pay_with_amazon_list_button").append('<span id="payWithAmazonListDiv"></span>');
+			OffAmazonPayments.Button("payWithAmazonListDiv", AMZSELLERID, {
+	            type: AMZ_BUTTON_TYPE_PAY,
+	            size: AMZ_BUTTON_SIZE_LPA,
+	            color: AMZ_BUTTON_COLOR_LPA,
+	            authorization: function() {
+	            loginOptions =  {scope: 'profile postal_code payments:widget payments:shipping_address', popup: !useRedirect };
+                authRequest = amazon.Login.authorize (loginOptions, (useRedirect ? LOGINREDIRECTAMZ_CHECKOUT : null));
+	        },
+	        onSignIn: function(orderReference) {
+	            amazonOrderReferenceId = orderReference.getAmazonOrderReferenceId();		            
+	            $('#payWithAmazonListDiv').html('');
+	            $.ajax({
+	                    type: 'GET',
+	                    url: REDIRECTAMZ,
+	                    data: 'ajax=true&method=setsession&access_token=' + authRequest.access_token + '&amazon_id=' + amazonOrderReferenceId,
+	                    success: function(htmlcontent){
+	                    	window.location = REDIRECTAMZ + amazonOrderReferenceId;
+	                    }
+	            });
+	        },
+	        onError: function(error) {
+	            console.log(error); 
+	        }
+			});
+		}
+		
+		$("a.amzPayments").click(function() {
+			return false;
+		});
+				
+		setInterval(checkForAmazonListButton, 2000);
+	}
+	/*	
+	if (is_logged) {
+	    var buttonImg = $('#payWithAmazonDiv').find('img').attr('src');
+	    var newButton = $('<img src="'+buttonImg+'" style="cursor:pointer;" />');
+	    $('#payWithAmazonDiv').html(newButton);
+	    newButton.click(function(){
+	        window.location.href = REDIRECTAMZ;
+	    });	
+	}
+	*/
+}
+
+function checkForAmazonListButton() {
+	if (jQuery("#pay_with_amazon_list_button").length > 0) {
+		if (jQuery.trim(jQuery("#pay_with_amazon_list_button").html()) == '') {
+			jQuery("#pay_with_amazon_list_button").append('<span id="payWithAmazonListDiv"></span>');
+			OffAmazonPayments.Button("payWithAmazonListDiv", AMZSELLERID, {
+		            type: AMZ_BUTTON_TYPE_PAY,
+		            size: AMZ_BUTTON_SIZE_LPA,
+		            color: AMZ_BUTTON_COLOR_LPA,
+		            authorization: function() {
+		            loginOptions =  {scope: 'profile postal_code payments:widget payments:shipping_address', popup: !useRedirect };
+	                authRequest = amazon.Login.authorize (loginOptions, (useRedirect ? LOGINREDIRECTAMZ_CHECKOUT : null));
+		        },
+		        onSignIn: function(orderReference) {
+		            amazonOrderReferenceId = orderReference.getAmazonOrderReferenceId();		            
+		            jQuery('#payWithAmazonListDiv').html('');
+		            jQuery.ajax({
+		                    type: 'GET',
+		                    url: REDIRECTAMZ,
+		                    data: 'ajax=true&method=setsession&access_token=' + authRequest.access_token + '&amazon_id=' + amazonOrderReferenceId,
+		                    success: function(htmlcontent){
+		                    	window.location = REDIRECTAMZ + amazonOrderReferenceId;
+		                    }
+		            });
+		        },
+		        onError: function(error) {
+		            console.log(error); 
+		        }
+			});
+		}
+	}	
+}
+

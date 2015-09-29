@@ -14,28 +14,40 @@ function getURLParameter(name, source) {
 
 function amazonLogout(){
     amazon.Login.logout();
-	document.cookie = "amazon_Login_accessToken=; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+	document.cookie = "amazon_Login_accessToken=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
+	document.cookie = "amazon_Login_accessToken=; expires=Thu, 18 Aug 1979 00:00:00 GMT; path=/prestashop/";
+	document.cookie = "amazon_Login_state_cache=; expires=Thu, 01 Jan 1970 00:00:00 GMT";
 }
 
 var authRequest;    
 
 jQuery(document).ready(function($){
-	initAmazon();
-    $('.logout').click(function() {
-		amazonLogout();
-	});
+	if ($("#authentication #SubmitCreate").length > 0) {
+		$("#authentication #SubmitCreate").parent().append('<div class="amazonLoginWr" id="jsLoginAuthPage"></div>');
+	}
+	
+	if (AMZACTIVE == '1') {
+		initAmazon();
+    	$('.logout').click(function() {
+			amazonLogout();
+		});
+	}
 });
 
 function initAmazon(){
 
 	if($('.amazonLoginWr').length > 0){
 	   $('.amazonLoginWr').each(function(){
+	   		var amzBtnColor = AMZ_BUTTON_COLOR_LPA;
+	   		if ($(this).attr("id") == "amazonLogin")
+	   			amzBtnColor = AMZ_BUTTON_COLOR_LPA_NAVI;
 	        OffAmazonPayments.Button($(this).attr('id'), AMZSELLERID, {
 	                type: AMZ_BUTTON_TYPE_LOGIN, 
 	                size: AMZ_BUTTON_SIZE_LPA,
-	                color: AMZ_BUTTON_COLOR_LPA,
+	                color: amzBtnColor,
+	                language: AMZ_WIDGET_LANGUAGE,
 	                authorization: function() {
-	                loginOptions =  {scope: 'profile postal_code payments:widget payments:shipping_address', popup: !useRedirect };
+	                loginOptions =  {scope: 'profile postal_code payments:widget payments:shipping_address payments:billing_address', popup: !useRedirect };
 	                authRequest = amazon.Login.authorize (loginOptions, useRedirect ? LOGINREDIRECTAMZ : null);
 	            },    
 	            onSignIn: function(orderReference) {
@@ -67,8 +79,9 @@ function initAmazon(){
 		            type: AMZ_BUTTON_TYPE_PAY,
 		            size: AMZ_BUTTON_SIZE_LPA,
 		            color: AMZ_BUTTON_COLOR_LPA,
+	                language: AMZ_WIDGET_LANGUAGE,
 		            authorization: function() {
-		            loginOptions =  {scope: 'profile postal_code payments:widget payments:shipping_address', popup: !useRedirect };
+		            loginOptions =  {scope: 'profile postal_code payments:widget payments:shipping_address payments:billing_address', popup: !useRedirect };
 	                authRequest = amazon.Login.authorize (loginOptions, (useRedirect ? LOGINREDIRECTAMZ_CHECKOUT : null));
 		        },
 		        onSignIn: function(orderReference) {
@@ -94,8 +107,9 @@ function initAmazon(){
 		            type: AMZ_BUTTON_TYPE_PAY,
 		            size: AMZ_BUTTON_SIZE_LPA,
 		            color: AMZ_BUTTON_COLOR_LPA,
+	                language: AMZ_WIDGET_LANGUAGE,
 		            authorization: function() {
-		            loginOptions =  {scope: 'profile postal_code payments:widget payments:shipping_address', popup: !useRedirect };
+		            loginOptions =  {scope: 'profile postal_code payments:widget payments:shipping_address payments:billing_address', popup: !useRedirect };
 	                authRequest = amazon.Login.authorize (loginOptions, (useRedirect ? LOGINREDIRECTAMZ_CHECKOUT : null));
 		        },
 		        onSignIn: function(orderReference) {
@@ -123,8 +137,9 @@ function initAmazon(){
 	            type: AMZ_BUTTON_TYPE_PAY,
 	            size: AMZ_BUTTON_SIZE_LPA,
 	            color: AMZ_BUTTON_COLOR_LPA,
+	            language: AMZ_WIDGET_LANGUAGE,
 	            authorization: function() {
-	            loginOptions =  {scope: 'profile postal_code payments:widget payments:shipping_address', popup: !useRedirect };
+	            loginOptions =  {scope: 'profile postal_code payments:widget payments:shipping_address payments:billing_address', popup: !useRedirect };
                 authRequest = amazon.Login.authorize (loginOptions, (useRedirect ? LOGINREDIRECTAMZ_CHECKOUT : null));
 	        },
 	        onSignIn: function(orderReference) {
@@ -170,9 +185,10 @@ function checkForAmazonListButton() {
 			OffAmazonPayments.Button("payWithAmazonListDiv", AMZSELLERID, {
 		            type: AMZ_BUTTON_TYPE_PAY,
 		            size: AMZ_BUTTON_SIZE_LPA,
-		            color: AMZ_BUTTON_COLOR_LPA,
+		            color: AMZ_BUTTON_COLOR_LPA,		            
+	                language: AMZ_WIDGET_LANGUAGE,
 		            authorization: function() {
-		            loginOptions =  {scope: 'profile postal_code payments:widget payments:shipping_address', popup: !useRedirect };
+		            loginOptions =  {scope: 'profile postal_code payments:widget payments:shipping_address payments:billing_address', popup: !useRedirect };
 	                authRequest = amazon.Login.authorize (loginOptions, (useRedirect ? LOGINREDIRECTAMZ_CHECKOUT : null));
 		        },
 		        onSignIn: function(orderReference) {
@@ -193,5 +209,35 @@ function checkForAmazonListButton() {
 			});
 		}
 	}	
+	if (jQuery("#HOOK_ADVANCED_PAYMENT").length > 0) {
+		if (jQuery("#payWithAmazonListDiv").length == 0) {
+			jQuery("#HOOK_ADVANCED_PAYMENT").append('<span id="payWithAmazonListDiv"></span>');
+			OffAmazonPayments.Button("payWithAmazonListDiv", AMZSELLERID, {
+		            type: AMZ_BUTTON_TYPE_PAY,
+		            size: AMZ_BUTTON_SIZE_LPA,
+		            color: AMZ_BUTTON_COLOR_LPA,		            
+	                language: AMZ_WIDGET_LANGUAGE,
+		            authorization: function() {
+		            loginOptions =  {scope: 'profile postal_code payments:widget payments:shipping_address payments:billing_address', popup: !useRedirect };
+	                authRequest = amazon.Login.authorize (loginOptions, (useRedirect ? LOGINREDIRECTAMZ_CHECKOUT : null));
+		        },
+		        onSignIn: function(orderReference) {
+		            amazonOrderReferenceId = orderReference.getAmazonOrderReferenceId();		            
+		            jQuery('#payWithAmazonListDiv').html('');
+		            jQuery.ajax({
+		                    type: 'GET',
+		                    url: REDIRECTAMZ,
+		                    data: 'ajax=true&method=setsession&access_token=' + authRequest.access_token + '&amazon_id=' + amazonOrderReferenceId,
+		                    success: function(htmlcontent){
+		                    	window.location = REDIRECTAMZ + amazonOrderReferenceId;
+		                    }
+		            });
+		        },
+		        onError: function(error) {
+		            console.log(error); 
+		        }
+			});
+		}
+	}
 }
 

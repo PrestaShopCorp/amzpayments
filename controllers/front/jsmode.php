@@ -19,7 +19,7 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
-class AmzpaymentsProcess_LoginModuleFrontController extends ModuleFrontController
+class AmzpaymentsJsmodeModuleFrontController extends ModuleFrontController
 {
 
     public $ssl = true;
@@ -29,16 +29,6 @@ class AmzpaymentsProcess_LoginModuleFrontController extends ModuleFrontControlle
     public $display_column_left = false;
 
     public $display_column_right = false;
-
-    public $service;
-
-    protected $ajax_refresh = false;
-
-    protected $css_files_assigned = array();
-
-    protected $js_files_assigned = array();
-
-    protected static $amz_payments = '';
 
     public function __construct()
     {
@@ -51,35 +41,13 @@ class AmzpaymentsProcess_LoginModuleFrontController extends ModuleFrontControlle
         $this->page_name = 'module-' . $this->module->name . '-' . Dispatcher::getInstance()->getController();
         
         parent::__construct();
-    }
-
-    public function init()
-    {
-        self::$amz_payments = new AmzPayments();
-        $this->isLogged = (bool) $this->context->customer->id && Customer::customerIdExistsStatic((int) $this->context->cookie->id_customer);
-        
-        parent::init();
-        
-        /* Disable some cache related bugs on the cart/order */
-        header('Cache-Control: no-cache, must-revalidate');
-        header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
-        
-        $this->display_column_left = false;
-        $this->display_column_right = false;
-        
-        // Service initialisieren
-        $this->service = self::$amz_payments->getService();
-    }
-
-    public function initContent()
-    {
-        parent::initContent();
-        
-        unset($this->context->cookie->amazon_id);
-        
-        $this->context->smarty->assign('toCheckout', Tools::getValue('toCheckout'));
-        $this->context->smarty->assign('fromCheckout', Tools::getValue('fromCheckout'));
-        
-        $this->setTemplate('process_login.tpl');
+        header('Content-Type: application/javascript');
+        $cookiestring = Tools::getValue('c');
+        if ($cookiestring != '') {
+            if (isset($this->context->cookie->$cookiestring)) {
+                echo AmzPayments::prepareCookieValueForAmazonPaymentsUse($this->context->cookie->$cookiestring);
+            }
+        }
+        exit();
     }
 }

@@ -7,7 +7,7 @@
 *  @copyright  2013-2015 patworx multimedia GmbH
 *  @license    Released under the GNU General Public License
 *}
-<p>{l s='Your order on' mod='amzpayments'} <span class="bold">{$shop_name}</span> {l s='is complete.' mod='amzpayments'}
+<p>{l s='Your order on' mod='amzpayments'} <span class="bold">{$shop_name|escape:'htmlall':'UTF-8'}</span> {l s='is complete.' mod='amzpayments'}
 	<br /><br />
 	{l s='You have chosen the Amazon Payments method.' mod='amzpayments'}
 	<br /><br /><span class="bold">{l s='Your order will be sent very soon.' mod='amzpayments'}</span>

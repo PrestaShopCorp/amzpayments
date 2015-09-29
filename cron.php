@@ -27,25 +27,22 @@ $module_name = Tools::getValue('moduleName');
 
 $amz_payments = new AmzPayments();
 
-if ($amz_payments->cron_status == '1' && Tools::getValue('pw') == $amz_payments->cron_password)
-{
-	if ($amz_payments->capture_mode == 'after_shipping')
-		$amz_payments->shippingCapture();
-
-	$q = 'SELECT * FROM '._DB_PREFIX_.'amz_transactions WHERE amz_tx_status = \'Pending\' ORDER BY amz_tx_last_update ASC';
-	$rs = Db::getInstance()->ExecuteS($q);
-	foreach ($rs as $r)
-	{
-		$amz_payments->intelligentRefresh($r);
-		sleep(1);
-	}
-
-	$q = 'SELECT * FROM '._DB_PREFIX_.'amz_transactions WHERE amz_tx_status != \'Closed\' ORDER BY amz_tx_last_update ASC LIMIT 40';
-	$rs = Db::getInstance()->ExecuteS($q);
-	foreach ($rs as $r)
-	{
-		$amz_payments->intelligentRefresh($r);
-		sleep(1);
-	}
-	echo 'COMPLETED';
+if ($amz_payments->cron_status == '1' && Tools::getValue('pw') == $amz_payments->cron_password) {
+    if ($amz_payments->capture_mode == 'after_shipping')
+        $amz_payments->shippingCapture();
+    
+    $q = 'SELECT * FROM ' . _DB_PREFIX_ . 'amz_transactions WHERE amz_tx_status = \'Pending\' ORDER BY amz_tx_last_update ASC';
+    $rs = Db::getInstance()->ExecuteS($q);
+    foreach ($rs as $r) {
+        $amz_payments->intelligentRefresh($r);
+        sleep(1);
+    }
+    
+    $q = 'SELECT * FROM ' . _DB_PREFIX_ . 'amz_transactions WHERE amz_tx_status != \'Closed\' ORDER BY amz_tx_last_update ASC LIMIT 40';
+    $rs = Db::getInstance()->ExecuteS($q);
+    foreach ($rs as $r) {
+        $amz_payments->intelligentRefresh($r);
+        sleep(1);
+    }
+    echo 'COMPLETED';
 }

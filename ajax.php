@@ -60,7 +60,10 @@ switch (Tools::getValue('action')) {
         break;
     
     case 'authorizeAmount':
-        $response = AmazonTransactions::authorize($amz_payments, $amz_payments->getService(), Tools::getValue('orderRef'), Tools::getValue('amount'));
+        $order_id = AmazonTransactions::getOrdersIdFromOrderRef(Tools::getValue('orderRef'));
+        $order = new Order((int) $order_id);
+        $currency = new Currency($order->id_currency);
+        $response = AmazonTransactions::authorize($amz_payments, $amz_payments->getService(), Tools::getValue('orderRef'), Tools::getValue('amount'), $currency->iso_code);
         if ($response) {
             $details = $response->getAuthorizeResult()->getAuthorizationDetails();
             $status = $details->getAuthorizationStatus()->getState();
@@ -82,8 +85,13 @@ switch (Tools::getValue('action')) {
         else
             echo '<br/><b>' . $amz_payments->l('AMZ_CAPTURE_FAILED') . '</b>';
         break;
+    
     case 'captureAmountFromAuth':
-        $response = AmazonTransactions::capture($amz_payments, $amz_payments->getService(), Tools::getValue('authId'), Tools::getValue('amount'));
+        $order_ref = AmazonTransactions::getOrderRefFromAmzId(Tools::getValue('authId'));
+        $order_id = AmazonTransactions::getOrdersIdFromOrderRef($order_ref);
+        $order = new Order((int) $order_id);
+        $currency = new Currency($order->id_currency);
+        $response = AmazonTransactions::capture($amz_payments, $amz_payments->getService(), Tools::getValue('authId'), Tools::getValue('amount'), $currency->iso_code);
         if (is_object($response)) {
             $details = $response->getCaptureResult()->getCaptureDetails();
             $status = $details->getCaptureStatus()->getState();
@@ -95,7 +103,11 @@ switch (Tools::getValue('action')) {
         break;
     
     case 'refundAmount':
-        $response = AmazonTransactions::refund($amz_payments, $amz_payments->getService(), Tools::getValue('captureId'), Tools::getValue('amount'));
+        $order_ref = AmazonTransactions::getOrderRefFromAmzId(Tools::getValue('captureId'));
+        $order_id = AmazonTransactions::getOrdersIdFromOrderRef($order_ref);
+        $order = new Order((int) $order_id);
+        $currency = new Currency($order->id_currency);
+        $response = AmazonTransactions::refund($amz_payments, $amz_payments->getService(), Tools::getValue('captureId'), Tools::getValue('amount'), $currency->iso_code);
         if (is_object($response)) {
             $details = $response->getRefundResult()->getRefundDetails();
             $status = $details->getRefundStatus()->getState();

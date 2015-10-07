@@ -7,7 +7,7 @@
 *  @copyright  2013-2015 patworx multimedia GmbH
 *  @license    Released under the GNU General Public License
 *}
-<div id="amzOverlay"><img src="{$amz_module_path}views/img/loading_indicator.gif" /></div>
+<div id="amzOverlay"><img src="{$amz_module_path|escape:'htmlall':'UTF-8'}views/img/loading_indicator.gif" /></div>
 <div class="amz_cart_widgets_summary" id="amz_cart_widgets_summary">
 	{include file="$tpl_dir./shopping-cart.tpl"}
 </div>
@@ -28,10 +28,18 @@
 
 <div style="float: right">
 	{if $show_amazon_account_creation_allowed}
-		<p class="checkbox">
-			<input type="checkbox" id="connect_amz_account" value="1" name="connect_amz_account" />
-			<label for="connect_amz_account">{l s='Amazon-Konto mit Shop verbinden' mod='amzpayments'}</label>
-		</p>
+		{if $force_account_creation}
+			<input type="hidden" id="connect_amz_account" value="1" name="connect_amz_account" />
+		{else}
+			<p class="checkbox">
+				<input type="checkbox" id="connect_amz_account" value="1" name="connect_amz_account" {if $preselect_create_account}checked="checked"{/if}/>
+				<label for="connect_amz_account">
+					{l s='Amazon-Konto mit Shop verbinden' mod='amzpayments'}
+					<br />
+					<span style="font-size: 10px;">{l s='Sie müssen nichts weiter hierfür tun, es werden die Daten auf Ihrer aktuellen Bestellung verwendet, um das Konto zu erstellen.' mod='amzpayments'}</span>
+				</label>
+			</p>
+		{/if}
 	{/if}
 	<input type="button" id="amz_execute_order" class="exclusive" value="{l s='Buy now' mod='amzpayments'}" name="Submit" disabled="disabled">
 </div>
@@ -44,12 +52,12 @@
 {literal}
 <script> 
 var isFirstRun = true;
-var amazonOrderReferenceId = '{/literal}{$amz_session}{literal}';	
+var amazonOrderReferenceId = '{/literal}{$amz_session|escape:'htmlall':'UTF-8'}{literal}';	
 jQuery(document).ready(function($) {
 	var amzAddressSelectCounter = 0;
 	
 	new OffAmazonPayments.Widgets.AddressBook({
-		sellerId: '{/literal}{$sellerID}{literal}',
+		sellerId: '{/literal}{$sellerID|escape:'htmlall':'UTF-8'}{literal}',
 		{/literal}{if $amz_session == ''}{literal}
 		onOrderReferenceCreate: function(orderReference) {			
 			 amazonOrderReferenceId = orderReference.getAmazonOrderReferenceId();
@@ -63,7 +71,7 @@ jQuery(document).ready(function($) {
         	});
 		},
         {/literal}{/if}{literal}
-		{/literal}{if $amz_session != ''}{literal}amazonOrderReferenceId: '{/literal}{$amz_session}{literal}', {/literal}{/if}{literal}
+		{/literal}{if $amz_session != ''}{literal}amazonOrderReferenceId: '{/literal}{$amz_session|escape:'htmlall':'UTF-8'}{literal}', {/literal}{/if}{literal}
 		onAddressSelect: function(orderReference) {
 			if (isFirstRun) {
 				setTimeout(function() { 
@@ -80,7 +88,7 @@ jQuery(document).ready(function($) {
 			}
 		},
 		design: {
-			size : {width:'400px', height:'260px'}
+			designMode: 'responsive'
 		},
 		onError: function(error) {
 			console.log(error.getErrorCode());
@@ -89,10 +97,10 @@ jQuery(document).ready(function($) {
 	}).bind("addressBookWidgetDiv");
 	
 	new OffAmazonPayments.Widgets.Wallet({
-		sellerId: '{/literal}{$sellerID}{literal}',
-		{/literal}{if $amz_session != ''}{literal}amazonOrderReferenceId: '{/literal}{$amz_session}{literal}', {/literal}{/if}{literal}
+		sellerId: '{/literal}{$sellerID|escape:'htmlall':'UTF-8'}{literal}',
+		{/literal}{if $amz_session != ''}{literal}amazonOrderReferenceId: '{/literal}{$amz_session|escape:'htmlall':'UTF-8'}{literal}', {/literal}{/if}{literal}
 		design: {
-			size : {width:'400px', height:'260px'}
+			designMode: 'responsive'
 		},
 		onPaymentSelect: function(orderReference) {
 		},
@@ -104,10 +112,10 @@ jQuery(document).ready(function($) {
 	function reCreateWalletWidget() {
 		$("#walletWidgetDiv").html('');
 		new OffAmazonPayments.Widgets.Wallet({
-			sellerId: '{/literal}{$sellerID}{literal}',
-			{/literal}{if $amz_session != ''}{literal}amazonOrderReferenceId: '{/literal}{$amz_session}{literal}', {/literal}{/if}{literal}
+			sellerId: '{/literal}{$sellerID|escape:'htmlall':'UTF-8'}{literal}',
+			{/literal}{if $amz_session != ''}{literal}amazonOrderReferenceId: '{/literal}{$amz_session|escape:'htmlall':'UTF-8'}{literal}', {/literal}{/if}{literal}
 			design: {
-				size : {width:'400px', height:'260px'}
+				designMode: 'responsive'
 			},
 			onPaymentSelect: function(orderReference) {
 				$("#cgv").trigger('change');
@@ -120,13 +128,13 @@ jQuery(document).ready(function($) {
 	function reCreateAddressBookWidget() {
 		$("#addressBookWidgetDiv").html('');
 		new OffAmazonPayments.Widgets.AddressBook({
-			sellerId: '{/literal}{$sellerID}{literal}',
-			{/literal}{if $amz_session != ''}{literal}amazonOrderReferenceId: '{/literal}{$amz_session}{literal}', {/literal}{/if}{literal}
+			sellerId: '{/literal}{$sellerID|escape:'htmlall':'UTF-8'}{literal}',
+			{/literal}{if $amz_session != ''}{literal}amazonOrderReferenceId: '{/literal}{$amz_session|escape:'htmlall':'UTF-8'}{literal}', {/literal}{/if}{literal}
 			onAddressSelect: function(orderReference) {
 				updateAddressSelection(amazonOrderReferenceId);			
 			},
 			design: {
-				size : {width:'400px', height:'260px'}
+				designMode: 'responsive'
 			},
 			onError: function(error) {		
 				console.log(error.getErrorMessage());

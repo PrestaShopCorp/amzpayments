@@ -23,13 +23,13 @@ $(document).ready(function() {
 	<div class="col-xs-12 col-sm-6">
 		<form action="{$link->getModuleLink('amzpayments', 'connect_accounts')|escape:'html':'UTF-8'}" method="post" id="login_form" class="box">
 			<input type="hidden" name="action" value="tryConnect" />
-			<input type="hidden" name="email" value="{$smarty.session.amzConnectEmail}" />
+			<input type="hidden" name="email" value="{$amzConnectEmail|escape:'htmlall':'UTF-8'}" />
 			{if $toCheckout}<input type="hidden" name="toCheckout" value="1" />{/if}
 			<p>{l s='In unserem Shop existiert bereits ein Benutzerkonto mit dieser E-Mail-Addresse. Bitte geben Sie Ihr Passwort ein, um dieses mit Ihrem Amazon-Konto zu verknüpfen.' mod='amzpayments'}</p>
 			<div class="form_content clearfix">				
 				<div class="form-group">
 					<label for="passwd">{l s='Password' mod='amzpayments'}</label>
-					<span><input class="is_required validate account_input form-control" type="password" data-validate="isPasswd" id="passwd" name="passwd" value="{if isset($smarty.post.passwd)}{$smarty.post.passwd|stripslashes}{/if}" /></span>
+					<span><input class="is_required validate account_input form-control" type="password" data-validate="isPasswd" id="passwd" name="passwd" value="{if isset($smarty.post.passwd)}{$smarty.post.passwd|stripslashes|escape:'htmlall':'UTF-8'}{/if}" /></span>
 				</div>
 				<p class="submit">
 					<button type="submit" id="SubmitLogin" name="SubmitLogin" class="button btn btn-default button-medium">

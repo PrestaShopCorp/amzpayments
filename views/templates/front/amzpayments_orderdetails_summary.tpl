@@ -148,18 +148,18 @@
 						</ul>
 					{/if}
 					{if $voucherAllowed}
-					<form action="{if $opc}{$link->getPageLink('order-opc', true)}{else}{$link->getPageLink('order', true)}{/if}" method="post" id="voucher">
+					<form action="{if $opc}{$link->getPageLink('order-opc', true)|escape:'htmlall':'UTF-8'}{else}{$link->getPageLink('order', true)|escape:'htmlall':'UTF-8'}{/if}" method="post" id="voucher">
 						<fieldset>
 							<p class="title_block"><label for="discount_name">{l s='Vouchers' mod='amzpayments'}</label></p>
 							<p>
-								<input type="text" id="discount_name" name="discount_name" value="{if isset($discount_name) && $discount_name}{$discount_name}{/if}" />
+								<input type="text" id="discount_name" name="discount_name" value="{if isset($discount_name) && $discount_name}{$discount_name|escape:'htmlall':'UTF-8'}{/if}" />
 							</p>
 							<p class="submit"><input type="hidden" name="submitDiscount" /><input type="submit" name="submitAddDiscount" value="{l s='ok' mod='amzpayments'}" class="button" /></p>
 						{if $displayVouchers}
 							<p id="title" class="title_offers">{l s='Take advantage of our offers:' mod='amzpayments'}</p>
 							<div id="display_cart_vouchers">
 							{foreach from=$displayVouchers item=voucher}
-								<span onclick="$('#discount_name').val('{$voucher.name}');return false;" class="voucher_name">{$voucher.name}</span> - {$voucher.description} <br />
+								<span onclick="$('#discount_name').val('{$voucher.name|escape:'htmlall':'UTF-8'}');return false;" class="voucher_name">{$voucher.name|escape:'htmlall':'UTF-8'}</span> - {$voucher.description|escape:'htmlall':'UTF-8'} <br />
 							{/foreach}
 							</div>
 						{/if}
@@ -189,7 +189,7 @@
 			{* Then the customized datas ones*}
 			{if isset($customizedDatas.$productId.$productAttributeId)}
 				{foreach from=$customizedDatas.$productId.$productAttributeId[$product.id_address_delivery] key='id_customization' item='customization' mod='amzpayments'}
-					<tr id="product_{$product.id_product}_{$product.id_product_attribute}_{$id_customization}" class="alternate_item cart_item">
+					<tr id="product_{$product.id_product|escape:'htmlall':'UTF-8'}_{$product.id_product_attribute|escape:'htmlall':'UTF-8'}_{$id_customization|escape:'htmlall':'UTF-8'}" class="alternate_item cart_item">
 						<td colspan="4">
 							{foreach from=$customization.datas key='type' item='datas' mod='amzpayments'}
 								{if $type == $CUSTOMIZE_FILE}
@@ -197,7 +197,7 @@
 										<ul class="customizationUploaded">
 											{foreach from=$datas item='picture' mod='amzpayments'}
 												<li>
-													<img src="{$pic_dir}{$picture.value}_small" alt="" class="customizationUploaded" />
+													<img src="{$pic_dir|escape:'htmlall':'UTF-8'}{$picture.value|escape:'htmlall':'UTF-8'}_small" alt="" class="customizationUploaded" />
 												</li>
 											{/foreach}
 										</ul>
@@ -211,7 +211,7 @@
 												{else}
 													{l s='Text #%s:' sprintf=$smarty.foreach.typedText.index+1 mod='amzpayments'}
 												{/if}
-												{$textField.value}
+												{$textField.value|escape:'htmlall':'UTF-8'}
 											</li>
 										{/foreach}
 									</ul>
@@ -220,7 +220,7 @@
 						</td>
 						<td class="cart_quantity">
 							{if isset($cannotModify) AND $cannotModify == 1}
-								<span style="float:left">{if $quantityDisplayed == 0 AND isset($customizedDatas.$productId.$productAttributeId)}{$customizedDatas.$productId.$productAttributeId|@count}{else}{$product.cart_quantity-$quantityDisplayed}{/if}</span>
+								<span style="float:left">{if $quantityDisplayed == 0 AND isset($customizedDatas.$productId.$productAttributeId)}{$customizedDatas.$productId.$productAttributeId|@count|escape:'htmlall':'UTF-8'}{else}{$product.cart_quantity-$quantityDisplayed|escape:'htmlall':'UTF-8'}{/if}</span>
 							{else}
 								<div style="float:right">
 									<a rel="nofollow" class="cart_quantity_delete" id="{$product.id_product}_{$product.id_product_attribute}_{$id_customization}" href="{$link->getPageLink('cart', true, NULL, "delete=1&amp;id_product={$product.id_product|intval}&amp;ipa={$product.id_product_attribute|intval}&amp;id_customization={$id_customization}&amp;token={$token_cart}")|escape:'htmlall':'UTF-8' mod='amzpayments'}"><img src="{$img_dir}icon/delete.gif" alt="{l s='Delete' mod='amzpayments'}" title="{l s='Delete this customization' mod='amzpayments'}" width="11" height="13" class="icon" /></a>
@@ -229,16 +229,16 @@
 								<a rel="nofollow" class="cart_quantity_up" id="cart_quantity_up_{$product.id_product}_{$product.id_product_attribute}_{$id_customization}" href="{$link->getPageLink('cart', true, NULL, "add=1&amp;id_product={$product.id_product|intval}&amp;ipa={$product.id_product_attribute|intval}&amp;id_customization={$id_customization}&amp;token={$token_cart}")|escape:'htmlall':'UTF-8' mod='amzpayments'}" title="{l s='Add' mod='amzpayments'}"><img src="{$img_dir}icon/quantity_up.gif" alt="{l s='Add' mod='amzpayments'}" width="14" height="9" /></a><br />
 								{if $product.minimal_quantity < ($customization.quantity -$quantityDisplayed) OR $product.minimal_quantity <= 1}
 								<a rel="nofollow" class="cart_quantity_down" id="cart_quantity_down_{$product.id_product}_{$product.id_product_attribute}_{$id_customization}" href="{$link->getPageLink('cart', true, NULL, "add=1&amp;id_product={$product.id_product|intval}&amp;ipa={$product.id_product_attribute|intval}&amp;id_customization={$id_customization}&amp;op=down&amp;token={$token_cart}")|escape:'htmlall':'UTF-8' mod='amzpayments'}" title="{l s='Subtract' mod='amzpayments'}">
-									<img src="{$img_dir}icon/quantity_down.gif" alt="{l s='Subtract' mod='amzpayments'}" width="14" height="9" />
+									<img src="{$img_dir|escape:'htmlall':'UTF-8'}icon/quantity_down.gif" alt="{l s='Subtract' mod='amzpayments'}" width="14" height="9" />
 								</a>
 								{else}
-								<a class="cart_quantity_down" style="opacity: 0.3;" id="cart_quantity_down_{$product.id_product}_{$product.id_product_attribute}_{$id_customization}" href="#" title="{l s='Subtract' mod='amzpayments'}">
-									<img src="{$img_dir}icon/quantity_down.gif" alt="{l s='Subtract' mod='amzpayments'}" width="14" height="9" />
+								<a class="cart_quantity_down" style="opacity: 0.3;" id="cart_quantity_down_{$product.id_product|escape:'htmlall':'UTF-8'}_{$product.id_product_attribute|escape:'htmlall':'UTF-8'}_{$id_customization|escape:'htmlall':'UTF-8'}" href="#" title="{l s='Subtract' mod='amzpayments'}">
+									<img src="{$img_dir|escape:'htmlall':'UTF-8'}icon/quantity_down.gif" alt="{l s='Subtract' mod='amzpayments'}" width="14" height="9" />
 								</a>
 								{/if}
 								</div>
-								<input type="hidden" value="{$customization.quantity}" name="quantity_{$product.id_product}_{$product.id_product_attribute}_{$id_customization}_hidden"/>
-								<input size="2" type="text" value="{$customization.quantity}" class="cart_quantity_input" name="quantity_{$product.id_product}_{$product.id_product_attribute}_{$id_customization}"/>
+								<input type="hidden" value="{$customization.quantity|escape:'htmlall':'UTF-8'}" name="quantity_{$product.id_product|escape:'htmlall':'UTF-8'}_{$product.id_product_attribute|escape:'htmlall':'UTF-8'}_{$id_customization|escape:'htmlall':'UTF-8'}_hidden"/>
+								<input size="2" type="text" value="{$customization.quantity|escape:'htmlall':'UTF-8'}" class="cart_quantity_input" name="quantity_{$product.id_product|escape:'htmlall':'UTF-8'}_{$product.id_product_attribute|escape:'htmlall':'UTF-8'}_{$id_customization|escape:'htmlall':'UTF-8'}"/>
 							{/if}
 						</td>
 						<td class="cart_total"></td>
@@ -264,9 +264,9 @@
 	{if count($discounts)}
 		<tbody>
 		{foreach from=$discounts item=discount name=discountLoop}
-			<tr class="cart_discount {if $smarty.foreach.discountLoop.last}last_item{elseif $smarty.foreach.discountLoop.first}first_item{else}item{/if}" id="cart_discount_{$discount.id_discount}">
-				<td class="cart_discount_name" colspan="2">{$discount.name}</td>
-				<td class="cart_discount_description" colspan="3">{$discount.description}</td>
+			<tr class="cart_discount {if $smarty.foreach.discountLoop.last}last_item{elseif $smarty.foreach.discountLoop.first}first_item{else}item{/if}" id="cart_discount_{$discount.id_discount|escape:'htmlall':'UTF-8'}">
+				<td class="cart_discount_name" colspan="2">{$discount.name|escape:'htmlall':'UTF-8'}</td>
+				<td class="cart_discount_description" colspan="3">{$discount.description|escape:'htmlall':'UTF-8'}</td>
 				<td class="cart_discount_price">
 					<span class="price-discount">
 						{if $discount.value_real > 0}

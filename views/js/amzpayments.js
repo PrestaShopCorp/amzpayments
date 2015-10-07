@@ -69,5 +69,19 @@ function checkForAmazonListButton() {
 				}
 			}).bind("payWithAmazonListDiv");
 		}
+	}		
+	if (jQuery("#HOOK_ADVANCED_PAYMENT").length > 0) {
+		if (jQuery("#payWithAmazonListDiv").length == 0) {
+			jQuery("#HOOK_ADVANCED_PAYMENT").append('<span id="payWithAmazonListDiv"></span>');
+			new OffAmazonPayments.Widgets.Button ({
+				sellerId: AMZSELLERID,
+				onSignIn: function(orderReference) {
+					amazonOrderReferenceId = orderReference.getAmazonOrderReferenceId();
+					window.location = REDIRECTAMZ + amazonOrderReferenceId;
+				},
+				onError: function(error) {
+				}
+			}).bind("payWithAmazonListDiv");
+		}
 	}	
 }

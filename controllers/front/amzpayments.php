@@ -1,4 +1,5 @@
 <?php
+
 /**
  * 2013-2015 Amazon Advanced Payment APIs Modul
  *
@@ -18,7 +19,6 @@
  *  @copyright 2013-2015 patworx multimedia GmbH
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
-
 class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
 {
 
@@ -183,7 +183,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                             if ($this->context->customer->isLogged()) {
                                 if (! Customer::getAddressesTotalById($this->context->customer->id)) {
                                     die(Tools::jsonEncode(array(
-                                        'no_address' => 1                                        
+                                        'no_address' => 1
                                     )));
                                 }
                                 if (file_exists(_PS_MODULE_DIR_ . 'blockuserinfo/blockuserinfo.php')) {
@@ -598,6 +598,9 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                             $amazon_capture_id = $amazon_capture_response->getCaptureResult()
                                                 ->getCaptureDetails()
                                                 ->getAmazonCaptureId();
+                                            $amazon_capture_reference_id = $amazon_capture_response->getCaptureResult()
+                                                ->getCaptureDetails()
+                                                ->getCaptureReferenceId();
                                         }
                                     }
                                 }
@@ -620,6 +623,9 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                         $amazon_capture_id = $amazon_capture_response->getCaptureResult()
                                             ->getCaptureDetails()
                                             ->getAmazonCaptureId();
+                                        $amazon_capture_reference_id = $amazon_capture_response->getCaptureResult()
+                                            ->getCaptureDetails()
+                                            ->getCaptureReferenceId();
                                     }
                                 }
                                 
@@ -631,22 +637,28 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                 if (isset($amazon_authorization_id)) {
                                     self::$amz_payments->setAmazonAuthorizationIdForOrderId($amazon_authorization_id, $this->module->currentOrder);
                                 }
-                                if (isset($amazon_authorization_id)) {
-                                    self::$amz_payments->setAmazonCaptureReferenceIdForOrderId($amazon_authorization_id, $this->module->currentOrder);
+                                if (isset($amazon_capture_reference_id)) {
+                                    self::$amz_payments->setAmazonCaptureReferenceIdForOrderId($amazon_capture_reference_id, $this->module->currentOrder);
                                 }
                                 if (isset($amazon_capture_id)) {
                                     self::$amz_payments->setAmazonCaptureIdForOrderId($amazon_capture_id, $this->module->currentOrder);
                                 }
                                 
-                                if (isset($this->context->cookie->amzSetStatusAuthorized) && is_array($this->context->cookie->amzSetStatusAuthorized)) {
-                                    foreach ($this->context->cookie->amzSetStatusAuthorized as $order_ref) {
-                                        AmazonTransactions::setOrderStatusAuthorized($order_ref);
+                                if (isset($this->context->cookie->amzSetStatusAuthorized)) {
+                                    $tmpOrderRefs = unserialize($this->context->cookie->amzSetStatusAuthorized);
+                                    if (is_array($tmpOrderRefs)) {
+                                        foreach ($tmpOrderRefs as $order_ref) {
+                                            AmazonTransactions::setOrderStatusAuthorized($order_ref);
+                                        }
                                     }
                                     unset($this->context->cookie->amzSetStatusAuthorized);
                                 }
-                                if (isset($this->context->cookie->amzSetStatusCaptured) && is_array($this->context->cookie->amzSetStatusCaptured)) {
-                                    foreach ($this->context->cookie->amzSetStatusCaptured as $order_ref) {
-                                        AmazonTransactions::setOrderStatusCaptured($order_ref);
+                                if (isset($this->context->cookie->amzSetStatusCaptured)) {
+                                    $tmpOrderRefs = unserialize($this->context->cookie->amzSetStatusCaptured);
+                                    if (is_array($tmpOrderRefs)) {
+                                        foreach ($tmpOrderRefs as $order_ref) {
+                                            AmazonTransactions::setOrderStatusCaptured($order_ref);
+                                        }
                                     }
                                     unset($this->context->cookie->amzSetStatusCaptured);
                                 }
@@ -1095,7 +1107,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
         if (! $this->context->cart->id_address_delivery || ! $this->context->cart->id_address_invoice || ! Validate::isLoadedObject($address_delivery) || ! Validate::isLoadedObject($address_invoice) || $address_invoice->deleted || $address_delivery->deleted) {
             return '<p class="warning">' . Tools::displayError('Error: Please select an address.') . '</p>';
         }
-        if (count($this->context->cart->getDeliveryOptionList()) == 0 && ! $this->context->cart->isVirtualCart()) { 
+        if (count($this->context->cart->getDeliveryOptionList()) == 0 && ! $this->context->cart->isVirtualCart()) {
             if ($this->context->cart->isMultiAddressDelivery()) {
                 return '<p class="warning">' . Tools::displayError('Error: None of your chosen carriers deliver to some of  the addresses you\'ve selected.') . '</p>';
             } else {
@@ -1111,21 +1123,21 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
         if (! $this->context->cookie->checkedTOS && Configuration::get('PS_CONDITIONS')) {
             return '<p class="warning">' . Tools::displayError('Please accept the Terms of Service.') . '</p>';
         }
-            
-            /* If some products have disappear */
+        
+        /* If some products have disappear */
         if (! $this->context->cart->checkQuantities()) {
             return '<p class="warning">' . Tools::displayError('An item in your cart is no longer available. You cannot proceed with your order.') . '</p>';
         }
-            
-            /* Check minimal amount */
+        
+        /* Check minimal amount */
         $currency = Currency::getCurrency((int) $this->context->cart->id_currency);
         
         $minimal_purchase = Tools::convertPrice((float) Configuration::get('PS_PURCHASE_MINIMUM'), $currency);
         if ($this->context->cart->getOrderTotal(false, Cart::ONLY_PRODUCTS) < $minimal_purchase) {
             return '<p class="warning">' . sprintf(Tools::displayError('A minimum purchase total of %1s (tax excl.) is required in order to validate your order, current purchase total is %2s (tax excl.).'), Tools::displayPrice($minimal_purchase, $currency), Tools::displayPrice($this->context->cart->getOrderTotal(false, Cart::ONLY_PRODUCTS), $currency)) . '</p>';
         }
-            
-            /* Bypass payment step if total is 0 */
+        
+        /* Bypass payment step if total is 0 */
         if ($this->context->cart->getOrderTotal() <= 0) {
             return '<p class="center"><input type="button" class="exclusive_large" name="confirmOrder" id="confirmOrder" value="' . Tools::displayError('I confirm my order.') . '" onclick="confirmFreeOrder();" /></p>';
         }
@@ -1241,7 +1253,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
         if ($message_content) {
             if (! Validate::isMessage($message_content)) {
                 $this->errors[] = Tools::displayError('Invalid message');
-            } else { 
+            } else {
                 if ($old_message = Message::getMessageByCartId((int) ($this->context->cart->id))) {
                     $message = new Message((int) ($old_message['id_message']));
                     $message->message = $message_content;

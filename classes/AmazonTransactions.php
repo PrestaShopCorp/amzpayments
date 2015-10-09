@@ -66,7 +66,7 @@ class AmazonTransactions
         }
         
         if ($amz_payments->provocation == 'soft_decline' && $amz_payments->environment == 'SANDBOX') {
-            $_SESSION['setHadErrorNowWallet'] = 1;
+            Context::getContext()->cookie->setHadErrorNowWallet = 1;
             $authorize_request->setSellerAuthorizationNote('{"SandboxSimulation": {"State":"Declined", "ReasonCode":"InvalidPaymentMethod", "PaymentMethodUpdateTimeInMins":2}}');
         }
         
@@ -300,10 +300,12 @@ class AmazonTransactions
             $new_status = $amz_payments->authorized_status_id;
             self::setOrderStatus($oid, $new_status);
         } else {
-            if (! isset($_SESSION['amzSetStatusAuthorized'])) {
-                $_SESSION['amzSetStatusAuthorized'] = array();
+            if (! isset(Context::getContext()->cookie->amzSetStatusAuthorized)) {
+                Context::getContext()->cookie->amzSetStatusAuthorized = serialize(array());
             }
-            $_SESSION['amzSetStatusAuthorized'][] = $order_ref;
+            $tmpData = unserialize(Context::getContext()->cookie->amzSetStatusAuthorized);
+            $tmpData[] = $order_ref;
+            Context::getContext()->cookie->amzSetStatusAuthorized = serialize($tmpData);
         }
     }
 
@@ -312,13 +314,14 @@ class AmazonTransactions
         $oid = self::getOrdersIdFromOrderRef($order_ref);
         if ($oid) {
             $amz_payments = new AmzPayments();
-            $new_status = $amz_payments->capture_status_id;
+            $new_status = $amz_payments->capture_success_status_id;
             self::setOrderStatus($oid, $new_status);
         } else {
-            if (! isset($_SESSION['amzSetStatusCaptured'])) {
-                $_SESSION['amzSetStatusCaptured'] = array();
-            }
-            $_SESSION['amzSetStatusCaptured'][] = $order_ref;
+            if (! isset(Context::getContext()->cookie->amzSetStatusCaptured))
+                Context::getContext()->cookie->amzSetStatusCaptured = serialize(array());
+            $tmpData = unserialize(Context::getContext()->cookie->amzSetStatusCaptured);
+            $tmpData[] = $order_ref;
+            Context::getContext()->cookie->amzSetStatusCaptured = serialize($tmpData);
         }
     }
 
@@ -329,6 +332,12 @@ class AmazonTransactions
             $amz_payments = new AmzPayments();
             $new_status = $amz_payments->capture_success_status_id;
             self::setOrderStatus($oid, $new_status);
+        } else {
+            if (! isset(Context::getContext()->cookie->amzSetStatusCaptured))
+                Context::getContext()->cookie->amzSetStatusCaptured = serialize(array());
+            $tmpData = unserialize(Context::getContext()->cookie->amzSetStatusCaptured);
+            $tmpData[] = $order_ref;
+            Context::getContext()->cookie->amzSetStatusCaptured = serialize($tmpData);
         }
     }
 

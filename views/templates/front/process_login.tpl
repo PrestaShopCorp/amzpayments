@@ -30,13 +30,13 @@ $(document).ready(function() {
 
 {if $fromCheckout}
 <h1>
-	{l s='Vielen Dank, Ihre Bestellung war erfolgreich. Wir verknüpfen nun Ihr Amazon Account mit unserem Shop.' mod='amzpayments'}
+	{l s='Thank you. Your order has been successful. We now create your account.' mod='amzpayments'}
 </h1>
 {else}
 <h1>
-	{l s='Vielen Dank für Ihre Anmeldung mit Amazon Payments' mod='amzpayments'}
+	{l s='Thank you for your login with Amazon Payments' mod='amzpayments'}
 </h1>
 {/if}
 
-<h3>{l s='Sie werden in wenigen Sekunden weitergeleitet...' mod='amzpayments'}</h3>
+<h3>{l s='You will be redirected in a few seconds...' mod='amzpayments'}</h3>
 {/nocache}

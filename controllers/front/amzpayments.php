@@ -576,7 +576,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                                 die(Tools::jsonEncode(array(
                                                     'hasError' => true,
                                                     'errors' => array(
-                                                        Tools::displayError(self::$amz_payments->l('Die von Ihnen gewählte Zahlungsart ist leider momentan nicht verfügbar. Bitte wählen Sie eine andere..'))
+                                                        Tools::displayError(self::$amz_payments->l('Your selected payment method is currently not available. Please select another one.'))
                                                     )
                                                 )));
                                             } else {

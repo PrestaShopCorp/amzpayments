@@ -43,11 +43,11 @@ switch (Tools::getValue('action')) {
         break;
     case 'closeOrder':
         $amz_payments->closeOrder(Tools::getValue('orderRef'));
-        echo '<br/><b>' . $amz_payments->l('AMZ_ORDER_CLOSED') . '</b>';
+        echo '<br/><b>' . $amz_payments->l('Order completed') . '</b>';
         break;
     case 'cancelOrder':
         $amz_payments->cancelOrder(Tools::getValue('orderRef'));
-        echo '<br/><b>' . $amz_payments->l('AMZ_ORDER_CANCELLED') . '</b>';
+        echo '<br/><b>' . $amz_payments->l('Payment process cancelled') . '</b>';
         break;
     case 'refreshOrder':
         $q = 'SELECT * FROM ' . _DB_PREFIX_ . 'amz_transactions 
@@ -56,7 +56,7 @@ switch (Tools::getValue('action')) {
         $rs = Db::getInstance()->ExecuteS($q);
         foreach ($rs as $r)
             $amz_payments->intelligentRefresh($r);
-        echo '<br/><b>' . $amz_payments->l('AMZ_FINISHED_REFRESHING_ORDER') . '</b>';
+        echo '<br/><b>' . $amz_payments->l('Update is completed!') . '</b>';
         break;
     
     case 'authorizeAmount':
@@ -68,11 +68,11 @@ switch (Tools::getValue('action')) {
             $details = $response->getAuthorizeResult()->getAuthorizationDetails();
             $status = $details->getAuthorizationStatus()->getState();
             if ($status == 'Open' || $status == 'Pending')
-                echo $amz_payments->l('AMZ_AUTHORIZATION_SUCCESSFULLY_REQUESTED');
+                echo $amz_payments->l('Authorisation request was started successfully');
             else
-                echo '<br/><b>' . $amz_payments->l('AMZ_AUTHORIZATION_REQUEST_FAILED') . '</b>';
+                echo '<br/><b>' . $amz_payments->l('Creation of the authorisation request has failed') . '</b>';
         } else
-            echo '<br/><b>' . $amz_payments->l('AMZ_AUTHORIZATION_REQUEST_FAILED') . '</b>';
+            echo '<br/><b>' . $amz_payments->l('Creation of the authorisation request has failed') . '</b>';
         break;
     
     case 'captureTotalFromAuth':
@@ -81,9 +81,9 @@ switch (Tools::getValue('action')) {
         $details = $response->getCaptureResult()->getCaptureDetails();
         $status = $details->getCaptureStatus()->getState();
         if ($status == 'Completed')
-            echo $amz_payments->l('AMZ_CAPTURE_SUCCESS');
+            echo $amz_payments->l('Capture successful');
         else
-            echo '<br/><b>' . $amz_payments->l('AMZ_CAPTURE_FAILED') . '</b>';
+            echo '<br/><b>' . $amz_payments->l('Capture failed') . '</b>';
         break;
     
     case 'captureAmountFromAuth':
@@ -96,9 +96,9 @@ switch (Tools::getValue('action')) {
             $details = $response->getCaptureResult()->getCaptureDetails();
             $status = $details->getCaptureStatus()->getState();
             if ($status == 'Completed')
-                echo $amz_payments->l('AMZ_CAPTURE_SUCCESS');
+                echo $amz_payments->l('Capture successful');
             else
-                echo '<br/><b>' . $amz_payments->l('AMZ_CAPTURE_FAILED') . '</b>';
+                echo '<br/><b>' . $amz_payments->l('Capture failed') . '</b>';
         }
         break;
     
@@ -116,9 +116,9 @@ switch (Tools::getValue('action')) {
 						SET amz_tx_amount_refunded = amz_tx_amount_refunded + ' . (float) Tools::getValue('amount') . '
 						WHERE amz_tx_amz_id = \'' . pSQL(Tools::getValue('captureId')) . '\'';
                 DB::getInstance()->execute($q);
-                echo $amz_payments->l('AMZ_REFUND_SUCCESS');
+                echo $amz_payments->l('Refund request was started successfully');
             } else
-                echo $amz_payments->l('AMZ_REFUND_FAILED');
+                echo $amz_payments->l('Refund failed');
         }
         break;
     

@@ -343,8 +343,8 @@ class AmazonTransactions
 
     public static function getOrdersIdFromOrderRef($order_ref)
     {
-        $q = 'SELECT id_order FROM ' . _DB_PREFIX_ . 'orders 
-				WHERE amazon_order_reference_id = \'' . pSQL($order_ref) . '\'';
+        $q = 'SELECT `id_order` FROM `' . _DB_PREFIX_ . 'amz_orders`
+				WHERE `amazon_order_reference_id` = \'' . pSQL($order_ref) . '\'';
         $r = Db::getInstance()->getRow($q);
         return $r['id_order'];
     }

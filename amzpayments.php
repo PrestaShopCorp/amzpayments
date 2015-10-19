@@ -100,6 +100,8 @@ class AmzPayments extends PaymentModule
     public $ca_bundle_file;
 
     private $_postErrors = array();
+    
+    private $_postSuccess = array(); 
 
     private $pfid = 'A1AOZCKI9MBRZA';
 
@@ -143,9 +145,12 @@ class AmzPayments extends PaymentModule
     {
         $this->name = 'amzpayments';
         $this->tab = 'payments_gateways';
-        $this->version = '2.0.7';
+        $this->version = '2.0.11';
         $this->author = 'patworx multimedia GmbH';
         $this->need_instance = 1;
+        
+        $this->bootstrap = true;
+        
         $this->ps_versions_compliancy = array(
             'min' => '1.6',
             'max' => _PS_VERSION_
@@ -230,25 +235,12 @@ class AmzPayments extends PaymentModule
         
         if (Shop::isFeatureActive())
             Shop::setContext(Shop::CONTEXT_ALL);
-            
-            /* set database */
-        if (! $this->checkTableForColumn(_DB_PREFIX_ . 'address', 'amazon_order_reference_id'))
-            Db::getInstance()->Execute('ALTER TABLE `' . _DB_PREFIX_ . 'address` ADD `amazon_order_reference_id` varchar(50) NULL AFTER `dni`');
-        if (! $this->checkTableForColumn(_DB_PREFIX_ . 'orders', 'amazon_auth_reference_id'))
-            Db::getInstance()->Execute('ALTER TABLE `' . _DB_PREFIX_ . 'orders` ADD `amazon_auth_reference_id` varchar(50) NULL AFTER `valid`');
-        if (! $this->checkTableForColumn(_DB_PREFIX_ . 'orders', 'amazon_authorization_id'))
-            Db::getInstance()->Execute('ALTER TABLE `' . _DB_PREFIX_ . 'orders` ADD `amazon_authorization_id` varchar(50) NULL AFTER `valid`');
-        if (! $this->checkTableForColumn(_DB_PREFIX_ . 'orders', 'amazon_order_reference_id'))
-            Db::getInstance()->Execute('ALTER TABLE `' . _DB_PREFIX_ . 'orders` ADD `amazon_order_reference_id` varchar(50) NULL AFTER `valid`');
-        if (! $this->checkTableForColumn(_DB_PREFIX_ . 'orders', 'amazon_capture_id'))
-            Db::getInstance()->Execute('ALTER TABLE `' . _DB_PREFIX_ . 'orders` ADD `amazon_capture_id` varchar(50) NULL AFTER `valid`');
-        if (! $this->checkTableForColumn(_DB_PREFIX_ . 'orders', 'amazon_capture_reference_id'))
-            Db::getInstance()->Execute('ALTER TABLE `' . _DB_PREFIX_ . 'orders` ADD `amazon_capture_reference_id` varchar(50) NULL AFTER `valid`');
-        
-        if (! $this->checkTableForColumn(_DB_PREFIX_ . 'customer', 'amazon_customer_id'))
-            Db::getInstance()->Execute('ALTER TABLE `' . _DB_PREFIX_ . 'customer` ADD `amazon_customer_id` varchar(50) NULL AFTER `date_upd`');
         
         Db::getInstance()->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'amz_transactions`;');
+        Db::getInstance()->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'amz_orders`;');
+        Db::getInstance()->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'amz_address`;');
+        Db::getInstance()->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'amz_customer`;');
+        
         Db::getInstance()->execute('
 				CREATE TABLE `' . _DB_PREFIX_ . 'amz_transactions` (
 				`amz_tx_id` int(11) NOT NULL AUTO_INCREMENT,
@@ -270,7 +262,37 @@ class AmzPayments extends PaymentModule
 				KEY `amz_tx_order_reference` (`amz_tx_order_reference`),
 				KEY `amz_tx_type` (`amz_tx_type`)
 		) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
-
+				');
+        
+        Db::getInstance()->execute('
+				CREATE TABLE `' . _DB_PREFIX_ . 'amz_orders` (
+				`id` int(11) NOT NULL AUTO_INCREMENT,
+                `id_order` int(11) NOT NULL,
+				`amazon_auth_reference_id` varchar(255) NOT NULL,
+				`amazon_authorization_id` varchar(255) NOT NULL,
+				`amazon_order_reference_id` varchar(255) NOT NULL,
+				`amazon_capture_id` varchar(255) NOT NULL,
+				`amazon_capture_reference_id` varchar(255) NOT NULL,
+				PRIMARY KEY (`id`)
+		) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
+				');
+        
+        Db::getInstance()->execute('
+				CREATE TABLE `' . _DB_PREFIX_ . 'amz_address` (
+				`id` int(11) NOT NULL AUTO_INCREMENT,
+                `id_address` int(11) NOT NULL,
+				`amazon_order_reference_id` varchar(255) NOT NULL,
+				PRIMARY KEY (`id`)
+		) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
+				');
+        
+        Db::getInstance()->execute('
+				CREATE TABLE `' . _DB_PREFIX_ . 'amz_customer` (
+				`id` int(11) NOT NULL AUTO_INCREMENT,
+                `id_customer` int(11) NOT NULL,
+				`amazon_customer_id` varchar(255) NOT NULL,
+				PRIMARY KEY (`id`)
+		) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
 				');
         
         $this->installOrderStates();
@@ -301,7 +323,7 @@ class AmzPayments extends PaymentModule
             Db::getInstance()->autoExecute(_DB_PREFIX_ . 'order_state_lang', array(
                 'id_order_state' => $id_order_state,
                 'id_lang' => $language['id_lang'],
-                'name' => $this->l('Amazon Payments - autorisiert'),
+                'name' => $this->l('Amazon Payments - Authorized'),
                 'template' => ''
             ), 'INSERT');
         Configuration::updateValue('AUTHORIZED_STATUS_ID', $id_order_state);
@@ -328,7 +350,7 @@ class AmzPayments extends PaymentModule
             Db::getInstance()->autoExecute(_DB_PREFIX_ . 'order_state_lang', array(
                 'id_order_state' => $id_order_state,
                 'id_lang' => $language['id_lang'],
-                'name' => $this->l('Amazon Payments - Zahlung eingegangen'),
+                'name' => $this->l('Amazon Payments - Payment received'),
                 'template' => ''
             ), 'INSERT');
         Configuration::updateValue('CAPTURE_STATUS_ID', $id_order_state);
@@ -356,26 +378,27 @@ class AmzPayments extends PaymentModule
 
     private function _postValidation()
     {
-        if (Tools::isSubmit('btnSubmit')) {
-            foreach (array_keys(self::$config_array) as $f) {
-                if (Tools::getValue($f) === false)
-                    $this->_postErrors[] = $this->l($f . ' details are required.');
+        if (Tools::isSubmit('submitAmzpaymentsModule')) {
+            foreach (self::$config_array as $name => $f) {
+                if (Tools::getValue($f) === false) {
+                    $this->_postErrors[] = $this->l($name) . ' ' . $this->l(': details are required.');
+                }
             }
-            if (Tools::getValue('region') == '')
+            if (Tools::getValue('REGION') == '') {
                 $this->_postErrors[] = $this->l('Region is wrong.');
-            else {
+            } else {
                 $service = $this->getService(array(
-                    'merchantId' => Tools::getValue('merchant_id'),
-                    'accessKey' => Tools::getValue('access_key'),
-                    'environment' => Tools::getValue('environment'),
-                    'authorization_mode' => Tools::getValue('authorization_mode'),
-                    'capture_mode' => Tools::getValue('capture_mode'),
-                    'capture_status_id' => Tools::getValue('capture_status_id'),
-                    'region' => Tools::getValue('region'),
-                    'secretKey' => Tools::getValue('secret_key')
+                    'merchantId' => Tools::getValue('MERCHANT_ID'),
+                    'accessKey' => Tools::getValue('ACCESS_KEY'),
+                    'environment' => Tools::getValue('ENVIRONMENT'),
+                    'authorization_mode' => Tools::getValue('AUTHORIZATION_MODE'),
+                    'capture_mode' => Tools::getValue('CAPTURE_MODE'),
+                    'capture_status_id' => Tools::getValue('CAPTURE_STATUS_ID'),
+                    'region' => Tools::getValue('REGION'),
+                    'secretKey' => Tools::getValue('SECRET_KEY')
                 ));
                 $order_ref_request = new OffAmazonPaymentsService_Model_GetOrderReferenceDetailsRequest();
-                $order_ref_request->setSellerId(Tools::getValue('merchant_id'));
+                $order_ref_request->setSellerId(Tools::getValue('MERCHANT_ID'));
                 $order_ref_request->setAmazonOrderReferenceId('S00-0000000-0000000');
                 try {
                     $service->getOrderReferenceDetails($order_ref_request);
@@ -401,109 +424,38 @@ class AmzPayments extends PaymentModule
 
     private function _postProcess()
     {
-        if (Tools::isSubmit('btnSubmit')) {
-            foreach (self::$config_array as $f => $conf_key)
-                Configuration::updateValue($conf_key, trim(Tools::getValue($f)));
+        if (Tools::isSubmit('submitAmzpaymentsModule')) {
+            foreach (self::$config_array as $f => $conf_key) {
+                Configuration::updateValue($conf_key, trim(Tools::getValue($conf_key)));                
+            }                
         }
-        $this->_html .= '<div class="bootstrap"><div class="alert alert-success conf confirm"> ' . $this->l('Settings updated') . '</div></div>';
+        $this->_postSuccess[] = $this->l('Settings updated');
     }
 
     private function _displayForm()
     {
-        $this->_html .= '<form action="' . Tools::htmlentitiesUTF8($_SERVER['REQUEST_URI']) . '" method="post">
-		<fieldset>
-		<legend><img src="../img/admin/contact.gif" />' . $this->l('Your Amazon Payments Details') . '</legend>
-
-		<div style="float: right; border: 1px dotted #ccc; padding: 5px; width: 230px; height: 230px;" id="amzVersionChecker">
-		<p style="text-align: center" id="versionCheck">
-		<img src="' . _PS_BASE_URL_ . __PS_BASE_URI__ . 'modules/' . $this->name . '/views/img/loading_indicator.gif' . '" />
-		<br /><br />
-		' . $this->l('Wir prüfen, ob eine neue Modul-Version bereit steht') . '
-		<br /><br />
-		</p>
-		<p style="text-align: center" id="versionCheckResult">
-		' . $this->l('Ihre Version: ') . ' <strong>' . $this->version . '</strong>
-		<br /><br />
-		</p>
-		</div>
-		<script language="javascript">
-		$(document).ready(function() {
-		$.post("../modules/amzpayments/ajax.php",
-		{
-		action: "versionCheck",
-		asv: "' . $this->version . '",
-		psv: "' . _PS_VERSION_ . '",
-		ref: location.host
-	}, function(data) {
-	console.log(data);
-	if (data.newversion == 1) {
-	$("#versionCheckResult").append("' . $this->l('Es gibt eine neue Version: ') . ' <strong>" + data.newversion_number + "</strong><br /><br /><a href=\"http://www.patworx.de/Amazon-Advanced-Payment-APIs/PrestaShop\" target=\"_blank\">&gt; Download</a>");
-	} else {
-	$("#versionCheckResult").append("' . $this->l('Alles bestens, Sie nutzen die aktuelle Version') . '");
-	}
-	$("#versionCheck").hide();
-	}, "json"
-	);
-	});
-	</script>
-
-	<table border="0" width="" cellpadding="0" cellspacing="0" id="form">
-	<tr><td colspan="2">' . $this->l('Please configure your details before using the module.') . '.<br /><br /></td></tr>
-	';
+        $helper = new HelperForm();
         
-        // Da Presta die Lang-Vars sonst nicht findet...
-        $this->l('d_merchant_id');
-        $this->l('d_access_key');
-        $this->l('d_secret_key');
-        $this->l('d_client_id');
-        $this->l('d_region');
-        $this->l('d_button_visibility');
-        $this->l('d_environment');
-        $this->l('d_lpa_mode');
-        $this->l('d_authorization_mode');
-        $this->l('d_authorized_status_id');
-        $this->l('d_capture_mode');
-        $this->l('d_capture_status_id');
-        $this->l('d_capture_success_status_id');
-        $this->l('d_provocation');
-        $this->l('d_popup');
-        $this->l('d_shippings_not_allowed');
-        $this->l('d_products_not_allowed');
-        $this->l('d_allow_guests');
-        $this->l('d_button_size');
-        $this->l('d_button_size_lpa');
-        $this->l('d_button_color');
-        $this->l('d_button_color_lpa');
-        $this->l('d_button_color_lpa_navi');
-        $this->l('d_type_login');
-        $this->l('d_type_pay');
-        $this->l('d_ipn_status');
-        $this->l('d_cron_status');
-        $this->l('d_cron_password');
-        $this->l('d_send_mails_on_decline');
-        $this->l('Buy now');
-        $this->l('d_preselect_create_account');
-        $this->l('d_force_account_creation');
+        $helper->show_toolbar = false;
+        $helper->table = $this->table;
+        $helper->module = $this;
+        $helper->default_form_language = $this->context->language->id;
+        $helper->allow_employee_form_lang = Configuration::get('PS_BO_ALLOW_EMPLOYEE_FORM_LANG', 0);
         
-        foreach (array_keys(self::$config_array) as $f) {
-            $langvar = 'd_' . $f;
-            $this->_html .= '<tr><td width="300" style="height: 35px;">' . $this->l($langvar) . '</td>
-			<td>' . $this->buildConfigInput($f) . '</td></tr>';
-            if ($f == 'ipn_status') {
-                $this->_html .= '<tr><td width="300" style="height: 35px;">' . $this->l('d_url_ipn') . '</td>
-				<td>' . $this->getIPNURL() . '</td></tr>';
-            }
-            if ($f == 'cron_password') {
-                $this->_html .= '<tr><td width="300" style="height: 35px;">' . $this->l('d_url_cronjob') . '</td>
-				<td>' . $this->getCronURL() . '</td></tr>';
-            }
-        }
+        $helper->identifier = $this->identifier;
+        $helper->submit_action = 'submitAmzpaymentsModule';
+        $helper->currentIndex = $this->context->link->getAdminLink('AdminModules', false) . '&configure=' . $this->name . '&tab_module=' . $this->tab . '&module_name=' . $this->name;
+        $helper->token = Tools::getAdminTokenLite('AdminModules');
         
-        $this->_html .= '
-		<tr><td colspan="2" align="center"><input class="button" name="btnSubmit" value="' . $this->l('Update settings') . '" type="submit" /></td></tr>
-		</table>
-		</fieldset>
-		</form>';
+        $helper->tpl_vars = array(
+            'fields_value' => $this->getConfigFormValues(),
+            'languages' => $this->context->controller->getLanguages(),
+            'id_language' => $this->context->language->id
+        );
+        
+        return $helper->generateForm(array(
+            $this->getConfigForm()
+        ));
     }
 
     protected function getPossibleRegionEntries()
@@ -529,161 +481,613 @@ class AmzPayments extends PaymentModule
         return $url;
     }
 
-    public function buildConfigInput($f)
+    public function getConfigFormValues()
     {
-        switch ($f) {
-            case 'environment':
-                return '<select name="' . $f . '">
-				<option value="SANDBOX"' . ($this->$f == 'SANDBOX' ? ' selected="selected"' : false) . '>' . $this->l('Testbetrieb') . '</option>
-				<option value="LIVE"' . ($this->$f == 'LIVE' ? ' selected="selected"' : false) . '>' . $this->l('Livebetrieb') . '</option>
-				</select>';
-            
-            case 'lpa_mode':
-                return '<select name="' . $f . '">
-				<option value="pay"' . ($this->$f == 'pay' ? ' selected="selected"' : false) . '>' . $this->l('mode_pay') . '</option>
-				<option value="login"' . ($this->$f == 'login' ? ' selected="selected"' : false) . '>' . $this->l('mode_login') . '</option>
-				<option value="login_pay"' . ($this->$f == 'login_pay' ? ' selected="selected"' : false) . '>' . $this->l('mode_login_pay') . '</option>
-				</select>';
-            
-            case 'provocation':
-                return '<select name="' . $f . '">
-				<option value="0"' . ($this->$f == '0' ? ' selected="selected"' : false) . '>' . $this->l('Nein') . '</option>
-				<option value="hard_decline"' . ($this->$f == 'hard_decline' ? ' selected="selected"' : false) . '>' . $this->l('Hard Decline') . '</option>
-				<option value="soft_decline"' . ($this->$f == 'soft_decline' ? ' selected="selected"' : false) . '>' . $this->l('Soft Decline (2min)') . '</option>
-				<option value="capture_decline"' . ($this->$f == 'capture_decline' ? ' selected="selected"' : false) . '>' . $this->l('Capture Decline') . '</option>
-				</select>';
-            
-            case 'popup':
-            case 'ipn_status':
-            case 'cron_status':
-            case 'send_mails_on_decline':
-            case 'allow_guests':
-            case 'button_visibility':
-            case 'preselect_create_account':
-            case 'force_account_creation':
-                return '<select name="' . $f . '">
-				<option value="1"' . ($this->$f == '1' ? ' selected="selected"' : false) . '>' . $this->l('Ja') . '</option>
-				<option value="0"' . ($this->$f == '0' ? ' selected="selected"' : false) . '>' . $this->l('Nein') . '</option>
-				</select>';
-            
-            case 'authorization_mode':
-                return '<select name="' . $f . '">
-				<option value="fast_auth"' . ($this->$f == 'fast_auth' ? ' selected="selected"' : false) . '>' . $this->l('waehrend des Checkouts/vor Abschluss der Bestellung') . '</option>
-				<option value="after_checkout"' . ($this->$f == 'after_checkout' ? ' selected="selected"' : false) . '>' . $this->l('direkt nach der Bestellung') . '</option>
-				<option value="manually"' . ($this->$f == 'manually' ? ' selected="selected"' : false) . '>' . $this->l('manuell') . '</option>
-				</select>';
-            
-            case 'capture_mode':
-                return '<select name="' . $f . '">
-				<option value="after_shipping"' . ($this->$f == 'after_shipping' ? ' selected="selected"' : false) . '>' . $this->l('nach Versand') . '</option>
-				<option value="after_auth"' . ($this->$f == 'after_auth' ? ' selected="selected"' : false) . '>' . $this->l('direkt nach der Autorisierung') . '</option>
-				<option value="manually"' . ($this->$f == 'manually' ? ' selected="selected"' : false) . '>' . $this->l('manuell') . '</option>
-				</select>';
-            
-            case 'button_size':
-                return '<select name="' . $f . '">
-				<option value="medium"' . ($this->$f == 'medium' ? ' selected="selected"' : false) . '>' . $this->l('normal') . '</option>
-				<option value="large"' . ($this->$f == 'large' ? ' selected="selected"' : false) . '>' . $this->l('groß') . '</option>
-				<option value="x-large"' . ($this->$f == 'x-large' ? ' selected="selected"' : false) . '>' . $this->l('sehr groß') . '</option>
-				</select>';
-            
-            case 'button_size_lpa':
-                return '<select name="' . $f . '">
-				<option value="small"' . ($this->$f == 'small' ? ' selected="selected"' : false) . '>' . $this->l('klein') . '</option>
-				<option value="medium"' . ($this->$f == 'medium' ? ' selected="selected"' : false) . '>' . $this->l('normal') . '</option>
-				<option value="large"' . ($this->$f == 'large' ? ' selected="selected"' : false) . '>' . $this->l('groß') . '</option>
-				<option value="x-large"' . ($this->$f == 'x-large' ? ' selected="selected"' : false) . '>' . $this->l('sehr groß') . '</option>
-				</select>';
-            
-            case 'button_color':
-                return '<select name="' . $f . '">
-				<option value="orange"' . ($this->$f == 'orange' ? ' selected="selected"' : false) . '>' . $this->l('Amazon-Gelb') . '</option>
-				<option value="tan"' . ($this->$f == 'tan' ? ' selected="selected"' : false) . '>' . $this->l('Grau') . '</option>
-				</select>';
-            
-            case 'button_color_lpa_navi':
-            case 'button_color_lpa':
-                return '<select name="' . $f . '">
-				<option value="Gold"' . ($this->$f == 'Gold' ? ' selected="selected"' : false) . '>' . $this->l('Amazon-Gelb') . '</option>
-				<option value="LightGray"' . ($this->$f == 'LightGray' ? ' selected="selected"' : false) . '>' . $this->l('Hell-Grau') . '</option>
-				<option value="DarkGray"' . ($this->$f == 'DarkGray' ? ' selected="selected"' : false) . '>' . $this->l('Dunkel-Grau') . '</option>
-				</select>';
-            
-            case 'type_login':
-                return '<select name="' . $f . '">
-				<option value="LwA"' . ($this->$f == 'LwA' ? ' selected="selected"' : false) . '>' . $this->l('Login über Amazon') . '</option>
-				<option value="Login"' . ($this->$f == 'Login' ? ' selected="selected"' : false) . '>' . $this->l('Login') . '</option>
-				<option value="A"' . ($this->$f == 'A' ? ' selected="selected"' : false) . '>' . $this->l('Nur ein "A"') . '</option>
-				</select>';
-            
-            case 'type_pay':
-                return '<select name="' . $f . '">
-				<option value="PwA"' . ($this->$f == 'PwA' ? ' selected="selected"' : false) . '>' . $this->l('Bezahlen über Amazon') . '</option>
-				<option value="Pay"' . ($this->$f == 'Pay' ? ' selected="selected"' : false) . '>' . $this->l('Bezahlen') . '</option>
-				<option value="A"' . ($this->$f == 'A' ? ' selected="selected"' : false) . '>' . $this->l('Nur ein "A"') . '</option>
-				</select>';
-            
-            case 'authorized_status_id':
-            case 'capture_status_id':
-            case 'capture_success_status_id':
-                $states = OrderState::getOrderStates((int) Configuration::get('PS_LANG_DEFAULT'));
-                $options = '';
-                foreach ($states as $state) {
-                    $options .= '<option value="' . $state['id_order_state'] . '"' . ($this->$f == $state['id_order_state'] ? ' selected="selected"' : false) . '>' . $state['name'] . '</option>';
-                }
-                return '<select name="' . $f . '">' . $options . '</select>';
-            
-            case 'secret_key':
-                return '<input type="password" name="' . $f . '" value="' . htmlentities(Tools::getValue($f, $this->$f), ENT_COMPAT, 'UTF-8') . '" style="width: 300px;" />';
-            
-            case 'region':
-                return '<input type="text" name="' . $f . '" value="' . htmlentities(Tools::getValue($f, $this->$f), ENT_COMPAT, 'UTF-8') . '" style="width: 300px;" /> ' . $this->l('Zulässig Eingaben: ') . $this->getPossibleRegionEntries();
-            
-            default:
-                return '<input type="text" name="' . $f . '" value="' . htmlentities(Tools::getValue($f, $this->$f), ENT_COMPAT, 'UTF-8') . '" style="width: 300px;" />';
+        $return = array();
+        foreach (self::$config_array as $name => $key) {
+            $return[$key] = Configuration::get($key);
         }
+        return $return;
+    }
+
+    public function getConfigForm()
+    {
+        return array(
+            'form' => array(
+                'legend' => array(
+                    'title' => $this->l('Settings'),
+                    'icon' => 'icon-cogs'
+                ),
+                'input' => array(
+                    array(
+                        'col' => 3,
+                        'type' => 'text',
+                        'prefix' => '<i class="icon icon-tag"></i>',
+                        'name' => 'MERCHANT_ID',
+                        'label' => $this->l('merchant_id')
+                    ),
+                    array(
+                        'col' => 3,
+                        'type' => 'text',
+                        'prefix' => '<i class="icon icon-tag"></i>',
+                        'name' => 'ACCESS_KEY',
+                        'label' => $this->l('access_key')
+                    ),
+                    array(
+                        'col' => 3,
+                        'type' => 'text',
+                        'prefix' => '<i class="icon icon-tag"></i>',
+                        'name' => 'SECRET_KEY',
+                        'label' => $this->l('secret_key')
+                    ),
+                    array(
+                        'col' => 3,
+                        'type' => 'text',
+                        'prefix' => '<i class="icon icon-tag"></i>',
+                        'name' => 'CLIENT_ID',
+                        'label' => $this->l('client_id')
+                    ),
+                    array(
+                        'col' => 3,
+                        'type' => 'text',
+                        'prefix' => '<i class="icon icon-tag"></i>',
+                        'name' => 'REGION',
+                        'hint' => $this->l('Allowed values: ') . $this->getPossibleRegionEntries(),
+                        'label' => $this->l('region')
+                    ),
+                    array(
+                        'col' => 3,
+                        'type' => 'select',
+                        'prefix' => '<i class="icon icon-tag"></i>',
+                        'name' => 'LPA_MODE',
+                        'label' => $this->l('lpa_mode'),
+                        'options' => array(
+                            'query' => array(
+                                array(
+                                    'id_lpa_mode' => 'pay',
+                                    'name' => $this->l('mode_pay')
+                                ),
+                                array(
+                                    'id_lpa_mode' => 'login',
+                                    'name' => $this->l('mode_login')
+                                ),
+                                array(
+                                    'id_lpa_mode' => 'login_pay',
+                                    'name' => $this->l('mode_login_pay')
+                                )
+                            ),
+                            'id' => 'id_lpa_mode',
+                            'name' => 'name'
+                        )
+                    ),
+                    array(
+                        'type' => 'switch',
+                        'label' => $this->l('button_visibility'),
+                        'name' => 'BUTTON_VISIBILITY',
+                        'is_bool' => true,
+                        'values' => array(
+                            array(
+                                'id' => 'active_on_bv',
+                                'value' => true,
+                                'label' => $this->l('Enabled')
+                            ),
+                            array(
+                                'id' => 'active_off_bv',
+                                'value' => false,
+                                'label' => $this->l('Disabled')
+                            )
+                        )
+                    ),
+                    array(
+                        'col' => 3,
+                        'type' => 'select',
+                        'prefix' => '<i class="icon icon-tag"></i>',
+                        'name' => 'ENVIRONMENT',
+                        'label' => $this->l('environment'),
+                        'options' => array(
+                            'query' => array(
+                                array(
+                                    'id_lpa_environment' => 'SANDBOX',
+                                    'name' => $this->l('Test mode')
+                                ),
+                                array(
+                                    'id_lpa_environment' => 'LIVE',
+                                    'name' => $this->l('Live mode')
+                                )
+                            ),
+                            'id' => 'id_lpa_environment',
+                            'name' => 'name'
+                        )
+                    ),
+                    array(
+                        'col' => 3,
+                        'type' => 'select',
+                        'prefix' => '<i class="icon icon-tag"></i>',
+                        'name' => 'AUTHORIZATION_MODE',
+                        'label' => $this->l('authorization_mode'),
+                        'options' => array(
+                            'query' => array(
+                                array(
+                                    'id_lpa_auth_mode' => 'fast_auth',
+                                    'name' => $this->l('during checkout / before completing the order')
+                                ),
+                                array(
+                                    'id_lpa_auth_mode' => 'after_checkout',
+                                    'name' => $this->l('immediately after the order')
+                                ),
+                                array(
+                                    'id_lpa_auth_mode' => 'manually',
+                                    'name' => $this->l('manual')
+                                )
+                            ),
+                            'id' => 'id_lpa_auth_mode',
+                            'name' => 'name'
+                        )
+                    ),
+                    array(
+                        'col' => 3,
+                        'type' => 'select',
+                        'prefix' => '<i class="icon icon-tag"></i>',
+                        'name' => 'AUTHORIZED_STATUS_ID',
+                        'label' => $this->l('authorized_status_id'),
+                        'options' => array(
+                            'query' => OrderState::getOrderStates((int) Configuration::get('PS_LANG_DEFAULT')),
+                            'id' => 'id_order_state',
+                            'name' => 'name'
+                        )
+                    ),
+                    array(
+                        'col' => 3,
+                        'type' => 'select',
+                        'prefix' => '<i class="icon icon-tag"></i>',
+                        'name' => 'CAPTURE_MODE',
+                        'label' => $this->l('capture_mode'),
+                        'options' => array(
+                            'query' => array(
+                                array(
+                                    'id_lpa_capt_mode' => 'after_shipping',
+                                    'name' => $this->l('after delivery')
+                                ),
+                                array(
+                                    'id_lpa_capt_mode' => 'after_auth',
+                                    'name' => $this->l('directly after the authorisation')
+                                ),
+                                array(
+                                    'id_lpa_capt_mode' => 'manually',
+                                    'name' => $this->l('manual')
+                                )
+                            ),
+                            'id' => 'id_lpa_capt_mode',
+                            'name' => 'name'
+                        )
+                    ),
+                    array(
+                        'col' => 3,
+                        'type' => 'select',
+                        'prefix' => '<i class="icon icon-tag"></i>',
+                        'name' => 'CAPTURE_STATUS_ID',
+                        'label' => $this->l('capture_status_id'),
+                        'options' => array(
+                            'query' => OrderState::getOrderStates((int) Configuration::get('PS_LANG_DEFAULT')),
+                            'id' => 'id_order_state',
+                            'name' => 'name'
+                        )
+                    ),
+                    array(
+                        'col' => 3,
+                        'type' => 'select',
+                        'prefix' => '<i class="icon icon-tag"></i>',
+                        'name' => 'CAPTURE_SUCCESS_STATUS_ID',
+                        'label' => $this->l('capture_success_status_id'),
+                        'options' => array(
+                            'query' => OrderState::getOrderStates((int) Configuration::get('PS_LANG_DEFAULT')),
+                            'id' => 'id_order_state',
+                            'name' => 'name'
+                        )
+                    ),
+                    array(
+                        'col' => 3,
+                        'type' => 'select',
+                        'prefix' => '<i class="icon icon-tag"></i>',
+                        'name' => 'PROVOCATION',
+                        'label' => $this->l('capture_mode'),
+                        'options' => array(
+                            'query' => array(
+                                array(
+                                    'id_lpa_prov' => '0',
+                                    'name' => $this->l('No')
+                                ),
+                                array(
+                                    'id_lpa_prov' => 'hard_decline',
+                                    'name' => $this->l('Hard Decline')
+                                ),
+                                array(
+                                    'id_lpa_prov' => 'soft_decline',
+                                    'name' => $this->l('Soft Decline (2min)')
+                                ),
+                                array(
+                                    'id_lpa_prov' => 'capture_decline',
+                                    'name' => $this->l('Capture Decline')
+                                )
+                            ),
+                            'id' => 'id_lpa_prov',
+                            'name' => 'name'
+                        )
+                    ),
+                    array(
+                        'type' => 'switch',
+                        'label' => $this->l('popup'),
+                        'name' => 'POPUP',
+                        'is_bool' => true,
+                        'values' => array(
+                            array(
+                                'id' => 'active_on_popup',
+                                'value' => true,
+                                'label' => $this->l('Enabled')
+                            ),
+                            array(
+                                'id' => 'active_off_popup',
+                                'value' => false,
+                                'label' => $this->l('Disabled')
+                            )
+                        )
+                    ),
+                    array(
+                        'col' => 3,
+                        'type' => 'text',
+                        'prefix' => '<i class="icon icon-tag"></i>',
+                        'name' => 'SHIPPINGS_NOT_ALLOWED',
+                        'label' => $this->l('shippings_not_allowed')
+                    ),
+                    array(
+                        'col' => 3,
+                        'type' => 'text',
+                        'prefix' => '<i class="icon icon-tag"></i>',
+                        'name' => 'PRODUCTS_NOT_ALLOWED',
+                        'label' => $this->l('products_not_allowed')
+                    ),
+                    array(
+                        'type' => 'switch',
+                        'label' => $this->l('allow_guests'),
+                        'name' => 'ALLOW_GUEST',
+                        'is_bool' => true,
+                        'values' => array(
+                            array(
+                                'id' => 'active_on_guests',
+                                'value' => true,
+                                'label' => $this->l('Enabled')
+                            ),
+                            array(
+                                'id' => 'active_off_guests',
+                                'value' => false,
+                                'label' => $this->l('Disabled')
+                            )
+                        )
+                    ),
+                    array(
+                        'col' => 3,
+                        'type' => 'select',
+                        'prefix' => '<i class="icon icon-tag"></i>',
+                        'name' => 'BUTTON_SIZE',
+                        'label' => $this->l('button_size'),
+                        'options' => array(
+                            'query' => array(
+                                array(
+                                    'id_buttonsize' => 'medium',
+                                    'name' => $this->l('normal')
+                                ),
+                                array(
+                                    'id_buttonsize' => 'large',
+                                    'name' => $this->l('big')
+                                ),
+                                array(
+                                    'id_buttonsize' => 'x-large',
+                                    'name' => $this->l('very big')
+                                )
+                            ),
+                            'id' => 'id_buttonsize',
+                            'name' => 'name'
+                        )
+                    ),
+                    array(
+                        'col' => 3,
+                        'type' => 'select',
+                        'prefix' => '<i class="icon icon-tag"></i>',
+                        'name' => 'BUTTON_SIZE_LPA',
+                        'label' => $this->l('button_size_lpa'),
+                        'options' => array(
+                            'query' => array(
+                                array(
+                                    'id_buttonsize' => 'small',
+                                    'name' => $this->l('small')
+                                ),
+                                array(
+                                    'id_buttonsize' => 'medium',
+                                    'name' => $this->l('normal')
+                                ),
+                                array(
+                                    'id_buttonsize' => 'large',
+                                    'name' => $this->l('big')
+                                ),
+                                array(
+                                    'id_buttonsize' => 'x-large',
+                                    'name' => $this->l('very big')
+                                )
+                            ),
+                            'id' => 'id_buttonsize',
+                            'name' => 'name'
+                        )
+                    ),
+                    array(
+                        'col' => 3,
+                        'type' => 'select',
+                        'prefix' => '<i class="icon icon-tag"></i>',
+                        'name' => 'BUTTON_COLOR',
+                        'label' => $this->l('button_color'),
+                        'options' => array(
+                            'query' => array(
+                                array(
+                                    'id_buttonsize' => 'orange',
+                                    'name' => $this->l('Amazon yellow')
+                                ),
+                                array(
+                                    'id_buttonsize' => 'tan',
+                                    'name' => $this->l('Grey')
+                                )
+                            ),
+                            'id' => 'id_buttonsize',
+                            'name' => 'name'
+                        )
+                    ),
+                    array(
+                        'col' => 3,
+                        'type' => 'select',
+                        'prefix' => '<i class="icon icon-tag"></i>',
+                        'name' => 'BUTTON_COLOR_LPA',
+                        'label' => $this->l('button_color_lpa'),
+                        'options' => array(
+                            'query' => array(
+                                array(
+                                    'id_buttonsize' => 'Gold',
+                                    'name' => $this->l('Amazon yellow')
+                                ),
+                                array(
+                                    'id_buttonsize' => 'LightGray',
+                                    'name' => $this->l('Light grey')
+                                ),
+                                array(
+                                    'id_buttonsize' => 'DarkGray',
+                                    'name' => $this->l('Dark grey')
+                                )
+                            ),
+                            'id' => 'id_buttonsize',
+                            'name' => 'name'
+                        )
+                    ),
+                    array(
+                        'col' => 3,
+                        'type' => 'select',
+                        'prefix' => '<i class="icon icon-tag"></i>',
+                        'name' => 'BUTTON_COLOR_LPA_NAVI',
+                        'label' => $this->l('button_color_lpa_navi'),
+                        'options' => array(
+                            'query' => array(
+                                array(
+                                    'id_buttonsize' => 'Gold',
+                                    'name' => $this->l('Amazon yellow')
+                                ),
+                                array(
+                                    'id_buttonsize' => 'LightGray',
+                                    'name' => $this->l('Light grey')
+                                ),
+                                array(
+                                    'id_buttonsize' => 'DarkGray',
+                                    'name' => $this->l('Dark grey')
+                                )
+                            ),
+                            'id' => 'id_buttonsize',
+                            'name' => 'name'
+                        )
+                    ),
+                    array(
+                        'col' => 3,
+                        'type' => 'select',
+                        'prefix' => '<i class="icon icon-tag"></i>',
+                        'name' => 'TYPE_LOGIN',
+                        'label' => $this->l('type_login'),
+                        'options' => array(
+                            'query' => array(
+                                array(
+                                    'id_buttonsize' => 'LwA',
+                                    'name' => $this->l('Login with Amazon')
+                                ),
+                                array(
+                                    'id_buttonsize' => 'Login',
+                                    'name' => $this->l('Login')
+                                ),
+                                array(
+                                    'id_buttonsize' => 'A',
+                                    'name' => $this->l('Just an "A"')
+                                )
+                            ),
+                            'id' => 'id_buttonsize',
+                            'name' => 'name'
+                        )
+                    ),
+                    array(
+                        'col' => 3,
+                        'type' => 'select',
+                        'prefix' => '<i class="icon icon-tag"></i>',
+                        'name' => 'TYPE_PAY',
+                        'label' => $this->l('type_pay'),
+                        'options' => array(
+                            'query' => array(
+                                array(
+                                    'id_buttonsize' => 'PwA',
+                                    'name' => $this->l('Pay with Amazon')
+                                ),
+                                array(
+                                    'id_buttonsize' => 'Pay',
+                                    'name' => $this->l('Pay')
+                                ),
+                                array(
+                                    'id_buttonsize' => 'A',
+                                    'name' => $this->l('Just an "A"')
+                                )
+                            ),
+                            'id' => 'id_buttonsize',
+                            'name' => 'name'
+                        )
+                    ),
+                    array(
+                        'type' => 'switch',
+                        'label' => $this->l('ipn_status'),
+                        'name' => 'IPN_STATUS',
+                        'is_bool' => true,
+                        'desc' => $this->l('Use this URL for IPN: ') . $this->getIPNURL(),
+                        'values' => array(
+                            array(
+                                'id' => 'active_on_ipn',
+                                'value' => true,
+                                'label' => $this->l('Enabled')
+                            ),
+                            array(
+                                'id' => 'active_off_ipn',
+                                'value' => false,
+                                'label' => $this->l('Disabled')
+                            )
+                        )
+                    ),
+                    array(
+                        'type' => 'switch',
+                        'label' => $this->l('cron_status'),
+                        'name' => 'CRON_STATUS',
+                        'is_bool' => true,
+                        'desc' => $this->l('Use this URL for your cronjob: ') . $this->getCronURL(),
+                        'values' => array(
+                            array(
+                                'id' => 'active_on_cron',
+                                'value' => true,
+                                'label' => $this->l('Enabled')
+                            ),
+                            array(
+                                'id' => 'active_off_cron',
+                                'value' => false,
+                                'label' => $this->l('Disabled')
+                            )
+                        )
+                    ),
+                    array(
+                        'col' => 3,
+                        'type' => 'text',
+                        'prefix' => '<i class="icon icon-tag"></i>',
+                        'name' => 'CRON_PASSWORD',
+                        'label' => $this->l('cron_password')
+                    ),
+                    array(
+                        'type' => 'switch',
+                        'label' => $this->l('send_mails_on_decline'),
+                        'name' => 'SEND_MAILS_ON_DECLINE',
+                        'is_bool' => true,
+                        'values' => array(
+                            array(
+                                'id' => 'active_on_send_decline',
+                                'value' => true,
+                                'label' => $this->l('Enabled')
+                            ),
+                            array(
+                                'id' => 'active_off_send_decline',
+                                'value' => false,
+                                'label' => $this->l('Disabled')
+                            )
+                        )
+                    ),
+                    array(
+                        'type' => 'switch',
+                        'label' => $this->l('preselect_create_account'),
+                        'name' => 'PRESELECT_CREATE_ACCOUNT',
+                        'is_bool' => true,
+                        'values' => array(
+                            array(
+                                'id' => 'active_on_preselect',
+                                'value' => true,
+                                'label' => $this->l('Enabled')
+                            ),
+                            array(
+                                'id' => 'active_off_preselect',
+                                'value' => false,
+                                'label' => $this->l('Disabled')
+                            )
+                        )
+                    ),
+                    array(
+                        'type' => 'switch',
+                        'label' => $this->l('force_account_creation'),
+                        'name' => 'FORCE_ACCOUNT_CREATION',
+                        'is_bool' => true,
+                        'values' => array(
+                            array(
+                                'id' => 'active_on_force',
+                                'value' => true,
+                                'label' => $this->l('Enabled')
+                            ),
+                            array(
+                                'id' => 'active_off_force',
+                                'value' => false,
+                                'label' => $this->l('Disabled')
+                            )
+                        )
+                    )
+                ),
+                'submit' => array(
+                    'title' => $this->l('Save')
+                )
+            )
+        );
     }
 
     public function getContent()
     {
-        $this->_html = '';
-        
         if (version_compare(_PS_VERSION_, '1.6.1.2', '<')) {
-            $this->_html .= '<div class="bootstrap"><div class="alert alert-warning">' . $this->l('Please use the Amazon Advanced Payments APIs Plugin from the Addon-Store, this core-version is only compatible with PrestaShop >= 1.6.1.1.') . '</div></div>';
+            $this->context->smarty->assign('ps_version_hint', true);
         }
         
-        $this->_html .= '<h2>' . $this->displayName . '</h2>';
-        
-        if (Tools::isSubmit('btnSubmit')) {
+        if (Tools::isSubmit('submitAmzpaymentsModule')) {
             $this->_postValidation();
-            if (! count($this->_postErrors))
+            if (!count($this->_postErrors)) {
                 $this->_postProcess();
-            else
-                foreach ($this->_postErrors as $err)
-                    $this->_html .= '<div class="bootstrap"><div class="alert alert-warning">' . $err . '</div></div>';
-        } else
-            $this->_html .= '<br />';
+            } else {
+                $this->context->smarty->assign(array('postErrors' => $this->_postErrors));
+            }
+            if (count($this->_postSuccess)) {
+                $this->context->smarty->assign(array('postSuccess' => $this->_postSuccess));
+            }
+        }
+        
+        $this->context->smarty->assign('displayName', $this->displayName);
+        $this->context->smarty->assign('module_name', $this->name);
+        $this->context->smarty->assign('current_version', $this->version);
+        $this->context->smarty->assign('allowed_return_url_1', $this->getAllowedReturnUrls(1));
+        $this->context->smarty->assign('allowed_return_url_2', $this->getAllowedReturnUrls(2));
+        $this->context->smarty->assign('allowed_js_origins', str_replace('http://', 'https://', _PS_BASE_URL_));
         
         $this->reloadConfigVars();
+        $this->context->smarty->assign('module_dir', $this->_path);
+        $this->context->smarty->assign('configform', $this->_displayForm());
         
-        $this->_displayForm();
+        $output = $this->context->smarty->fetch($this->local_path . 'views/templates/admin/configuration.tpl');
         
-        $this->_html .= '<fieldset>';
-        $this->_html .= '<p>' . $this->l('Tragen Sie diese URLs in Ihrem Amazon SellerCentral in der "Login mit Amazon"-Konfiguration unter dem Punkt "Allowed Return URLs" ein:') . '</p>';
-        $this->_html .= '<ul><li>' . $this->getAllowedReturnUrls(1) . '</li><li>' . $this->getAllowedReturnUrls(2) . '</li></ul>';
-        $this->_html .= '<p>' . $this->l('Tragen Sie diese URL in Ihrem Amazon SellerCentral in der "Login mit Amazon"-Konfiguration unter dem Punkt "Allowed JavaScript Origins" ein:') . '</p>';
-        $this->_html .= '<ul><li>' . str_replace('http://', 'https://', _PS_BASE_URL_) . '</li></ul>';
-        $this->_html .= '<p>' . $this->l('Sie können in Ihrem Template an beliebigen Stellen den "Login mit Amazon"-Button integrieren. Nutzen Sie hier für den folgenden HTML-Code und tragen Sie beim Attribut "id" immer (!) einen eindeutigen Wert ein:') . '</p>';
-        $this->_html .= '<code> &lt;div id=&quot;&quot; class=&quot;amazonLoginWr&quot;&gt;&lt;/div&gt; </code>';
-        $this->_html .= '</fieldset>';
-        
-        return $this->_html;
+        return $output;
     }
 
     public function hookDisplayNav()
     {
-        if ($this->lpa_mode != 'pay' && ! $this->context->customer->isLogged() && ((isset($this->context->controller->module->name) && $this->context->controller->module->name != 'amzpayments') || ! (isset($this->context->controller->module->name))))
-            return '<div id="amazonLogin" class="amazonLoginWr"' . ($this->button_visibility == '0' ? 'style="display:none;"' : false) . '></div>';
+        if ($this->lpa_mode != 'pay' && ! $this->context->customer->isLogged() && ((isset($this->context->controller->module->name) && $this->context->controller->module->name != 'amzpayments') || ! (isset($this->context->controller->module->name)))) {
+            $this->smarty->assign(array(
+                'button_hidden' => $this->button_visibility == '0'
+            ));
+            return $this->display(__FILE__, 'views/templates/hooks/displaynav.tpl');
+        }
         return '';
     }
 
@@ -969,7 +1373,9 @@ class AmzPayments extends PaymentModule
     {
         $order = new Order($params['id_order']);
         if ($order->module == $this->name) {
-            $q = 'SELECT amazon_order_reference_id FROM ' . _DB_PREFIX_ . 'orders WHERE id_order = ' . (int) $params['id_order'];
+            $q = 'SELECT ao.`amazon_order_reference_id` 
+                    FROM `' . _DB_PREFIX_ . 'amz_orders` ao
+                   WHERE `id_order` = ' . (int) $params['id_order'];
             $r = Db::getInstance()->getRow($q);
             $amz_reference_id = $r['amazon_order_reference_id'];
             
@@ -992,29 +1398,47 @@ class AmzPayments extends PaymentModule
         return $this->display(__FILE__, 'views/templates/hooks/confirmation.tpl');
     }
 
+    public function setAmzOrdersReferences($order_id, $value, $field)
+    {
+        $result = Db::getInstance(_PS_USE_SQL_SLAVE_)->getRow('
+            SELECT * FROM `' . _DB_PREFIX_ . 'amz_orders` WHERE `id_order` = \'' . (int) $order_id . '\'
+        ');
+        
+        if ($result) {
+            return Db::getInstance(_PS_USE_SQL_SLAVE_)->update('amz_orders', array(
+                $field => pSQL($value)
+            ), 'id_order = \'' . (int) $order_id . '\'');
+        } else {
+            return Db::getInstance(_PS_USE_SQL_SLAVE_)->insert('amz_orders', array(
+                'id_order' => pSQL((int) $order_id),
+                $field => pSQL($value)
+            ));
+        }
+    }
+
     public function setAmazonReferenceIdForOrderId($amazon_reference_id, $order_id)
     {
-        return Db::getInstance()->execute('UPDATE `' . _DB_PREFIX_ . 'orders` SET `amazon_order_reference_id` = \'' . pSQL($amazon_reference_id) . '\' WHERE `id_order` = ' . (int) ($order_id));
+        return $this->setAmzOrdersReferences($order_id, $amazon_reference_id, 'amazon_order_reference_id');
     }
 
     public function setAmazonAuthorizationReferenceIdForOrderId($authorization_reference_id, $order_id)
     {
-        return Db::getInstance()->execute('UPDATE `' . _DB_PREFIX_ . 'orders` SET `amazon_auth_reference_id` = \'' . pSQL($authorization_reference_id) . '\' WHERE `id_order` = ' . (int) ($order_id));
+        return $this->setAmzOrdersReferences($order_id, $authorization_reference_id, 'amazon_auth_reference_id');
     }
 
     public function setAmazonAuthorizationIdForOrderId($authorization_id, $order_id)
     {
-        return Db::getInstance()->execute('UPDATE `' . _DB_PREFIX_ . 'orders` SET `amazon_authorization_id` = \'' . pSQL($authorization_id) . '\' WHERE `id_order` = ' . (int) ($order_id));
+        return $this->setAmzOrdersReferences($order_id, $authorization_id, 'amazon_authorization_id');
     }
 
     public function setAmazonCaptureIdForOrderId($amazon_capture_id, $order_id)
     {
-        return Db::getInstance()->execute('UPDATE `' . _DB_PREFIX_ . 'orders` SET `amazon_capture_id` = \'' . pSQL($amazon_capture_id) . '\' WHERE `id_order` = ' . (int) ($order_id));
+        return $this->setAmzOrdersReferences($order_id, $amazon_capture_id, 'amazon_capture_id');
     }
 
     public function setAmazonCaptureReferenceIdForOrderId($amazon_capture_reference_id, $order_id)
     {
-        return Db::getInstance()->execute('UPDATE `' . _DB_PREFIX_ . 'orders` SET `amazon_capture_reference_id` = \'' . pSQL($amazon_capture_reference_id) . '\' WHERE `id_order` = ' . (int) ($order_id));
+        return $this->setAmzOrdersReferences($order_id, $amazon_capture_reference_id, 'amazon_capture_reference_id');
     }
 
     public function setAmazonReferenceIdForOrderTransactionId($amazon_reference_id, $order_id)
@@ -1042,35 +1466,18 @@ class AmzPayments extends PaymentModule
 
     public function getAdminSkeleton($orders_id, $direct_include = false)
     {
-        $q = 'SELECT amazon_order_reference_id FROM ' . _DB_PREFIX_ . 'orders WHERE id_order = ' . (int) $orders_id;
+        $q = 'SELECT `amazon_order_reference_id` FROM `' . _DB_PREFIX_ . 'amz_orders` WHERE `id_order` = ' . (int) $orders_id;
         $r = Db::getInstance()->getRow($q);
         if ($r['amazon_order_reference_id']) {
-            $ret = '
-			<script src="../modules/amzpayments/views/js/admin.js"></script>
-			<input type="hidden" class="amzAjaxHandler" value="../modules/amzpayments/ajax.php" />
-			<br />
-			<div class="panel">
-			<div class="row">
-			<h3>
-			<i class="icon-money"></i>
-			' . $this->displayName . '
-			</h3>
-			<div class="amzAdminWr amzContainer16" data-orderRef="' . $r['amazon_order_reference_id'] . '">
-			<div class="panel amzAdminOrderHistoryWr">
-			<div class="amzAdminOrderHistory">
-			' . ($direct_include ? $this->getOrderHistory($r['amazon_order_reference_id']) : '') . '
-			</div>
-			</div>
-			<div class="panel amzAdminOrderSummary">
-			' . ($direct_include ? $this->getOrderSummary($r['amazon_order_reference_id']) : '') . '
-			</div>
-			<div class="panel amzAdminOrderActions">
-			' . ($direct_include ? $this->getOrderActions($r['amazon_order_reference_id']) : '') . '
-			</div>
-			</div>
-			</div>
-			</div>';
-            return $ret;
+            
+            $this->smarty->assign(array(
+                'displayName' => $this->displayName,
+                'amazon_order_reference_id' => $r['amazon_order_reference_id'],
+                'orderHistory' => $direct_include ? $this->getOrderHistory($r['amazon_order_reference_id']) : '',
+                'orderSummary' => $direct_include ? $this->getOrderSummary($r['amazon_order_reference_id']) : '',
+                'orderActions' => $direct_include ? $this->getOrderActions($r['amazon_order_reference_id']) : ''
+            ));
+            return $this->display(__FILE__, 'views/templates/admin/skeleton.tpl');
         }
     }
 
@@ -1079,70 +1486,30 @@ class AmzPayments extends PaymentModule
         $q = 'SELECT * FROM ' . _DB_PREFIX_ . 'amz_transactions WHERE amz_tx_order_reference = \'' . pSQL($order_ref) . '\' ORDER BY amz_tx_time';
         $rs = Db::getInstance()->ExecuteS($q);
         $ret = '';
+        
+        $rs_to_assign = array();
         foreach ($rs as $r) {
             if ($r['amz_tx_type'] == 'order_ref')
                 $reference_status = $r['amz_tx_status'];
             
-            $ret .= '<tr>
-			<td>
-			' . $this->translateTransactionType($r['amz_tx_type']) . '
-			</td>
-			<td>
-			' . self::formatAmount($r['amz_tx_amount']) . '
-			</td>
-			<td>
-			' . date('Y-m-d H:i:s', $r['amz_tx_time']) . '
-			</td>
-			<td>
-			' . $r['amz_tx_status'] . '
-			</td>
-			<td>
-			' . date('Y-m-d H:i:s', $r['amz_tx_last_change']) . '
-			</td>
-			<td>
-			' . $r['amz_tx_amz_id'] . '
-			</td>
-			<td>
-			' . ($r['amz_tx_expiration'] != 0 ? date('Y-m-d H:i:s', $r['amz_tx_expiration']) : '-') . '
-			</td>
-			</tr>';
+            $rs_to_assign[] = array(
+                'transaction_type' => $this->translateTransactionType($r['amz_tx_type']),
+                'amount' => self::formatAmount($r['amz_tx_amount']),
+                'date' => date('Y-m-d H:i:s', $r['amz_tx_time']),
+                'status' => $r['amz_tx_status'],
+                'last_change' => date('Y-m-d H:i:s', $r['amz_tx_last_change']),
+                'tx_id' => $r['amz_tx_amz_id'],
+                'tx_expiration' => ($r['amz_tx_expiration'] != 0 ? date('Y-m-d H:i:s', $r['amz_tx_expiration']) : '-')
+            );
         }
         
-        if ($ret != '') {
-            return '<h3>' . $this->l('AMZ_HISTORY') . '</h3><table class="table">
-			<thead>
-			<tr>
-			<th>
-			' . $this->l('AMZ_TX_TYPE_HEADING') . '
-			</th>
-			<th>
-			' . $this->l('AMZ_TX_AMOUNT_HEADING') . '
-			</th><th>
-			' . $this->l('AMZ_TX_TIME_HEADING') . '
-			</th>
-			<th>
-			' . $this->l('AMZ_TX_STATUS_HEADING') . '
-			</th>
-			<th>
-			' . $this->l('AMZ_TX_LAST_CHANGE_HEADING') . '
-			</th>
-			<th>
-			' . $this->l('AMZ_TX_ID_HEADING') . '
-			</th>
-			<th>
-			' . $this->l('AMZ_TX_EXPIRATION_HEADING') . '
-			</th>
-			</tr>
-			</thead>
-			<tbody>
-			' . $ret . '</tbody></table>
-			<div>
-			<a href="#" class="amzAjaxLink btn btn-default button" data-action="refreshOrder" data-orderRef="' . $order_ref . '">' . $this->l('AMZ_REFRESH') . '</a>
-			' . ($reference_status == 'Open' || $reference_status == 'Suspended' ? '
-					<a href="#" class="amzAjaxLink btn btn-default button" data-action="cancelOrder" data-orderRef="' . $order_ref . '">' . $this->l('AMZ_CANCEL_ORDER') . '</a>
-					<a href="#" class="amzAjaxLink btn btn-default button" data-action="closeOrder" data-orderRef="' . $order_ref . '">' . $this->l('AMZ_CLOSE_ORDER') . '</a>
-					' : '') . '
-					</div>';
+        if (sizeof($rs_to_assign) > 0) {
+            $this->smarty->assign(array(
+                'rs' => $rs_to_assign,
+                'order_ref' => $order_ref,
+                'reference_status' => $reference_status
+            ));
+            return $this->display(__FILE__, 'views/templates/admin/order_history.tpl');
         }
     }
 
@@ -1413,193 +1780,78 @@ class AmzPayments extends PaymentModule
     public function getOrderActions($order_ref)
     {
         $order_state = $this->getOrderState($order_ref);
-        $ret = '';
+        $got_something = false;
+        $this->smarty->assign(array(
+            'order_state' => $order_state
+        ));
         if ($order_state == 'Open' || $order_state == 'Closed') {
             $open_auth = self::getOrderOpenAuthorizations($order_ref);
             if (count($open_auth) > 0) {
-                $ret .= '<h4>' . $this->l('AMZ_CAPTURE_FROM_AUTH_HEADING') . '</h4>';
-                $ret .= '<table class="table">
-				<thead>
-				<tr class="headline">
-				<th class="amzAmountCell">
-				' . $this->l('AMZ_TX_AMOUNT_HEADING') . '
-				</th><th>
-
-				' . $this->l('AMZ_TX_TIME_HEADING') . '
-				</th>
-				<th>
-				' . $this->l('AMZ_TX_ID_HEADING') . '
-				</th>
-				<th>
-				' . $this->l('AMZ_TX_EXPIRATION_HEADING') . '
-				</th>
-				<th>
-				' . $this->l('AMZ_TX_ACTION_HEADING') . '
-				</th>
-				</tr>
-				</thead>
-				<tbody>';
-                
+                $open_auth_assigns = array();
                 foreach ($open_auth as $r) {
-                    $ret .= '<tr>
-					<td class="amzAmountCell">
-
-					' . self::formatAmount($r['amz_tx_amount']) . '
-					</td>
-					<td>
-					' . date('Y-m-d H:i:s', $r['amz_tx_time']) . '
-					</td>
-					<td>
-
-					' . $r['amz_tx_amz_id'] . '
-					</td>
-					<td>
-					' . ($r['amz_tx_expiration'] != 0 ? date('Y-m-d H:i:s', $r['amz_tx_expiration']) : '-') . '
-					</td>
-					<td>
-					<div>
-					<a href="#" class="amzAjaxLink btn btn-default button amzButton" data-action="captureTotalFromAuth" data-authid="' . $r['amz_tx_amz_id'] . '">' . $this->l('AMZ_CAPTURE_TOTAL_FROM_AUTH') . '</a>
-					</div>
-					<div>
-					<input type="text" class="amzAmountField" value="' . self::formatAmount($r['amz_tx_amount']) . '" />
-					<a href="#" class="amzAjaxLink btn btn-default button amzButton" data-action="captureAmountFromAuth" data-authid="' . $r['amz_tx_amz_id'] . '">' . $this->l('AMZ_CAPTURE_AMOUNT_FROM_AUTH') . '</a>
-
-					</div>
-
-					</td>
-					</tr>';
+                    $open_auth_assigns[] = array(
+                        'amount' => self::formatAmount($r['amz_tx_amount']),
+                        'date' => date('Y-m-d H:i:s', $r['amz_tx_time']),
+                        'tx_id' => $r['amz_tx_amz_id'],
+                        'tx_expiration' => ($r['amz_tx_expiration'] != 0 ? date('Y-m-d H:i:s', $r['amz_tx_expiration']) : '-')
+                    );
                 }
-                $ret .= '</tbody></table>';
+                $got_something = true;
+                $this->smarty->assign(array(
+                    'open_auth' => $open_auth_assigns
+                ));
             }
         }
         if ($order_state == 'Open') {
             $amount_left_to_authorize = $this->getAmountLeftToAuthorize($order_ref);
             $amount_left_to_over_authorize = $this->getAmountLeftToOverAuthorize($order_ref);
             if ($amount_left_to_authorize > 0 || $amount_left_to_over_authorize > 0) {
-                $ret .= '<h4>' . $this->l('AMZ_AUTHORIZE') . '</h4>';
-                $ret .= '<table style="width:100%" class="table">
-				<thead>
-				<tr class="headline">
-				<th class="amzAmountCell">
-				' . $this->l('AMZ_TX_AMOUNT_NOT_AUTHORIZED_YET_HEADING') . '
-				</th>
-				<th class="amzAmountCell">
-				' . $this->l('AMZ_TX_AMOUNT_POSSIBLE_HEADING') . '
-				</th>
-				<th>
-				' . $this->l('AMZ_TX_ACTION_HEADING') . '
-				</th>
-				</tr>
-				</thead>
-				<tbody>';
-                
                 if ($amount_left_to_authorize + $amount_left_to_over_authorize > 0) {
-                    $ret .= '<tr>
-					<td class="amzAmountCell">
-					' . self::formatAmount($amount_left_to_authorize) . '
-					</td>
-					<td class="amzAmountCell">
-					' . self::formatAmount($amount_left_to_authorize + $amount_left_to_over_authorize) . '
-					</td>
-					<td>
-					' . ($amount_left_to_authorize > 0 ? '
-							<a href="#" class="amzAjaxLink btn btn-default button amzButton" data-action="authorizeAmount" data-amount="' . $amount_left_to_authorize . '" data-orderRef="' . $order_ref . '">' . $this->l('AMZ_AUTHORIZE') . '</a>
-							' : '') . '
-							<div>
-							<nobr>
-							<input type="text" class="amzAmountField" value="' . self::formatAmount(($amount_left_to_authorize > 0 ? $amount_left_to_authorize : $amount_left_to_over_authorize)) . '" />
-							<a href="#" class="amzAjaxLink btn btn-default button amzButton" data-action="authorizeAmountFromField" data-orderRef="' . $order_ref . '">' . ($amount_left_to_authorize > 0 ? $this->l('AMZ_AUTHORIZE_AMOUNT') : $this->l('AMZ_OVER_AUTHORIZE_AMOUNT')) . '</a>
-							</nobr>
-							</div>
-							</td>
-							</tr>';
+                    $this->smarty->assign(array(
+                        'authorize_tab' => true
+                    ));
+                    $this->smarty->assign(array(
+                        'amount_left_to_authorize_raw' => $amount_left_to_authorize,
+                        'amount_left_to_authorize' => self::formatAmount($amount_left_to_authorize),
+                        'amount_maximum' => self::formatAmount($amount_left_to_authorize + $amount_left_to_over_authorize),
+                        'amount_field' => self::formatAmount(($amount_left_to_authorize > 0 ? $amount_left_to_authorize : $amount_left_to_over_authorize)),
+                        'order_ref' => $order_ref
+                    ));
+                    $got_something = true;
                 }
-                
-                $ret .= '</tbody></table>';
             }
         }
         
         $captures = self::getOrderUnclosedCaptures($order_ref);
         if (count($captures) > 0) {
-            $ret .= '<h4>' . $this->l('AMZ_REFUNDS') . '</h4><table class="table">
-			<thead>
-			<tr class="headline">
-
-			<th class="amzAmountCell">
-			' . $this->l('AMZ_TX_AMOUNT_HEADING') . '
-			</th>
-			<th class="amzAmountCell">
-			' . $this->l('AMZ_TX_AMOUNT_REFUNDED_HEADING') . '
-			</th>
-			<th>
-			' . $this->l('AMZ_TX_AMOUNT_REFUNDABLE_HEADING') . '
-			</th class="amzAmountCell">
-			<th>
-			' . $this->l('AMZ_TX_TIME_HEADING') . '
-			</th>
-			<th>
-			' . $this->l('AMZ_TX_STATUS_HEADING') . '
-			</th>
-			<th>
-			' . $this->l('AMZ_TX_LAST_CHANGE_HEADING') . '
-			</th>
-			<th>
-			' . $this->l('AMZ_TX_ID_HEADING') . '
-			</th>
-			<th>
-			' . $this->l('AMZ_TX_ACTION_HEADING') . '
-			</th>
-			</tr>
-			</thead>
-			<tbody>
-			';
+            $this->smarty->assign(array(
+                'refunds_tab' => true
+            ));
+            $captures_to_assign = array();
             foreach ($captures as $r) {
-                $ret .= '<tr>
-
-				<td class="amzAmountCell">
-				' . self::formatAmount($r['amz_tx_amount']) . '
-				</td>
-				<td class="amzAmountCell">
-				' . self::formatAmount($r['amz_tx_amount_refunded']) . '
-				</td>
-				<td class="amzAmountCell">
-				' . self::formatAmount(($refundable = (min((75 + $r['amz_tx_amount']), (round($r['amz_tx_amount'] * 1.15, 2))) - $r['amz_tx_amount_refunded']))) . '
-				</td>
-				<td>
-				' . date('Y-m-d H:i:s', $r['amz_tx_time']) . '
-				</td>
-				<td>
-				<span class="' . self::getClassForStatus($r['amz_tx_status']) . '">' . $r['amz_tx_status'] . '</span>
-				</td>
-				<td>
-				' . date('Y-m-d H:i:s', $r['amz_tx_last_change']) . '
-				</td>
-				<td>
-				' . $r['amz_tx_amz_id'] . '
-				</td>
-					
-				<td>
-				' . ($r['amz_tx_amount'] - $r['amz_tx_amount_refunded'] > 0 ? '
-						<div>
-						<a href="#" class="amzAjaxLink btn btn-default button amzButton" data-action="refundAmount" data-amount="' . ($r['amz_tx_amount'] - $r['amz_tx_amount_refunded']) . '" data-captureid="' . $r['amz_tx_amz_id'] . '">' . $this->l('AMZ_REFUND_TOTAL') . '</a>
-						</div>
-						' : '') . '
-						<div>
-						<nobr>
-						<input type="text" class="amzAmountField" value="' . self::formatAmount(($r['amz_tx_amount'] - $r['amz_tx_amount_refunded'] > 0 ? ($r['amz_tx_amount'] - $r['amz_tx_amount_refunded']) : $refundable)) . '" />
-						<a href="#" class="amzAjaxLink btn btn-default button amzButton" data-action="refundAmountFromField" data-captureid="' . $r['amz_tx_amz_id'] . '">' . ($r['amz_tx_amount'] - $r['amz_tx_amount_refunded'] > 0 ? $this->l('AMZ_REFUND_AMOUNT') : $this->l('AMZ_REFUND_OVER_AMOUNT')) . '</a>
-						</nobr>
-						</div>
-						</td>
-						</tr>';
+                
+                $captures_to_assign[] = array(
+                    'amount' => self::formatAmount($r['amz_tx_amount']),
+                    'amount_refunded' => self::formatAmount($r['amz_tx_amount_refunded']),
+                    'amount_possible' => self::formatAmount(($refundable = (min((75 + $r['amz_tx_amount']), (round($r['amz_tx_amount'] * 1.15, 2))) - $r['amz_tx_amount_refunded']))),
+                    'date' => date('Y-m-d H:i:s', $r['amz_tx_time']),
+                    'status_class' => self::getClassForStatus($r['amz_tx_status']),
+                    'status' => $r['amz_tx_status'],
+                    'last_change' => date('Y-m-d H:i:s', $r['amz_tx_last_change']),
+                    'tx_id' => $r['amz_tx_amz_id'],
+                    'total_refund_button' => $r['amz_tx_amount'] - $r['amz_tx_amount_refunded'] > 0,
+                    'total_refund_button_value' => $r['amz_tx_amount'] - $r['amz_tx_amount_refunded'],
+                    'field_value' => self::formatAmount(($r['amz_tx_amount'] - $r['amz_tx_amount_refunded'] > 0 ? ($r['amz_tx_amount'] - $r['amz_tx_amount_refunded']) : $refundable))
+                );
             }
+            $got_something = true;
+            $this->smarty->assign('captures', $captures_to_assign);
         }
-        $ret .= '</tbody></table>';
         
-        if ($ret != '')
-            $ret = $ret = '<h3>' . $this->l('AMZ_ACTIONS') . '</h3>' . $ret;
-        
-        return $ret;
+        if ($got_something) {
+            return $this->display(__FILE__, 'views/templates/admin/order_actions.tpl');
+        }
+        return false;
     }
 
     public function getAmountLeftToAuthorize($order_ref)
@@ -1645,21 +1897,13 @@ class AmzPayments extends PaymentModule
 
     public function getOrderSummary($order_ref)
     {
-        $ret = '<h3>' . $this->l('AMZ_SUMMARY') . '</h3><table>
-		<tr>
-		<td><b>' . $this->l('AMZ_ORDER_AUTH_TOTAL') . '</b></td>
-		<td>' . self::formatAmount(self::getOrderAuthorizedAmount($order_ref)) . '</td>
-		</tr>
-		<tr>
-		<td><b>' . $this->l('AMZ_ORDER_CAPTURE_TOTAL') . '</b></td>
-		<td>' . self::formatAmount(self::getOrderCapturedAmount($order_ref)) . '</td>
-		</tr>
-		<tr>
-		<td><b>' . $this->l('AMZ_ORDER_REFUND_TOTAL') . '</b></td>
-		<td>' . self::formatAmount(self::getOrderRefundedAmount($order_ref)) . '</td>
-		</tr>
-		</table>';
-        return $ret;
+        $this->smarty->assign(array(
+            'authorized_amount' => self::formatAmount(self::getOrderAuthorizedAmount($order_ref)),
+            'captured_amount' => self::formatAmount(self::getOrderCapturedAmount($order_ref)),
+            'refunded_amount' => self::formatAmount(self::getOrderRefundedAmount($order_ref))
+        ));
+        
+        return $this->display(__FILE__, 'views/templates/admin/order_summary.tpl');
     }
 
     public static function formatAmount($amount)
@@ -1671,16 +1915,16 @@ class AmzPayments extends PaymentModule
     {
         switch ($str) {
             case 'auth':
-                $str = $this->l('AMZ_AUTH_TEXT');
+                $str = $this->l('Authorisation');
                 break;
             case 'order_ref':
-                $str = $this->l('AMZ_ORDER_TEXT');
+                $str = $this->l('Order');
                 break;
             case 'capture':
-                $str = $this->l('AMZ_CAPTURE_TEXT');
+                $str = $this->l('Withdrawal');
                 break;
             case 'refund':
-                $str = $this->l('AMZ_REFUND_TEXT');
+                $str = $this->l('Refund');
                 break;
         }
         
@@ -1690,11 +1934,12 @@ class AmzPayments extends PaymentModule
     public function shippingCapture()
     {
         if ($this->capture_mode == 'after_shipping') {
-            $q = 'SELECT DISTINCT o.amazon_order_reference_id FROM  ' . _DB_PREFIX_ . 'orders o
+            $q = 'SELECT DISTINCT ao.amazon_order_reference_id FROM  ' . _DB_PREFIX_ . 'orders o
+            JOIN ' . _DB_PREFIX_ . 'amz_orders ao ON o.id_order = ao.id_order 
 			JOIN ' . _DB_PREFIX_ . 'amz_transactions AS a1 ON (o.amazon_order_reference_id = a1.amz_tx_order_reference AND a1.amz_tx_type = \'auth\' AND a1.amz_tx_status = \'Open\')
 			LEFT JOIN ' . _DB_PREFIX_ . 'amz_transactions AS a2 ON (o.amazon_order_reference_id = a2.amz_tx_order_reference AND a2.amz_tx_type = \'capture\')
 			WHERE
-			o.amazon_order_reference_id != \'\'
+			ao.amazon_order_reference_id != \'\'
 			AND
 			o.current_state = \'' . $this->capture_status_id . '\'
 			AND
@@ -1720,7 +1965,7 @@ class AmzPayments extends PaymentModule
 
     public function sendDeclinedMail($order_ref, $type)
     {
-        $q = 'SELECT * FROM ' . _DB_PREFIX_ . 'orders WHERE amazon_order_reference_id = \'' . pSQL($order_ref) . '\'';
+        $q = 'SELECT * FROM ' . _DB_PREFIX_ . 'amz_orders WHERE amazon_order_reference_id = \'' . pSQL($order_ref) . '\'';
         $rs = Db::getInstance()->ExecuteS($q);
         foreach ($rs as $r) {
             
@@ -1733,9 +1978,9 @@ class AmzPayments extends PaymentModule
             $email = $customer->email;
             
             if ($type == 'soft')
-                $subject = $this->l('Ihre Zahlung wurde von Amazon abgelehnt');
+                $subject = $this->l('Your payment was rejected by Amazon');
             elseif ($type == 'hard')
-                $subject = $this->l('Ihre Zahlung wurde von Amazon abgelehnt - bitte kontaktieren Sie uns');
+                $subject = $this->l('Your payment was rejected by Amazon - please contact us');
             
             Mail::Send($lang_id, 'amazon_' . $type . '_decline', $subject, array(
                 '{$ORDER_NR}' => $reference,

@@ -690,7 +690,7 @@ class AmzPayments extends PaymentModule
                         'type' => 'select',
                         'prefix' => '<i class="icon icon-tag"></i>',
                         'name' => 'PROVOCATION',
-                        'label' => $this->l('capture_mode'),
+                        'label' => $this->l('provocation'),
                         'options' => array(
                             'query' => array(
                                 array(

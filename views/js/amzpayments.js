@@ -47,6 +47,7 @@ jQuery(document).ready(function($) {
 		}
 		
 		$("a.amzPayments").click(function() {
+			$("#payWithAmazonListDiv img").trigger('click');
 			return false;
 		});
 				

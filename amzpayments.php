@@ -1048,9 +1048,6 @@ class AmzPayments extends PaymentModule
 
     public function getContent()
     {
-        if (version_compare(_PS_VERSION_, '1.6.1.2', '<')) {
-            $this->context->smarty->assign('ps_version_hint', true);
-        }
         
         if (Tools::isSubmit('submitAmzpaymentsModule')) {
             $this->_postValidation();

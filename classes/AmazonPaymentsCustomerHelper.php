@@ -25,12 +25,13 @@ class AmazonPaymentsCustomerHelper
     public static function findByAmazonCustomerId($amazon_customer_id, $ignore_guest = true)
     {
         $result = Db::getInstance(_PS_USE_SQL_SLAVE_)->getRow('
-				SELECT *
-				FROM `' . _DB_PREFIX_ . 'customer`
-				WHERE `amazon_customer_id` = \'' . pSQL($amazon_customer_id) . '\'
+				SELECT c.*
+				FROM `' . _DB_PREFIX_ . 'customer` c
+                JOIN `' . _DB_PREFIX_ . 'amz_customer` ac ON c.`id_customer` = ac.`id_customer`
+				WHERE ac.`amazon_customer_id` = \'' . pSQL($amazon_customer_id) . '\'
 				' . Shop::addSqlRestriction(Shop::SHARE_CUSTOMER) . '
-				AND `deleted` = 0
-				' . ($ignore_guest ? ' AND `is_guest` = 0' : ''));
+				AND c.`deleted` = 0
+				' . ($ignore_guest ? ' AND c.`is_guest` = 0' : ''));
         return $result['id_customer'] ? $result['id_customer'] : false;
     }
 
@@ -71,19 +72,35 @@ class AmazonPaymentsCustomerHelper
 
     public static function saveCustomersAmazonReference(Customer $customer, $amazon_customer_id)
     {
-        Db::getInstance(_PS_USE_SQL_SLAVE_)->update('customer', array(
-            'amazon_customer_id' => pSQL($amazon_customer_id)
-        ), 'id_customer = \'' . (int) $customer->id . '\'');
+        $result = Db::getInstance(_PS_USE_SQL_SLAVE_)->getRow('
+            SELECT * FROM `' . _DB_PREFIX_ . 'amz_customer` WHERE `id_customer` = \'' . (int)$customer->id . '\'    
+        ');       
+        
+        if ($result) {
+            Db::getInstance(_PS_USE_SQL_SLAVE_)->update('amz_customer', array(
+                'amazon_customer_id' => pSQL($amazon_customer_id)
+            ), 'id_customer = \'' . (int) $customer->id . '\'');            
+        } else {
+            Db::getInstance(_PS_USE_SQL_SLAVE_)->insert('amz_customer', array(
+                'id_customer' => pSQL((int)$customer->id),
+                'amazon_customer_id' => pSQL($amazon_customer_id)
+            ));
+        }
     }
 
     public static function customerHasAmazonCustomerId($id_customer)
     {
         $result = Db::getInstance(_PS_USE_SQL_SLAVE_)->getRow('
-				SELECT *
-				FROM `' . _DB_PREFIX_ . 'customer`
-				WHERE `id_customer` = \'' . pSQL($id_customer) . '\'
-				' . Shop::addSqlRestriction(Shop::SHARE_CUSTOMER) . '
-				AND `deleted` = 0');
-        return $result['amazon_customer_id'] ? $result['amazon_customer_id'] : false;
+				SELECT ac.*
+				  FROM `' . _DB_PREFIX_ . 'customer` c
+                  JOIN `' . _DB_PREFIX_ . 'amz_customer` ac ON c.`id_customer` = ac.`id_customer`
+				 WHERE c.`id_customer` = \'' . pSQL($id_customer) . '\'
+				    ' . Shop::addSqlRestriction(Shop::SHARE_CUSTOMER) . '
+				   AND c.`deleted` = 0');
+        if (!$result) {
+            return false;
+        } else {
+            return $result['amazon_customer_id'] ? $result['amazon_customer_id'] : false;
+        }
     }
 }

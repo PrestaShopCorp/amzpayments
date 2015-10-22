@@ -22,20 +22,32 @@
 class AmazonPaymentsAddressHelper
 {
 
-    public static function findByAmazonOrderReferenceIdOrNew($amazon_order_reference_id)
+    public static function findByAmazonOrderReferenceIdOrNew($amazon_order_reference_id, $boolean = false)
     {
         $result = Db::getInstance(_PS_USE_SQL_SLAVE_)->getRow('
 			SELECT a.`id_address`
 			FROM `' . _DB_PREFIX_ . 'address` a
-			WHERE a.`amazon_order_reference_id` = "' . pSQL($amazon_order_reference_id) . '"');
+            JOIN `' . _DB_PREFIX_ . 'amz_address` aa ON aa.id_address = a.id_address
+			WHERE aa.`amazon_order_reference_id` = "' . pSQL($amazon_order_reference_id) . '"');
         
-        return $result['id_address'] ? new Address($result['id_address']) : new Address();
+        if ($boolean) {
+            return $result['id_address'] ? true : false;
+        } else {
+            return $result['id_address'] ? new Address($result['id_address']) : new Address();
+        }        
     }
 
     public static function saveAddressAmazonReference(Address $address, $amazon_order_reference_id)
     {
-        Db::getInstance(_PS_USE_SQL_SLAVE_)->update('address', array(
-            'amazon_order_reference_id' => pSQL($amazon_order_reference_id)
-        ), 'id_address = \'' . (int) $address->id . '\'');
+        if (self::findByAmazonOrderReferenceIdOrNew($amazon_order_reference_id, true)) {
+            Db::getInstance(_PS_USE_SQL_SLAVE_)->update('amz_address', array(
+               'amazon_order_reference_id' => pSQL($amazon_order_reference_id)
+            ), 'id_address = \'' . (int) $address->id . '\'');
+        } else {
+            Db::getInstance(_PS_USE_SQL_SLAVE_)->insert('amz_address', array(
+                'id_address' => pSQL((int)$address->id),
+                'amazon_order_reference_id' => pSQL($amazon_order_reference_id)
+            ));
+        }
     }
 }

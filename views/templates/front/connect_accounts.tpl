@@ -17,7 +17,7 @@ $(document).ready(function() {
 {/literal}
 </script>
 
-<h1>{l s='Vielen Dank für Ihre Anmeldung mit Amazon Payments' mod='amzpayments'}</h1>
+<h1>{l s='Thank you for your login with Amazon Payments' mod='amzpayments'}</h1>
 
 <div class="row">
 	<div class="col-xs-12 col-sm-6">
@@ -25,7 +25,7 @@ $(document).ready(function() {
 			<input type="hidden" name="action" value="tryConnect" />
 			<input type="hidden" name="email" value="{$amzConnectEmail|escape:'htmlall':'UTF-8'}" />
 			{if $toCheckout}<input type="hidden" name="toCheckout" value="1" />{/if}
-			<p>{l s='In unserem Shop existiert bereits ein Benutzerkonto mit dieser E-Mail-Addresse. Bitte geben Sie Ihr Passwort ein, um dieses mit Ihrem Amazon-Konto zu verknüpfen.' mod='amzpayments'}</p>
+			<p>{l s='There is already a customer account with this e-mail-address in our shop. Please enter your password to connect it with your Amazon-account.' mod='amzpayments'}</p>
 			<div class="form_content clearfix">				
 				<div class="form-group">
 					<label for="passwd">{l s='Password' mod='amzpayments'}</label>
@@ -35,7 +35,7 @@ $(document).ready(function() {
 					<button type="submit" id="SubmitLogin" name="SubmitLogin" class="button btn btn-default button-medium">
 						<span>
 							<i class="icon-lock left"></i>
-							{l s='Konten jetzt verknüpfen' mod='amzpayments'}
+							{l s='Connect accounts' mod='amzpayments'}
 						</span>
 					</button>
 				</p>

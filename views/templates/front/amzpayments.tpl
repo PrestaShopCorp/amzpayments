@@ -34,9 +34,9 @@
 			<p class="checkbox">
 				<input type="checkbox" id="connect_amz_account" value="1" name="connect_amz_account" {if $preselect_create_account}checked="checked"{/if}/>
 				<label for="connect_amz_account">
-					{l s='Amazon-Konto mit Shop verbinden' mod='amzpayments'}
+					{l s='Create customer account.' mod='amzpayments'}
 					<br />
-					<span style="font-size: 10px;">{l s='Sie müssen nichts weiter hierfür tun, es werden die Daten auf Ihrer aktuellen Bestellung verwendet, um das Konto zu erstellen.' mod='amzpayments'}</span>
+					<span style="font-size: 10px;">{l s='You don\'t need to do anything. We create the account with the data of your current order.' mod='amzpayments'}</span>
 				</label>
 			</p>
 		{/if}

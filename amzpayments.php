@@ -297,7 +297,7 @@ class AmzPayments extends PaymentModule
         
         $this->installOrderStates();
         
-        return parent::install() && $this->registerHook('displayShoppingCartFooter') && $this->registerHook('displayNav') && $this->registerHook('adminOrder') && $this->registerHook('updateOrderStatus') && $this->registerHook('displayBackOfficeFooter') && $this->registerHook('displayPayment') && $this->registerHook('paymentReturn') && $this->registerHook('payment') && $this->registerhook('displayPaymentEU') && $this->registerHook('header') && $this->registerHook('actionCustomerLogoutBefore') && $this->registerHook('actionCustomerLogoutAfter');
+        return parent::install() && $this->registerHook('displayShoppingCartFooter') && $this->registerHook('displayNav') && $this->registerHook('adminOrder') && $this->registerHook('updateOrderStatus') && $this->registerHook('displayBackOfficeFooter') && $this->registerHook('displayPayment') && $this->registerHook('paymentReturn') && $this->registerHook('payment') && $this->registerhook('displayPaymentEU') && $this->registerHook('header');
     }
 
     protected function installOrderStates()
@@ -1048,9 +1048,6 @@ class AmzPayments extends PaymentModule
 
     public function getContent()
     {
-        if (version_compare(_PS_VERSION_, '1.6.1.2', '<')) {
-            $this->context->smarty->assign('ps_version_hint', true);
-        }
         
         if (Tools::isSubmit('submitAmzpaymentsModule')) {
             $this->_postValidation();
@@ -1189,13 +1186,6 @@ class AmzPayments extends PaymentModule
         }
     }
 
-    public function hookActionCustomerLogoutAfter($params)
-    {
-        unset($this->context->cookie->amz_access_token);
-        unset($this->context->cookie->amazon_id);
-        unset($this->context->cookie->amz_js_string);
-    }
-
     public function hookPayment($params)
     {
         if (! $this->active)
@@ -1260,6 +1250,13 @@ class AmzPayments extends PaymentModule
 
     public function hookDisplayHeader($params)
     {
+        
+        if (isset($this->context->cookie->amz_access_token) && ! $this->context->customer->isLogged()) {
+            unset($this->context->cookie->amz_access_token);
+            unset($this->context->cookie->amazon_id);
+            unset($this->context->cookie->amz_js_string);
+        }        
+        
         $show_amazon_button = true;
         if (($this->allow_guests == '0') && (! $this->context->customer->isLogged()))
             $show_amazon_button = false;

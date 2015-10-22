@@ -112,6 +112,9 @@ input.disabled {
     display:block;
     clear: both;
 }
+p.payment_module a.amzPayments {
+	cursor: pointer;
+}
 p.payment_module a.amzPayments::after {
     color: #777;
     display: block;

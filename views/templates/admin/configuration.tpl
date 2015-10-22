@@ -8,10 +8,6 @@
 *  @license    Released under the GNU General Public License
 *}
 
-{if isset($ps_version_hint)}
-	<div class="alert alert-warning">Please use the Amazon Advanced Payments APIs Plugin from <a href="http://www.patworx.de" target="_blank">patworx.de</a>, this core-version is only compatible with PrestaShop >= 1.6.1.1.</div>
-{/if}
-
 {if isset($postSuccess)}
 	{foreach from=$postSuccess item=ps}
 		<div class="alert alert-success">{$ps}</div>

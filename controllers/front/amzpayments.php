@@ -751,6 +751,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
             }
         
         $this->context->smarty->assign(array(
+            'advanced_payment_api' => false,
             'free_shipping' => $free_shipping,
             'isGuest' => isset($this->context->cookie->is_guest) ? $this->context->cookie->is_guest : 0,
             'countries' => $countries,

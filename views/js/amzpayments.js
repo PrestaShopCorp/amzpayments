@@ -46,8 +46,13 @@ jQuery(document).ready(function($) {
 			}).bind("payWithAmazonListDiv");
 		}
 		
+		var have_clicked = false;
 		$("a.amzPayments").click(function() {
-			$("#payWithAmazonListDiv img").trigger('click');
+			if (!have_clicked) {
+				have_clicked = true;
+				$("#payWithAmazonListDiv img").trigger('click');
+				setTimeout(function() { have_clicked = false; }, 1000);
+			}
 			return false;
 		});
 				

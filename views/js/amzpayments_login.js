@@ -172,16 +172,6 @@ function initAmazon(){
 				
 		setInterval(checkForAmazonListButton, 2000);
 	}
-	/*	
-	if (is_logged) {
-	    var buttonImg = $('#payWithAmazonDiv').find('img').attr('src');
-	    var newButton = $('<img src="'+buttonImg+'" style="cursor:pointer;" />');
-	    $('#payWithAmazonDiv').html(newButton);
-	    newButton.click(function(){
-	        window.location.href = REDIRECTAMZ;
-	    });	
-	}
-	*/
 }
 
 function checkForAmazonListButton() {

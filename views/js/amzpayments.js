@@ -50,7 +50,7 @@ jQuery(document).ready(function($) {
 		$("a.amzPayments").click(function() {
 			if (!have_clicked) {
 				have_clicked = true;
-				$("#payWithAmazonListDiv img").trigger('click');
+				eventFire(document.getElementById($("#payWithAmazonListDiv img").attr("id")), 'click');
 				setTimeout(function() { have_clicked = false; }, 1000);
 			}
 			return false;
@@ -60,7 +60,15 @@ jQuery(document).ready(function($) {
 		
 	}
 });
-
+function eventFire(el, etype){
+	if (el.fireEvent) {
+		el.fireEvent('on' + etype);
+	} else {
+		var evObj = document.createEvent('Events');
+		evObj.initEvent(etype, true, false);
+		el.dispatchEvent(evObj);
+	}
+}
 function checkForAmazonListButton() {
 	if (jQuery("#pay_with_amazon_list_button").length > 0) {
 		if (jQuery.trim(jQuery("#pay_with_amazon_list_button").html()) == '') {

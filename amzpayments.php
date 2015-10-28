@@ -305,7 +305,7 @@ class AmzPayments extends PaymentModule
         $values_to_insert = array(
             'invoice' => 0,
             'send_email' => 0,
-            'module_name' => $this->name,
+            'module_name' => pSQL($this->name),
             'color' => 'RoyalBlue',
             'unremovable' => 0,
             'hidden' => 0,
@@ -332,7 +332,7 @@ class AmzPayments extends PaymentModule
         $values_to_insert = array(
             'invoice' => 0,
             'send_email' => 0,
-            'module_name' => $this->name,
+            'module_name' => pSQL($this->name),
             'color' => 'RoyalBlue',
             'unremovable' => 0,
             'hidden' => 0,
@@ -360,7 +360,7 @@ class AmzPayments extends PaymentModule
     public function checkTableForColumn($table, $column)
     {
         if (! isset(self::$table_columns[$table][$column])) {
-            $res = Db::getInstance()->executeS('SHOW COLUMNS FROM `' . $table . '` LIKE \'' . $column . '\'');
+            $res = Db::getInstance()->executeS('SHOW COLUMNS FROM `' . pSQL($table) . '` LIKE \'' . pSQL($column) . '\'');
             if ($res)
                 self::$table_columns[$table][$column] = true;
             else
@@ -1633,9 +1633,9 @@ class AmzPayments extends PaymentModule
             $response = $service->getRefundDetails($refund_request);
             $details = $response->getGetRefundDetailsResult()->getRefundDetails();
             $sql_arr = array(
-                'amz_tx_status' => (string) $details->getRefundStatus()->getState(),
-                'amz_tx_last_change' => strtotime((string) $details->getRefundStatus()->getLastUpdateTimestamp()),
-                'amz_tx_last_update' => time()
+                'amz_tx_status' => pSQL((string) $details->getRefundStatus()->getState()),
+                'amz_tx_last_change' => pSQL(strtotime((string) $details->getRefundStatus()->getLastUpdateTimestamp())),
+                'amz_tx_last_update' => pSQL(time())
             );
             Db::getInstance()->update('amz_transactions', $sql_arr, " amz_tx_amz_id = '" . pSQL($refund_id) . "'");
         } catch (OffAmazonPaymentsService_Exception $e) {
@@ -1654,10 +1654,10 @@ class AmzPayments extends PaymentModule
             $details = $response->getGetCaptureDetailsResult()->getCaptureDetails();
             
             $sql_arr = array(
-                'amz_tx_status' => (string) $details->getCaptureStatus()->getState(),
-                'amz_tx_last_change' => strtotime((string) $details->getCaptureStatus()->getLastUpdateTimestamp()),
-                'amz_tx_amount_refunded' => (float) $details->getRefundedAmount()->getAmount(),
-                'amz_tx_last_update' => time()
+                'amz_tx_status' => pSQL((string) $details->getCaptureStatus()->getState()),
+                'amz_tx_last_change' => pSQL(strtotime((string) $details->getCaptureStatus()->getLastUpdateTimestamp())),
+                'amz_tx_amount_refunded' => pSQL((float) $details->getRefundedAmount()->getAmount()),
+                'amz_tx_last_update' => pSQL(time())
             );
             Db::getInstance()->update('amz_transactions', $sql_arr, " amz_tx_amz_id = '" . pSQL($capture_id) . "'");
             
@@ -1690,9 +1690,9 @@ class AmzPayments extends PaymentModule
             // $address = $details->getAuthorizationBillingAddress();
             
             $sql_arr = array(
-                'amz_tx_status' => (string) $details->getAuthorizationStatus()->getState(),
-                'amz_tx_last_change' => strtotime((string) $details->getAuthorizationStatus()->getLastUpdateTimestamp()),
-                'amz_tx_last_update' => time()
+                'amz_tx_status' => pSQL((string) $details->getAuthorizationStatus()->getState()),
+                'amz_tx_last_change' => pSQL(strtotime((string) $details->getAuthorizationStatus()->getLastUpdateTimestamp())),
+                'amz_tx_last_update' => pSQL(time())
             );
             Db::getInstance()->update('amz_transactions', $sql_arr, " amz_tx_amz_id = '" . pSQL($auth_id) . "'");
             
@@ -1720,9 +1720,9 @@ class AmzPayments extends PaymentModule
             $response = $service->getOrderReferenceDetails($order_ref_request);
             $details = $response->getGetOrderReferenceDetailsResult()->getOrderReferenceDetails();
             $sql_arr = array(
-                'amz_tx_status' => (string) $details->getOrderReferenceStatus()->getState(),
-                'amz_tx_last_change' => strtotime((string) $details->getOrderReferenceStatus()->getLastUpdateTimestamp()),
-                'amz_tx_last_update' => time()
+                'amz_tx_status' => pSQL((string) $details->getOrderReferenceStatus()->getState()),
+                'amz_tx_last_change' => pSQL(strtotime((string) $details->getOrderReferenceStatus()->getLastUpdateTimestamp())),
+                'amz_tx_last_update' => pSQL(time())
             );
             Db::getInstance()->update('amz_transactions', $sql_arr, " amz_tx_amz_id = '" . pSQL($order_ref) . "'");
         } catch (OffAmazonPaymentsService_Exception $e) {
@@ -1938,7 +1938,7 @@ class AmzPayments extends PaymentModule
 			WHERE
 			ao.amazon_order_reference_id != \'\'
 			AND
-			o.current_state = \'' . $this->capture_status_id . '\'
+			o.current_state = \'' . pSQL($this->capture_status_id) . '\'
 			AND
 			a2.amz_tx_id IS NULL';
             $rs = Db::getInstance()->ExecuteS($q);

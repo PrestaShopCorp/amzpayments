@@ -402,19 +402,19 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                     $reference_details_result_wrapper = $this->service->getOrderReferenceDetails($get_order_reference_details_request);
                                     
                                     $sql_arr = array(
-                                        'amz_tx_time' => time(),
+                                        'amz_tx_time' => pSQL(time()),
                                         'amz_tx_type' => 'order_ref',
-                                        'amz_tx_status' => $reference_details_result_wrapper->GetOrderReferenceDetailsResult->getOrderReferenceDetails()
+                                        'amz_tx_status' => pSQL($reference_details_result_wrapper->GetOrderReferenceDetailsResult->getOrderReferenceDetails()
                                             ->getOrderReferenceStatus()
-                                            ->getState(),
-                                        'amz_tx_order_reference' => Tools::getValue('amazonOrderReferenceId'),
-                                        'amz_tx_expiration' => strtotime($reference_details_result_wrapper->GetOrderReferenceDetailsResult->getOrderReferenceDetails()->getExpirationTimestamp()),
-                                        'amz_tx_reference' => Tools::getValue('amazonOrderReferenceId'),
-                                        'amz_tx_amz_id' => Tools::getValue('amazonOrderReferenceId'),
-                                        'amz_tx_last_change' => time(),
-                                        'amz_tx_amount' => $reference_details_result_wrapper->GetOrderReferenceDetailsResult->getOrderReferenceDetails()
+                                            ->getState()),
+                                        'amz_tx_order_reference' => pSQL(Tools::getValue('amazonOrderReferenceId')),
+                                        'amz_tx_expiration' => pSQL(strtotime($reference_details_result_wrapper->GetOrderReferenceDetailsResult->getOrderReferenceDetails()->getExpirationTimestamp())),
+                                        'amz_tx_reference' => pSQL(Tools::getValue('amazonOrderReferenceId')),
+                                        'amz_tx_amz_id' => pSQL(Tools::getValue('amazonOrderReferenceId')),
+                                        'amz_tx_last_change' => pSQL(time()),
+                                        'amz_tx_amount' => pSQL($reference_details_result_wrapper->GetOrderReferenceDetailsResult->getOrderReferenceDetails()
                                             ->getOrderTotal()
-                                            ->getAmount()
+                                            ->getAmount())
                                     );
                                     Db::getInstance()->insert('amz_transactions', $sql_arr);
                                 } else {
@@ -645,7 +645,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                 }
                                 
                                 if (isset($this->context->cookie->amzSetStatusAuthorized)) {
-                                    $tmpOrderRefs = unserialize($this->context->cookie->amzSetStatusAuthorized);
+                                    $tmpOrderRefs = Tools::unSerialize($this->context->cookie->amzSetStatusAuthorized);
                                     if (is_array($tmpOrderRefs)) {
                                         foreach ($tmpOrderRefs as $order_ref) {
                                             AmazonTransactions::setOrderStatusAuthorized($order_ref);
@@ -654,7 +654,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                     unset($this->context->cookie->amzSetStatusAuthorized);
                                 }
                                 if (isset($this->context->cookie->amzSetStatusCaptured)) {
-                                    $tmpOrderRefs = unserialize($this->context->cookie->amzSetStatusCaptured);
+                                    $tmpOrderRefs = Tools::unSerialize($this->context->cookie->amzSetStatusCaptured);
                                     if (is_array($tmpOrderRefs)) {
                                         foreach ($tmpOrderRefs as $order_ref) {
                                             AmazonTransactions::setOrderStatusCaptured($order_ref);

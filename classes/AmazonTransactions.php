@@ -79,16 +79,16 @@ class AmazonTransactions
             $details = $response->getAuthorizeResult()->getAuthorizationDetails();
             
             $sql_arr = array(
-                'amz_tx_order_reference' => $order_ref,
+                'amz_tx_order_reference' => pSQL($order_ref),
                 'amz_tx_type' => 'auth',
-                'amz_tx_time' => time(),
-                'amz_tx_expiration' => strtotime($details->getExpirationTimestamp()),
-                'amz_tx_amount' => $amount,
-                'amz_tx_status' => $details->getAuthorizationStatus()->getState(),
-                'amz_tx_reference' => $details->getAuthorizationReferenceId(),
-                'amz_tx_amz_id' => $details->getAmazonAuthorizationId(),
-                'amz_tx_last_change' => time(),
-                'amz_tx_last_update' => time()
+                'amz_tx_time' => pSQL(time()),
+                'amz_tx_expiration' => pSQL(strtotime($details->getExpirationTimestamp())),
+                'amz_tx_amount' => pSQL($amount),
+                'amz_tx_status' => pSQL($details->getAuthorizationStatus()->getState()),
+                'amz_tx_reference' => pSQL($details->getAuthorizationReferenceId()),
+                'amz_tx_amz_id' => pSQL($details->getAmazonAuthorizationId()),
+                'amz_tx_last_change' => pSQL(time()),
+                'amz_tx_last_update' => pSQL(time())
             );
             
             Db::getInstance()->insert('amz_transactions', $sql_arr);
@@ -117,16 +117,16 @@ class AmazonTransactions
             $details = $response->getRefundResult()->getRefundDetails();
             
             $sql_arr = array(
-                'amz_tx_order_reference' => $order_ref,
+                'amz_tx_order_reference' => pSQL($order_ref),
                 'amz_tx_type' => 'refund',
-                'amz_tx_time' => time(),
+                'amz_tx_time' => pSQL(time()),
                 'amz_tx_expiration' => 0,
-                'amz_tx_amount' => $amount,
-                'amz_tx_status' => $details->getRefundStatus()->getState(),
-                'amz_tx_reference' => $details->getRefundReferenceId(),
-                'amz_tx_amz_id' => $details->getAmazonRefundId(),
-                'amz_tx_last_change' => time(),
-                'amz_tx_last_update' => time()
+                'amz_tx_amount' => pSQL($amount),
+                'amz_tx_status' => pSQL($details->getRefundStatus()->getState()),
+                'amz_tx_reference' => pSQL($details->getRefundReferenceId()),
+                'amz_tx_amz_id' => pSQL($details->getAmazonRefundId()),
+                'amz_tx_last_change' => pSQL(time()),
+                'amz_tx_last_update' => pSQL(time())
             );
             Db::getInstance()->insert('amz_transactions', $sql_arr);
         } catch (OffAmazonPaymentsService_Exception $e) {
@@ -156,16 +156,16 @@ class AmazonTransactions
                 $details = $response->getCaptureResult()->getCaptureDetails();
                 
                 $sql_arr = array(
-                    'amz_tx_order_reference' => $order_ref,
+                    'amz_tx_order_reference' => pSQL($order_ref),
                     'amz_tx_type' => 'capture',
-                    'amz_tx_time' => time(),
+                    'amz_tx_time' => pSQL(time()),
                     'amz_tx_expiration' => 0,
-                    'amz_tx_amount' => $amount,
-                    'amz_tx_status' => $details->getCaptureStatus()->getState(),
-                    'amz_tx_reference' => $details->getCaptureReferenceId(),
-                    'amz_tx_amz_id' => $details->getAmazonCaptureId(),
-                    'amz_tx_last_change' => time(),
-                    'amz_tx_last_update' => time()
+                    'amz_tx_amount' => pSQL($amount),
+                    'amz_tx_status' => pSQL($details->getCaptureStatus()->getState()),
+                    'amz_tx_reference' => pSQL($details->getCaptureReferenceId()),
+                    'amz_tx_amz_id' => pSQL($details->getAmazonCaptureId()),
+                    'amz_tx_last_change' => pSQL(time()),
+                    'amz_tx_last_update' => pSQL(time())
                 );
                 Db::getInstance()->insert('amz_transactions', $sql_arr);
                 
@@ -266,7 +266,7 @@ class AmazonTransactions
     {
         $last_id = 0;
         $prefix = Tools::substr($type, 0, 1);
-        $q = 'SELECT * FROM ' . _DB_PREFIX_ . 'amz_transactions WHERE amz_tx_type=\'' . $type . '\' 
+        $q = 'SELECT * FROM ' . _DB_PREFIX_ . 'amz_transactions WHERE amz_tx_type=\'' . pSQL($type) . '\' 
 				AND amz_tx_order_reference = \'' . pSQL($order_ref) . '\' ORDER BY amz_tx_id DESC';
         if ($r = Db::getInstance()->getRow($q)) {
             $last_id = (int) str_replace($order_ref . '-' . $prefix, '', $r['amz_tx_reference']);
@@ -303,7 +303,7 @@ class AmazonTransactions
             if (! isset(Context::getContext()->cookie->amzSetStatusAuthorized)) {
                 Context::getContext()->cookie->amzSetStatusAuthorized = serialize(array());
             }
-            $tmpData = unserialize(Context::getContext()->cookie->amzSetStatusAuthorized);
+            $tmpData = Tools::unSerialize(Context::getContext()->cookie->amzSetStatusAuthorized);
             $tmpData[] = $order_ref;
             Context::getContext()->cookie->amzSetStatusAuthorized = serialize($tmpData);
         }
@@ -319,7 +319,7 @@ class AmazonTransactions
         } else {
             if (! isset(Context::getContext()->cookie->amzSetStatusCaptured))
                 Context::getContext()->cookie->amzSetStatusCaptured = serialize(array());
-            $tmpData = unserialize(Context::getContext()->cookie->amzSetStatusCaptured);
+            $tmpData = Tools::unSerialize(Context::getContext()->cookie->amzSetStatusCaptured);
             $tmpData[] = $order_ref;
             Context::getContext()->cookie->amzSetStatusCaptured = serialize($tmpData);
         }
@@ -335,7 +335,7 @@ class AmazonTransactions
         } else {
             if (! isset(Context::getContext()->cookie->amzSetStatusCaptured))
                 Context::getContext()->cookie->amzSetStatusCaptured = serialize(array());
-            $tmpData = unserialize(Context::getContext()->cookie->amzSetStatusCaptured);
+            $tmpData = Tools::unSerialize(Context::getContext()->cookie->amzSetStatusCaptured);
             $tmpData[] = $order_ref;
             Context::getContext()->cookie->amzSetStatusCaptured = serialize($tmpData);
         }
@@ -353,8 +353,8 @@ class AmazonTransactions
     {
         unset($comment);
         $sql_data_array = array(
-            'id_order' => $oid,
-            'id_order_state' => $status,
+            'id_order' => pSQL($oid),
+            'id_order_state' => pSQL($status),
             'date_add' => date('Y-m-d H:i:s')
         );
         Db::getInstance()->insert('order_history', $sql_data_array);

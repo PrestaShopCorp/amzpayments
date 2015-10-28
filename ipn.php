@@ -56,7 +56,7 @@ if ($amz_payments->ipn_status == '1') {
             $r = Db::getInstance()->getRow($q);
             
             $sqlArr = array(
-                'amz_tx_status' => (string) $response_xml->AuthorizationDetails->AuthorizationStatus->State,
+                'amz_tx_status' => pSQL((string) $response_xml->AuthorizationDetails->AuthorizationStatus->State),
                 'amz_tx_last_change' => time(),
                 'amz_tx_expiration' => strtotime($response_xml->AuthorizationDetails->ExpirationTimestamp),
                 'amz_tx_last_update' => time()
@@ -78,7 +78,7 @@ if ($amz_payments->ipn_status == '1') {
             $r = Db::getInstance()->getRow($q);
             
             $sqlArr = array(
-                'amz_tx_status' => (string) $response_xml->CaptureDetails->CaptureStatus->State,
+                'amz_tx_status' => pSQL((string) $response_xml->CaptureDetails->CaptureStatus->State),
                 'amz_tx_last_change' => time(),
                 'amz_tx_amount_refunded' => (float) $response_xml->CaptureDetails->RefundedAmount->Amount,
                 'amz_tx_last_update' => time()
@@ -98,7 +98,7 @@ if ($amz_payments->ipn_status == '1') {
             $r = Db::getInstance()->getRow($q);
             
             $sqlArr = array(
-                'amz_tx_status' => (string) $response_xml->RefundDetails->RefundStatus->State,
+                'amz_tx_status' => pSQL((string) $response_xml->RefundDetails->RefundStatus->State),
                 'amz_tx_last_change' => time(),
                 'amz_tx_last_update' => time()
             );
@@ -111,7 +111,7 @@ if ($amz_payments->ipn_status == '1') {
             $r = Db::getInstance()->getRow($q);
             
             $sqlArr = array(
-                'amz_tx_status' => (string) $response_xml->OrderReference->OrderReferenceStatus->State,
+                'amz_tx_status' => pSQL((string) $response_xml->OrderReference->OrderReferenceStatus->State),
                 'amz_tx_last_change' => time(),
                 'amz_tx_last_update' => time()
             );

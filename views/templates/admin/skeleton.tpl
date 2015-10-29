@@ -15,9 +15,9 @@
 	<div class="row">
 		<h3>
 			<i class="icon-money"></i>
-			{$displayName}
+			{$displayName|escape:'htmlall':'UTF-8'}
 		</h3>
-		<div class="amzAdminWr amzContainer16" data-orderRef="{$amazon_order_reference_id}">
+		<div class="amzAdminWr amzContainer16" data-orderRef="{$amazon_order_reference_id|escape:'htmlall':'UTF-8'}">
 			<div class="panel amzAdminOrderHistoryWr">
 				<div class="amzAdminOrderHistory">
 					{$orderHistory}

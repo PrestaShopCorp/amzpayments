@@ -16,7 +16,7 @@
 			<strong>{l s='Authorised amount' mod='amzpayments'}</strong>
 		</td>
 		<td>
-			{$authorized_amount}
+			{$authorized_amount|escape:'htmlall':'UTF-8'}
 		</td>
 	</tr>
 	<tr>
@@ -24,7 +24,7 @@
 			<strong>{l s='Withdrawn amount' mod='amzpayments'}</strong>
 		</td>
 		<td>
-			{$captured_amount}
+			{$captured_amount|escape:'htmlall':'UTF-8'}
 		</td>
 	</tr>
 	<tr>
@@ -32,7 +32,7 @@
 			<strong>{l s='Refunded amount' mod='amzpayments'}</strong>
 		</td>
 		<td>
-			{$refunded_amount}	
+			{$refunded_amount|escape:'htmlall':'UTF-8'}	
 		</td>
 	</tr>
 </table>

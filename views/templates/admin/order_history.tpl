@@ -39,34 +39,34 @@
 	{foreach from=$rs item=r}
 		<tr>
 			<td>
-				{$r.transaction_type}
+				{$r.transaction_type|escape:'htmlall':'UTF-8'}
 			</td>
 			<td>
-				{$r.amount}
+				{$r.amount|escape:'htmlall':'UTF-8'}
 			</td>
 			<td>
-				{$r.date}
+				{$r.date|escape:'htmlall':'UTF-8'}
 			</td>
 			<td>
-				{$r.status}
+				{$r.status|escape:'htmlall':'UTF-8'}
 			</td>
 			<td>
-				{$r.last_change}
+				{$r.last_change|escape:'htmlall':'UTF-8'}
 			</td>
 			<td>
-				{$r.tx_id}
+				{$r.tx_id|escape:'htmlall':'UTF-8'}
 			</td>
 			<td>
-				{$r.tx_expiration}
+				{$r.tx_expiration|escape:'htmlall':'UTF-8'}
 			</td>
 		</tr>
 	{/foreach}
 	</tbody>
 </table>
 <div>
-	<a href="#" class="amzAjaxLink btn btn-default button" data-action="refreshOrder" data-orderRef="{$order_ref}">{l s='Update' mod='amzpayments'}</a>
+	<a href="#" class="amzAjaxLink btn btn-default button" data-action="refreshOrder" data-orderRef="{$order_ref|escape:'htmlall':'UTF-8'}">{l s='Update' mod='amzpayments'}</a>
 	{if $reference_status == 'Open' || $reference_status == 'Suspended'}
-		<a href="#" class="amzAjaxLink btn btn-default button" data-action="cancelOrder" data-orderRef="{$order_ref}">{l s='Cancel order' mod='amzpayments'}</a>
-		<a href="#" class="amzAjaxLink btn btn-default button" data-action="closeOrder" data-orderRef="{$order_ref}">{l s='Close order' mod='amzpayments'}</a>
+		<a href="#" class="amzAjaxLink btn btn-default button" data-action="cancelOrder" data-orderRef="{$order_ref|escape:'htmlall':'UTF-8'}">{l s='Cancel order' mod='amzpayments'}</a>
+		<a href="#" class="amzAjaxLink btn btn-default button" data-action="closeOrder" data-orderRef="{$order_ref|escape:'htmlall':'UTF-8'}">{l s='Close order' mod='amzpayments'}</a>
 	{/if}
 </div>

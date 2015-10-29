@@ -192,7 +192,7 @@ class AmzPayments extends PaymentModule
         }
     }
 
-    public function getService($override = false)
+    public function getService($override = false, $serviceType = 'service')
     {
         include_once (CURRENT_MODULE_DIR . '/vendor/config.php');
         include_once (CURRENT_MODULE_DIR . '/vendor/functions.php');
@@ -219,7 +219,11 @@ class AmzPayments extends PaymentModule
                 $config[$k] = $v;
         }
         
-        return new OffAmazonPaymentsService_Client($config);
+        if ($serviceType == 'service') {
+            return new OffAmazonPaymentsService_Client($config);           
+        } elseif ($serviceType == 'notification') {
+            return new OffAmazonPaymentsNotifications_Client($config); 
+        }
     }
 
     public function getPfId()

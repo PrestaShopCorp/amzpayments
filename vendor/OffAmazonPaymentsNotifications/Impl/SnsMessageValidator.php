@@ -188,7 +188,7 @@ class SnsMessageValidator
             || empty($parsed['host'])
             || $parsed['scheme'] !== 'https'
             || substr($url, -4) !== '.pem'
-            || !preg_match($this->hostPattern, $parsed['host'])
+            || !preg_match(self::$defaultHostPattern, $parsed['host'])
             ) {
                 throw new OffAmazonPaymentsNotifications_InvalidMessageException(
                     'The certificate is located on an invalid domain.'

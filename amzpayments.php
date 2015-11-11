@@ -1131,6 +1131,25 @@ class AmzPayments extends PaymentModule
         }
     }
 
+    public function getLpaApiUrl()
+    {
+        if ($this->environment == 'SANDBOX') {
+            if (Tools::strtolower($this->region) == 'de')
+                return 'https://api.sandbox.amazon.de';
+            elseif (Tools::strtolower($this->region) == 'uk')
+                return 'https://api.sandbox.amazon.co.uk';
+            elseif (Tools::strtolower($this->region) == 'us')
+                return 'https://api.sandbox.amazon.com';
+        } else {
+            if (Tools::strtolower($this->region) == 'de')
+                return 'https://api.amazon.de';
+            elseif (Tools::strtolower($this->region) == 'uk')
+                return 'https://api.amazon.co.uk';
+            elseif (Tools::strtolower($this->region) == 'us')
+                return 'https://api.amazon.com';
+        }    
+    }
+
     protected function checkForTemporarySessionVarsAndKillThem()
     {
         if (isset($this->context->cart->id_address_delivery)) {

@@ -469,17 +469,17 @@ class AmzPayments extends PaymentModule
 
     protected function getCronURL()
     {
-        return _PS_BASE_URL_ . __PS_BASE_URI__ . 'module/' . $this->name . '/cron.php?pw=' . $this->cron_password;
+        return $this->context->link->getModuleLink('amzpayments','cron.php', array('pw' => $this->cron_password));
     }
 
     protected function getIPNURL()
     {
-        return str_replace('http://', 'https://', _PS_BASE_URL_) . __PS_BASE_URI__ . 'module/' . $this->name . '/ipn.php';
+        return str_replace('http://', 'https://', $this->context->link->getModuleLink('amzpayments','ipn.php'));
     }
 
     protected function getAllowedReturnUrls($type = 1)
     {
-        $url = str_replace('http://', 'https://', _PS_BASE_URL_) . __PS_BASE_URI__ . 'module/' . $this->name . '/process_login';
+        $url = str_replace('http://', 'https://', $this->context->link->getModuleLink('amzpayments','process_login'));
         if ($type == 2)
             $url .= '?toCheckout=1';
         return $url;
@@ -948,7 +948,7 @@ class AmzPayments extends PaymentModule
                         'label' => $this->l('ipn_status'),
                         'name' => 'IPN_STATUS',
                         'is_bool' => true,
-                        'desc' => $this->l('Use this URL for IPN: ') . $this->getIPNURL(),
+                        'desc' => $this->l('Use this URL for IPN: ') . ' ' . $this->getIPNURL(),
                         'values' => array(
                             array(
                                 'id' => 'active_on_ipn',
@@ -967,7 +967,7 @@ class AmzPayments extends PaymentModule
                         'label' => $this->l('cron_status'),
                         'name' => 'CRON_STATUS',
                         'is_bool' => true,
-                        'desc' => $this->l('Use this URL for your cronjob: ') . $this->getCronURL(),
+                        'desc' => $this->l('Use this URL for your cronjob: ') . ' ' . $this->getCronURL(),
                         'values' => array(
                             array(
                                 'id' => 'active_on_cron',

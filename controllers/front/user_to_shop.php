@@ -91,11 +91,8 @@ class AmzpaymentsUser_To_ShopModuleFrontController extends ModuleFrontController
                         } else {
                             $accessTokenValue = Tools::getValue('access_token');
                         }
-                        if (self::$amz_payments->environment == 'SANDBOX') {
-                            $c = curl_init('https://api.sandbox.amazon.de/auth/o2/tokeninfo?access_token=' . urlencode($accessTokenValue));
-                        } else {
-                            $c = curl_init('https://api.amazon.de/auth/o2/tokeninfo?access_token=' . urlencode($accessTokenValue));
-                        }
+                       
+                        $c = curl_init(self::$amz_payments->getLpaApiUrl() . '/auth/o2/tokeninfo?access_token=' . urlencode($accessTokenValue));
                         
                         curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
                         curl_setopt($c, CURLOPT_CAINFO, self::$amz_payments->ca_bundle_file);
@@ -114,11 +111,7 @@ class AmzpaymentsUser_To_ShopModuleFrontController extends ModuleFrontController
                         }
                         
                         // exchange the access token for user profile
-                        if (self::$amz_payments->environment == 'SANDBOX') {
-                            $c = curl_init('https://api.sandbox.amazon.de/user/profile');
-                        } else {
-                            $c = curl_init('https://api.amazon.de/user/profile');
-                        }
+                        $c = curl_init(self::$amz_payments->getLpaApiUrl() . '/user/profile');
                         
                         curl_setopt($c, CURLOPT_HTTPHEADER, array(
                             'Authorization: bearer ' . $accessTokenValue

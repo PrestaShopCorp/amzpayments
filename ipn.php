@@ -22,11 +22,22 @@
 include_once ('../../config/config.inc.php');
 include_once ('../../init.php');
 include_once ('../../modules/amzpayments/amzpayments.php');
+include_once (CURRENT_MODULE_DIR . '/vendor/config.php');
+
+$headers = getallheaders();
 $response = Tools::file_get_contents('php://input');
 
 $module_name = Tools::getValue('moduleName');
-
 $amz_payments = new AmzPayments();
+
+try {
+    $client = $amz_payments->getService(false, 'notification');
+    $result = $client->parseRawMessage($headers, $response);
+} catch (OffAmazonPaymentsNotifications_InvalidMessageException $ex) {
+    error_log($ex->getMessage());
+    header("HTTP/1.1 503 Service Unavailable");
+    exit(0);
+}
 
 function jsonCleanDecode($json, $assoc = false, $depth = 512, $options = 0)
 {
@@ -46,7 +57,6 @@ $response = jsonCleanDecode($response);
 $message = jsonCleanDecode($response->Message);
 $response_xml = simplexml_load_string($message->NotificationData);
 $response_xml = $response_xml;
-var_dump($response, $message, $response_xml);
 
 if ($amz_payments->ipn_status == '1') {
     switch ($message->NotificationType) {
@@ -56,7 +66,7 @@ if ($amz_payments->ipn_status == '1') {
             $r = Db::getInstance()->getRow($q);
             
             $sqlArr = array(
-                'amz_tx_status' => (string) $response_xml->AuthorizationDetails->AuthorizationStatus->State,
+                'amz_tx_status' => pSQL((string) $response_xml->AuthorizationDetails->AuthorizationStatus->State),
                 'amz_tx_last_change' => time(),
                 'amz_tx_expiration' => strtotime($response_xml->AuthorizationDetails->ExpirationTimestamp),
                 'amz_tx_last_update' => time()
@@ -78,7 +88,7 @@ if ($amz_payments->ipn_status == '1') {
             $r = Db::getInstance()->getRow($q);
             
             $sqlArr = array(
-                'amz_tx_status' => (string) $response_xml->CaptureDetails->CaptureStatus->State,
+                'amz_tx_status' => pSQL((string) $response_xml->CaptureDetails->CaptureStatus->State),
                 'amz_tx_last_change' => time(),
                 'amz_tx_amount_refunded' => (float) $response_xml->CaptureDetails->RefundedAmount->Amount,
                 'amz_tx_last_update' => time()
@@ -98,7 +108,7 @@ if ($amz_payments->ipn_status == '1') {
             $r = Db::getInstance()->getRow($q);
             
             $sqlArr = array(
-                'amz_tx_status' => (string) $response_xml->RefundDetails->RefundStatus->State,
+                'amz_tx_status' => pSQL((string) $response_xml->RefundDetails->RefundStatus->State),
                 'amz_tx_last_change' => time(),
                 'amz_tx_last_update' => time()
             );
@@ -111,7 +121,7 @@ if ($amz_payments->ipn_status == '1') {
             $r = Db::getInstance()->getRow($q);
             
             $sqlArr = array(
-                'amz_tx_status' => (string) $response_xml->OrderReference->OrderReferenceStatus->State,
+                'amz_tx_status' => pSQL((string) $response_xml->OrderReference->OrderReferenceStatus->State),
                 'amz_tx_last_change' => time(),
                 'amz_tx_last_update' => time()
             );

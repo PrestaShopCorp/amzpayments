@@ -192,7 +192,7 @@ class AmzPayments extends PaymentModule
         }
     }
 
-    public function getService($override = false)
+    public function getService($override = false, $serviceType = 'service')
     {
         include_once (CURRENT_MODULE_DIR . '/vendor/config.php');
         include_once (CURRENT_MODULE_DIR . '/vendor/functions.php');
@@ -219,7 +219,11 @@ class AmzPayments extends PaymentModule
                 $config[$k] = $v;
         }
         
-        return new OffAmazonPaymentsService_Client($config);
+        if ($serviceType == 'service') {
+            return new OffAmazonPaymentsService_Client($config);           
+        } elseif ($serviceType == 'notification') {
+            return new OffAmazonPaymentsNotifications_Client($config); 
+        }
     }
 
     public function getPfId()
@@ -305,7 +309,7 @@ class AmzPayments extends PaymentModule
         $values_to_insert = array(
             'invoice' => 0,
             'send_email' => 0,
-            'module_name' => $this->name,
+            'module_name' => pSQL($this->name),
             'color' => 'RoyalBlue',
             'unremovable' => 0,
             'hidden' => 0,
@@ -332,7 +336,7 @@ class AmzPayments extends PaymentModule
         $values_to_insert = array(
             'invoice' => 0,
             'send_email' => 0,
-            'module_name' => $this->name,
+            'module_name' => pSQL($this->name),
             'color' => 'RoyalBlue',
             'unremovable' => 0,
             'hidden' => 0,
@@ -360,7 +364,7 @@ class AmzPayments extends PaymentModule
     public function checkTableForColumn($table, $column)
     {
         if (! isset(self::$table_columns[$table][$column])) {
-            $res = Db::getInstance()->executeS('SHOW COLUMNS FROM `' . $table . '` LIKE \'' . $column . '\'');
+            $res = Db::getInstance()->executeS('SHOW COLUMNS FROM `' . pSQL($table) . '` LIKE \'' . pSQL($column) . '\'');
             if ($res)
                 self::$table_columns[$table][$column] = true;
             else
@@ -465,17 +469,17 @@ class AmzPayments extends PaymentModule
 
     protected function getCronURL()
     {
-        return _PS_BASE_URL_ . __PS_BASE_URI__ . 'module/' . $this->name . '/cron.php?pw=' . $this->cron_password;
+        return $this->context->link->getModuleLink('amzpayments','cron.php', array('pw' => $this->cron_password));
     }
 
     protected function getIPNURL()
     {
-        return str_replace('http://', 'https://', _PS_BASE_URL_) . __PS_BASE_URI__ . 'module/' . $this->name . '/ipn.php';
+        return str_replace('http://', 'https://', $this->context->link->getModuleLink('amzpayments','ipn.php'));
     }
 
     protected function getAllowedReturnUrls($type = 1)
     {
-        $url = str_replace('http://', 'https://', _PS_BASE_URL_) . __PS_BASE_URI__ . 'module/' . $this->name . '/process_login';
+        $url = str_replace('http://', 'https://', $this->context->link->getModuleLink('amzpayments','process_login'));
         if ($type == 2)
             $url .= '?toCheckout=1';
         return $url;
@@ -944,7 +948,7 @@ class AmzPayments extends PaymentModule
                         'label' => $this->l('ipn_status'),
                         'name' => 'IPN_STATUS',
                         'is_bool' => true,
-                        'desc' => $this->l('Use this URL for IPN: ') . $this->getIPNURL(),
+                        'desc' => $this->l('Use this URL for IPN: ') . ' ' . $this->getIPNURL(),
                         'values' => array(
                             array(
                                 'id' => 'active_on_ipn',
@@ -963,7 +967,7 @@ class AmzPayments extends PaymentModule
                         'label' => $this->l('cron_status'),
                         'name' => 'CRON_STATUS',
                         'is_bool' => true,
-                        'desc' => $this->l('Use this URL for your cronjob: ') . $this->getCronURL(),
+                        'desc' => $this->l('Use this URL for your cronjob: ') . ' ' . $this->getCronURL(),
                         'values' => array(
                             array(
                                 'id' => 'active_on_cron',
@@ -1125,6 +1129,25 @@ class AmzPayments extends PaymentModule
             elseif (Tools::strtolower($this->region) == 'us')
                 return 'https://payments.amazon.com/gp/widgets/button';
         }
+    }
+
+    public function getLpaApiUrl()
+    {
+        if ($this->environment == 'SANDBOX') {
+            if (Tools::strtolower($this->region) == 'de')
+                return 'https://api.sandbox.amazon.de';
+            elseif (Tools::strtolower($this->region) == 'uk')
+                return 'https://api.sandbox.amazon.co.uk';
+            elseif (Tools::strtolower($this->region) == 'us')
+                return 'https://api.sandbox.amazon.com';
+        } else {
+            if (Tools::strtolower($this->region) == 'de')
+                return 'https://api.amazon.de';
+            elseif (Tools::strtolower($this->region) == 'uk')
+                return 'https://api.amazon.co.uk';
+            elseif (Tools::strtolower($this->region) == 'us')
+                return 'https://api.amazon.com';
+        }    
     }
 
     protected function checkForTemporarySessionVarsAndKillThem()
@@ -1633,9 +1656,9 @@ class AmzPayments extends PaymentModule
             $response = $service->getRefundDetails($refund_request);
             $details = $response->getGetRefundDetailsResult()->getRefundDetails();
             $sql_arr = array(
-                'amz_tx_status' => (string) $details->getRefundStatus()->getState(),
-                'amz_tx_last_change' => strtotime((string) $details->getRefundStatus()->getLastUpdateTimestamp()),
-                'amz_tx_last_update' => time()
+                'amz_tx_status' => pSQL((string) $details->getRefundStatus()->getState()),
+                'amz_tx_last_change' => pSQL(strtotime((string) $details->getRefundStatus()->getLastUpdateTimestamp())),
+                'amz_tx_last_update' => pSQL(time())
             );
             Db::getInstance()->update('amz_transactions', $sql_arr, " amz_tx_amz_id = '" . pSQL($refund_id) . "'");
         } catch (OffAmazonPaymentsService_Exception $e) {
@@ -1654,10 +1677,10 @@ class AmzPayments extends PaymentModule
             $details = $response->getGetCaptureDetailsResult()->getCaptureDetails();
             
             $sql_arr = array(
-                'amz_tx_status' => (string) $details->getCaptureStatus()->getState(),
-                'amz_tx_last_change' => strtotime((string) $details->getCaptureStatus()->getLastUpdateTimestamp()),
-                'amz_tx_amount_refunded' => (float) $details->getRefundedAmount()->getAmount(),
-                'amz_tx_last_update' => time()
+                'amz_tx_status' => pSQL((string) $details->getCaptureStatus()->getState()),
+                'amz_tx_last_change' => pSQL(strtotime((string) $details->getCaptureStatus()->getLastUpdateTimestamp())),
+                'amz_tx_amount_refunded' => pSQL((float) $details->getRefundedAmount()->getAmount()),
+                'amz_tx_last_update' => pSQL(time())
             );
             Db::getInstance()->update('amz_transactions', $sql_arr, " amz_tx_amz_id = '" . pSQL($capture_id) . "'");
             
@@ -1690,9 +1713,9 @@ class AmzPayments extends PaymentModule
             // $address = $details->getAuthorizationBillingAddress();
             
             $sql_arr = array(
-                'amz_tx_status' => (string) $details->getAuthorizationStatus()->getState(),
-                'amz_tx_last_change' => strtotime((string) $details->getAuthorizationStatus()->getLastUpdateTimestamp()),
-                'amz_tx_last_update' => time()
+                'amz_tx_status' => pSQL((string) $details->getAuthorizationStatus()->getState()),
+                'amz_tx_last_change' => pSQL(strtotime((string) $details->getAuthorizationStatus()->getLastUpdateTimestamp())),
+                'amz_tx_last_update' => pSQL(time())
             );
             Db::getInstance()->update('amz_transactions', $sql_arr, " amz_tx_amz_id = '" . pSQL($auth_id) . "'");
             
@@ -1720,9 +1743,9 @@ class AmzPayments extends PaymentModule
             $response = $service->getOrderReferenceDetails($order_ref_request);
             $details = $response->getGetOrderReferenceDetailsResult()->getOrderReferenceDetails();
             $sql_arr = array(
-                'amz_tx_status' => (string) $details->getOrderReferenceStatus()->getState(),
-                'amz_tx_last_change' => strtotime((string) $details->getOrderReferenceStatus()->getLastUpdateTimestamp()),
-                'amz_tx_last_update' => time()
+                'amz_tx_status' => pSQL((string) $details->getOrderReferenceStatus()->getState()),
+                'amz_tx_last_change' => pSQL(strtotime((string) $details->getOrderReferenceStatus()->getLastUpdateTimestamp())),
+                'amz_tx_last_update' => pSQL(time())
             );
             Db::getInstance()->update('amz_transactions', $sql_arr, " amz_tx_amz_id = '" . pSQL($order_ref) . "'");
         } catch (OffAmazonPaymentsService_Exception $e) {
@@ -1938,7 +1961,7 @@ class AmzPayments extends PaymentModule
 			WHERE
 			ao.amazon_order_reference_id != \'\'
 			AND
-			o.current_state = \'' . $this->capture_status_id . '\'
+			o.current_state = \'' . pSQL($this->capture_status_id) . '\'
 			AND
 			a2.amz_tx_id IS NULL';
             $rs = Db::getInstance()->ExecuteS($q);

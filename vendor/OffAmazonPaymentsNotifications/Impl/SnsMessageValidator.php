@@ -34,6 +34,14 @@ class SnsMessageValidator
      */
     private $_verifySignature = null;
     
+   /**
+    * @var string  A pattern that will match all regional SNS endpoints, e.g.:
+    *                  - sns.<region>.amazonaws.com        (AWS)
+    *                  - sns.us-gov-west-1.amazonaws.com   (AWS GovCloud)
+    *                  - sns.cn-north-1.amazonaws.com.cn   (AWS China)
+    */
+    private static $defaultHostPattern = '/^sns\.[a-zA-Z0-9\-]{3,}\.amazonaws\.com(\.cn)?$/';    
+    
     /**
      * Create new instance of the SnsMessageValidator
      * 
@@ -89,7 +97,10 @@ class SnsMessageValidator
      * @return void
      */
     private function _verifySignatureWithVersionOneAlgorithm(Message $snsMessage)
-    {      
+    {   
+        
+        $this->validateUrl($snsMessage->getMandatoryField("SigningCertURL"));
+        
         $result = $this->_verifySignature->verifySignatureIsCorrect(
             $this->_constructSignatureFromSnsMessage($snsMessage),
             base64_decode($snsMessage->getMandatoryField("Signature")),
@@ -160,6 +171,30 @@ class SnsMessageValidator
         // create the signature string - key / value in byte order
         // delimited by newline character + ending with a new line character
         return implode("\n", $signatureFields) . "\n";
-    }
+    }    
+    
+    /**
+     * Ensures that the URL of the certificate is one belonging to AWS, and not
+     * just something from the amazonaws domain, which could include S3 buckets.
+     *
+     * @param string $url Certificate URL
+     *
+     * @throws InvalidSnsMessageException if the cert url is invalid.
+     */
+    private function validateUrl($url)
+    {
+        $parsed = parse_url($url);
+        if (empty($parsed['scheme'])
+            || empty($parsed['host'])
+            || $parsed['scheme'] !== 'https'
+            || substr($url, -4) !== '.pem'
+            || !preg_match(self::$defaultHostPattern, $parsed['host'])
+            ) {
+                throw new OffAmazonPaymentsNotifications_InvalidMessageException(
+                    'The certificate is located on an invalid domain.'
+                    );
+            }
+    }    
+    
 }
 ?>

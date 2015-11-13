@@ -10,13 +10,13 @@
 
 {if isset($postSuccess)}
 	{foreach from=$postSuccess item=ps}
-		<div class="alert alert-success">{$ps}</div>
+		<div class="alert alert-success">{$ps|escape:'htmlall':'UTF-8'}</div>
 	{/foreach}
 {/if}
 
 {if isset($postErrors)}
 	{foreach from=$postErrors item=pe}
-		<div class="alert alert-warning">{$pe}</div>
+		<div class="alert alert-warning">{$pe|escape:'htmlall':'UTF-8'}</div>
 	{/foreach}
 {/if}
 
@@ -28,13 +28,13 @@
 	<div class="row">
 		<div class="col-xs-12">
 			<p style="text-align: center" id="versionCheck">
-				<img src="{$smarty.const._PS_BASE_URL_}{$smarty.const.__PS_BASE_URI__}modules/{$module_name}/views/img/loading_indicator.gif" />
+				<img src="{$smarty.const._PS_BASE_URL_|escape:'htmlall':'UTF-8'}{$smarty.const.__PS_BASE_URI__|escape:'htmlall':'UTF-8'}modules/{$module_name|escape:'htmlall':'UTF-8'}/views/img/loading_indicator.gif" />
 				<br /><br />
 				{l s='We check if there is a new version of the plugin available.' mod='amzpayments'}
 				<br /><br />
 			</p>
 			<p style="text-align: center" id="versionCheckResult">
-				{l s='Your version: ' mod='amzpayments'} <strong>{$current_version}</strong>
+				{l s='Your version: ' mod='amzpayments'} <strong>{$current_version|escape:'htmlall':'UTF-8'}</strong>
 				<br /><br />
 			</p>			
 		</div>
@@ -47,8 +47,8 @@
 		$.post("../modules/amzpayments/ajax.php",
 		{
 			action: "versionCheck",
-			asv: "{/literal}{$current_version}{literal}",
-			psv: "{/literal}{$smarty.const._PS_VERSION_}{literal}",
+			asv: "{/literal}{$current_version|escape:'htmlall':'UTF-8'}{literal}",
+			psv: "{/literal}{$smarty.const._PS_VERSION_|escape:'htmlall':'UTF-8'}{literal}",
 			ref: location.host
 		}, 
 		function(data) {	
@@ -78,14 +78,14 @@
 				{l s='Allowed Return URLs - Enter these URLs in your Amazon SellerCentral Configuration-Panel!' mod='amzpayments'}
 			</p>
 			<ul>
-				<li>{$allowed_return_url_1}</li>
-				<li>{$allowed_return_url_2}</li>
+				<li>{$allowed_return_url_1|escape:'htmlall':'UTF-8'}</li>
+				<li>{$allowed_return_url_2|escape:'htmlall':'UTF-8'}</li>
 			</ul>
 			<p>
 				{l s='Allowed JavaScript Origins - Enter these URLs in your Amazon SellerCentral Configuration-Panel!' mod='amzpayments'}
 			</p>
 			<ul>
-				<li>{$allowed_js_origins}</li>
+				<li>{$allowed_js_origins|escape:'htmlall':'UTF-8'}</li>
 			</ul>
 			<p>
 				{l s='You can integrate the "Login with Amazon"-Button at any part of your template. Just use the following HTML-Code, but be aware to always (!) use a unique value for the attribute "id":' mod='amzpayments'}

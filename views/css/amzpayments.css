@@ -72,6 +72,8 @@ body#module-amzpayments-amzpayments .delivery_option label {
 	top: 50%;
 }
 
+#module-amzpayments-amzpayments td.cart_quantity.text-center,
+#module-amzpayments-amzpayments th.cart_quantity.item.text-center,
 #module-amzpayments-amzpayments #order_step {
 	display: none;
 }
@@ -173,4 +175,22 @@ p.payment_module a.amzPayments::after {
 #jsLoginAuthPage {
 	margin-top: 20px;
 	display: block;
+}
+
+#HOOK_ADVANCED_PAYMENT #payWithAmazonListDiv {
+	width:100%;
+	padding: 47px;
+	padding-left: 95px;
+	background: #fff;
+	border: 1px solid #d6d4d4;
+	display: inline-block;
+	border-radius: 4px; 
+}
+	
+@media only screen and (min-width: 981px) {
+	#HOOK_ADVANCED_PAYMENT #payWithAmazonListDiv {
+		background: #fff;
+		width: 48.8%;
+		padding-left: 190px;
+	} 
 }

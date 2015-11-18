@@ -178,11 +178,11 @@ $_MODULE['<{amzpayments}prestashop>connect_accounts_98980b642469e6353fda51e7c25e
 $_MODULE['<{amzpayments}prestashop>process_login_599100c527155892f4359effc359a76b'] = 'Thank you. Your order has been successful. We now create your account.';
 $_MODULE['<{amzpayments}prestashop>process_login_633dfeead551299f8224bc60eb5aaca9'] = 'Thank you for your login with Amazon Payments';
 $_MODULE['<{amzpayments}prestashop>process_login_1d90cfb5cc90a32ee0146e7a9aec46b9'] = 'You will be redirected in a few seconds...';
-$_MODULE['<{amzpayments}prestashop>confirmation_2e2117b7c81aa9ea6931641ea2c6499f'] = 'Ihre Bestellung bei';
-$_MODULE['<{amzpayments}prestashop>confirmation_75fbf512d744977d62599cc3f0ae2bb4'] = 'ist vollständig.';
-$_MODULE['<{amzpayments}prestashop>confirmation_fb4ea5a18e5f77bece3219a4171320a9'] = 'Sie haben Amazon Payments als Bezahlmethode gewählt.';
-$_MODULE['<{amzpayments}prestashop>confirmation_e6dc7945b557a1cd949bea92dd58963e'] = 'Ihre Bestellung wird in Kürze versandt.';
-$_MODULE['<{amzpayments}prestashop>confirmation_0db71da7150c27142eef9d22b843b4a9'] = 'Für weitere Fragen wenden Sie sich bitte an unseren';
-$_MODULE['<{amzpayments}prestashop>confirmation_64430ad2835be8ad60c59e7d44e4b0b1'] = 'Kunden-Support.';
+$_MODULE['<{amzpayments}prestashop>confirmation_2e2117b7c81aa9ea6931641ea2c6499f'] = 'Your order at ';
+$_MODULE['<{amzpayments}prestashop>confirmation_75fbf512d744977d62599cc3f0ae2bb4'] = 'is complete.';
+$_MODULE['<{amzpayments}prestashop>confirmation_fb4ea5a18e5f77bece3219a4171320a9'] = 'You have chosen Amazon Payments for your payment.';
+$_MODULE['<{amzpayments}prestashop>confirmation_e6dc7945b557a1cd949bea92dd58963e'] = 'Your order will be dispatched shortly.';
+$_MODULE['<{amzpayments}prestashop>confirmation_0db71da7150c27142eef9d22b843b4a9'] = 'For further questions, please contact our';
+$_MODULE['<{amzpayments}prestashop>confirmation_64430ad2835be8ad60c59e7d44e4b0b1'] = 'customer-support.';
 $_MODULE['<{amzpayments}prestashop>payment_ed20689b0d8d53ec534166a88b67f259'] = 'Pay with Amazon';
 $_MODULE['<{amzpayments}prestashop>payment_8811becbf523354e20e2017242326f70'] = '(Comfortable and save payment with your amazon-account)';

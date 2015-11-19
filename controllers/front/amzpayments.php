@@ -686,7 +686,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                         $address_invoice->save();
                                     }
                                 } else {
-                                    if ($registered_customer = Customer::AmazonPaymentsCustomerHelper($customer->email)) {
+                                    if ($registered_customer = AmazonPaymentsCustomerHelper::findByEmailAddress($customer->email)) {
                                         if (! AmzPayments::addressAlreadyExists($address_delivery, $registered_customer)) {
                                             $address_delivery->id_customer = $registered_customer->id;
                                             $address_delivery->save();

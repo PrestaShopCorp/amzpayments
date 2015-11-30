@@ -249,10 +249,13 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                             
                             $this->context->smarty->assign('isVirtualCart', $this->context->cart->isVirtualCart());
                             
+                            $old_delivery_address_id = $this->context->cart->id_address_delivery;
                             $this->context->cart->id_address_delivery = $address_delivery->id;
                             $this->context->cart->id_address_invoice = $address_delivery->id;
                             
                             $this->context->cart->setNoMultishipping();
+                            
+                            $this->context->cart->updateAddressId($old_delivery_address_id, $address_delivery->id);
                             
                             if (! $this->context->cart->update()) {
                                 $this->errors[] = Tools::displayError('An error occurred while updating your cart.');

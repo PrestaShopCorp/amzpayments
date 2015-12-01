@@ -145,7 +145,7 @@ class AmzPayments extends PaymentModule
     {
         $this->name = 'amzpayments';
         $this->tab = 'payments_gateways';
-        $this->version = '2.0.12';
+        $this->version = '2.0.13';
         $this->author = 'patworx multimedia GmbH';
         $this->need_instance = 1;
         
@@ -1155,6 +1155,7 @@ class AmzPayments extends PaymentModule
         if (isset($this->context->cart->id_address_delivery)) {
             $check_address = new Address((int) $this->context->cart->id_address_delivery);
             if ($check_address->lastname == 'amzLastname' || $check_address->firstname == 'amzFirstname' || $check_address->address1 == 'amzAddress1') {
+                $check_address->delete();
                 $this->context->cart->id_address_delivery = 0;
                 $this->context->cart->update();
             }
@@ -1162,6 +1163,7 @@ class AmzPayments extends PaymentModule
         if (isset($this->context->cart->id_address_invoice)) {
             $check_address = new Address((int) $this->context->cart->id_address_invoice);
             if ($check_address->lastname == 'amzLastname' || $check_address->firstname == 'amzFirstname' || $check_address->address1 == 'amzAddress1') {
+                $check_address->delete();
                 $this->context->cart->id_address_invoice = 0;
                 $this->context->cart->update();
             }

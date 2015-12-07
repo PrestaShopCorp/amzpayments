@@ -77,8 +77,12 @@ if ($amz_payments->ipn_status == '1') {
                 if ($amz_payments->capture_mode == 'after_auth') {
                     $order_id = AmazonTransactions::getOrdersIdFromOrderRef($r['amz_tx_order_reference']);
                     $order = new Order((int) $order_id);
-                    $currency = new Currency($order->id_currency);
-                    AmazonTransactions::capture($amz_payments, $amz_payments->getService(), $response_xml->AuthorizationDetails->AmazonAuthorizationId, $r['amz_tx_amount'], $currency->iso_code);
+                    if (Validate::isLoadedObject($order)) {
+                        $currency = new Currency($order->id_currency);
+                        if (Validate::isLoadedObject($currency)) {                            
+                            AmazonTransactions::capture($amz_payments, $amz_payments->getService(), $response_xml->AuthorizationDetails->AmazonAuthorizationId, $r['amz_tx_amount'], $currency->iso_code);
+                        }
+                    }
                 }
             } elseif ($sqlArr['amz_tx_status'] == 'Declined') {
                 $reason = (string) $response_xml->AuthorizationDetails->AuthorizationStatus->ReasonCode;

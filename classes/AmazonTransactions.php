@@ -197,7 +197,16 @@ class AmazonTransactions
 				AND amz_tx_amz_id = \'' . pSQL($auth_id) . '\'';
         $r = Db::getInstance()->getRow($q);
         if ($r) {
-            return self::capture($amz_payments, $service, $auth_id, $r['amz_tx_amount']);
+            $order_ref = AmazonTransactions::getOrderRefFromAmzId($auth_id);
+            $order_id = AmazonTransactions::getOrdersIdFromOrderRef($order_ref);
+            $order = new Order((int) $order_id);
+            if (Validate::isLoadedObject($order)) {
+                $currency = new Currency($order->id_currency);
+                if (Validate::isLoadedObject($currency)) {
+                    return self::capture($amz_payments, $service, $auth_id, $r['amz_tx_amount'], $currency->iso_code);
+                }
+            }
+            return false;
         } else {
             return false;
         }

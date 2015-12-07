@@ -315,7 +315,11 @@ function bindInputs()
 	if ($("#noCarrierWarning").length > 0) 
 		$("#amz_execute_order").attr("disabled","disabled").addClass("disabled"); 
 	else {
-		$("#cgv").trigger('change');
+		if ($("#cgv").length > 0) {
+			$("#cgv").trigger('change');			
+		} else {
+			$("#amz_execute_order").removeAttr("disabled").removeClass("disabled");
+		}
 	}
 }
 

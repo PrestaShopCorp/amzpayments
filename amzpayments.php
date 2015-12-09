@@ -1094,10 +1094,9 @@ class AmzPayments extends PaymentModule
 
     public function hookDisplayBackOfficeFooter()
     {
-        if ($this->capture_mode == 'after_shipping')
-            return '<iframe style="width:1px; height:1px; visibility:hidden;" src="../modules/amzpayments/ajax.php?action=shippingCapture" />';
-        else
-            return '';
+        if ($this->capture_mode == 'after_shipping') {
+            $this->shippingCapture();
+        }
     }
 
     public function getRegionalCodeForURL()
@@ -1958,8 +1957,8 @@ class AmzPayments extends PaymentModule
         if ($this->capture_mode == 'after_shipping') {
             $q = 'SELECT DISTINCT ao.amazon_order_reference_id FROM  ' . _DB_PREFIX_ . 'orders o
             JOIN ' . _DB_PREFIX_ . 'amz_orders ao ON o.id_order = ao.id_order 
-			JOIN ' . _DB_PREFIX_ . 'amz_transactions AS a1 ON (o.amazon_order_reference_id = a1.amz_tx_order_reference AND a1.amz_tx_type = \'auth\' AND a1.amz_tx_status = \'Open\')
-			LEFT JOIN ' . _DB_PREFIX_ . 'amz_transactions AS a2 ON (o.amazon_order_reference_id = a2.amz_tx_order_reference AND a2.amz_tx_type = \'capture\')
+			JOIN ' . _DB_PREFIX_ . 'amz_transactions AS a1 ON (ao.amazon_order_reference_id = a1.amz_tx_order_reference AND a1.amz_tx_type = \'auth\' AND a1.amz_tx_status = \'Open\')
+			LEFT JOIN ' . _DB_PREFIX_ . 'amz_transactions AS a2 ON (ao.amazon_order_reference_id = a2.amz_tx_order_reference AND a2.amz_tx_type = \'capture\')
 			WHERE
 			ao.amazon_order_reference_id != \'\'
 			AND

@@ -180,7 +180,7 @@
 				{/if}					
 					<div>
 						<nobr>
-							<input type="text" class="amzAmountField" value="{$field_value|escape:'htmlall':'UTF-8'}" />
+							<input type="text" class="amzAmountField" value="{if isset($field_value)}{$field_value|escape:'htmlall':'UTF-8'}{/if}" />
 							<a href="#" class="amzAjaxLink btn btn-default button amzButton" data-action="refundAmountFromField" data-captureid="{$r.tx_id|escape:'htmlall':'UTF-8'}">
 								{if $r.total_refund_button}
 									{l s='Issue partial refund' mod='amzpayments'}

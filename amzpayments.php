@@ -111,7 +111,7 @@ class AmzPayments extends PaymentModule
         'merchant_id' => 'MERCHANT_ID',
         'access_key' => 'ACCESS_KEY',
         'secret_key' => 'SECRET_KEY',
-        'client_id' => 'CLIENT_ID',
+        'client_id' => 'AMZ_CLIENT_ID',
         'region' => 'REGION',
         'lpa_mode' => 'LPA_MODE',
         'button_visibility' => 'BUTTON_VISIBILITY',
@@ -528,7 +528,7 @@ class AmzPayments extends PaymentModule
                         'col' => 3,
                         'type' => 'text',
                         'prefix' => '<i class="icon icon-tag"></i>',
-                        'name' => 'CLIENT_ID',
+                        'name' => 'AMZ_CLIENT_ID',
                         'label' => $this->l('client_id')
                     ),
                     array(

@@ -26,6 +26,6 @@ function upgrade_module_2_0_15($module)
 {
     $old_value = Configuration::get('CLIENT_ID');
     Configuration::updateValue('AMZ_CLIENT_ID', $old_value);
-    
+    Configuration::deleteByName('CLIENT_ID');
 	return true;
 }

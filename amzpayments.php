@@ -111,7 +111,7 @@ class AmzPayments extends PaymentModule
         'merchant_id' => 'MERCHANT_ID',
         'access_key' => 'ACCESS_KEY',
         'secret_key' => 'SECRET_KEY',
-        'client_id' => 'CLIENT_ID',
+        'client_id' => 'AMZ_CLIENT_ID',
         'region' => 'REGION',
         'lpa_mode' => 'LPA_MODE',
         'button_visibility' => 'BUTTON_VISIBILITY',
@@ -145,7 +145,7 @@ class AmzPayments extends PaymentModule
     {
         $this->name = 'amzpayments';
         $this->tab = 'payments_gateways';
-        $this->version = '2.0.14';
+        $this->version = '2.0.15';
         $this->author = 'patworx multimedia GmbH';
         $this->need_instance = 1;
         
@@ -528,7 +528,7 @@ class AmzPayments extends PaymentModule
                         'col' => 3,
                         'type' => 'text',
                         'prefix' => '<i class="icon icon-tag"></i>',
-                        'name' => 'CLIENT_ID',
+                        'name' => 'AMZ_CLIENT_ID',
                         'label' => $this->l('client_id')
                     ),
                     array(
@@ -1094,10 +1094,9 @@ class AmzPayments extends PaymentModule
 
     public function hookDisplayBackOfficeFooter()
     {
-        if ($this->capture_mode == 'after_shipping')
-            return '<iframe style="width:1px; height:1px; visibility:hidden;" src="../modules/amzpayments/ajax.php?action=shippingCapture" />';
-        else
-            return '';
+        if ($this->capture_mode == 'after_shipping') {
+            $this->shippingCapture();
+        }
     }
 
     public function getRegionalCodeForURL()
@@ -1958,8 +1957,8 @@ class AmzPayments extends PaymentModule
         if ($this->capture_mode == 'after_shipping') {
             $q = 'SELECT DISTINCT ao.amazon_order_reference_id FROM  ' . _DB_PREFIX_ . 'orders o
             JOIN ' . _DB_PREFIX_ . 'amz_orders ao ON o.id_order = ao.id_order 
-			JOIN ' . _DB_PREFIX_ . 'amz_transactions AS a1 ON (o.amazon_order_reference_id = a1.amz_tx_order_reference AND a1.amz_tx_type = \'auth\' AND a1.amz_tx_status = \'Open\')
-			LEFT JOIN ' . _DB_PREFIX_ . 'amz_transactions AS a2 ON (o.amazon_order_reference_id = a2.amz_tx_order_reference AND a2.amz_tx_type = \'capture\')
+			JOIN ' . _DB_PREFIX_ . 'amz_transactions AS a1 ON (ao.amazon_order_reference_id = a1.amz_tx_order_reference AND a1.amz_tx_type = \'auth\' AND a1.amz_tx_status = \'Open\')
+			LEFT JOIN ' . _DB_PREFIX_ . 'amz_transactions AS a2 ON (ao.amazon_order_reference_id = a2.amz_tx_order_reference AND a2.amz_tx_type = \'capture\')
 			WHERE
 			ao.amazon_order_reference_id != \'\'
 			AND

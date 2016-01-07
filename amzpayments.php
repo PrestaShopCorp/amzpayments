@@ -108,7 +108,7 @@ class AmzPayments extends PaymentModule
     protected static $table_columns = array();
 
     public static $config_array = array(
-        'merchant_id' => 'MERCHANT_ID',
+        'merchant_id' => 'AMZ_MERCHANT_ID',
         'access_key' => 'ACCESS_KEY',
         'secret_key' => 'SECRET_KEY',
         'client_id' => 'AMZ_CLIENT_ID',
@@ -145,7 +145,7 @@ class AmzPayments extends PaymentModule
     {
         $this->name = 'amzpayments';
         $this->tab = 'payments_gateways';
-        $this->version = '2.0.15';
+        $this->version = '2.0.16';
         $this->author = 'patworx multimedia GmbH';
         $this->need_instance = 1;
         
@@ -375,7 +375,7 @@ class AmzPayments extends PaymentModule
 
     public function uninstall()
     {
-        if (! Configuration::deleteByName('MERCHANT_ID') || ! Configuration::deleteByName('ACCESS_KEY') || ! Configuration::deleteByName('SECRET_KEY') || ! Configuration::deleteByName('REGION') || ! Configuration::deleteByName('BUTTON_VISIBILITY') || ! Configuration::deleteByName('ENVIRONMENT') || ! Configuration::deleteByName('AUTHORIZATION_MODE') || ! Configuration::deleteByName('CAPTURE_MODE') || ! Configuration::deleteByName('CAPTURE_STATUS_ID') || ! parent::uninstall())
+        if (! Configuration::deleteByName('AMZ_MERCHANT_ID') || ! Configuration::deleteByName('ACCESS_KEY') || ! Configuration::deleteByName('SECRET_KEY') || ! Configuration::deleteByName('REGION') || ! Configuration::deleteByName('BUTTON_VISIBILITY') || ! Configuration::deleteByName('ENVIRONMENT') || ! Configuration::deleteByName('AUTHORIZATION_MODE') || ! Configuration::deleteByName('CAPTURE_MODE') || ! Configuration::deleteByName('CAPTURE_STATUS_ID') || ! parent::uninstall())
             return false;
         return true;
     }
@@ -392,7 +392,7 @@ class AmzPayments extends PaymentModule
                 $this->_postErrors[] = $this->l('Region is wrong.');
             } else {
                 $service = $this->getService(array(
-                    'merchantId' => Tools::getValue('MERCHANT_ID'),
+                    'merchantId' => Tools::getValue('AMZ_MERCHANT_ID'),
                     'accessKey' => Tools::getValue('ACCESS_KEY'),
                     'environment' => Tools::getValue('ENVIRONMENT'),
                     'authorization_mode' => Tools::getValue('AUTHORIZATION_MODE'),
@@ -402,7 +402,7 @@ class AmzPayments extends PaymentModule
                     'secretKey' => Tools::getValue('SECRET_KEY')
                 ));
                 $order_ref_request = new OffAmazonPaymentsService_Model_GetOrderReferenceDetailsRequest();
-                $order_ref_request->setSellerId(Tools::getValue('MERCHANT_ID'));
+                $order_ref_request->setSellerId(Tools::getValue('AMZ_MERCHANT_ID'));
                 $order_ref_request->setAmazonOrderReferenceId('S00-0000000-0000000');
                 try {
                     $service->getOrderReferenceDetails($order_ref_request);
@@ -507,7 +507,7 @@ class AmzPayments extends PaymentModule
                         'col' => 3,
                         'type' => 'text',
                         'prefix' => '<i class="icon icon-tag"></i>',
-                        'name' => 'MERCHANT_ID',
+                        'name' => 'AMZ_MERCHANT_ID',
                         'label' => $this->l('merchant_id')
                     ),
                     array(

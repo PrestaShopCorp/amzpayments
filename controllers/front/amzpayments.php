@@ -786,7 +786,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
         $this->context->smarty->assign(array(
             'amz_module_path' => self::$amz_payments->getPathUri(),
             'amz_session' => Tools::getValue('session') ? Tools::getValue('session') : $this->context->cookie->amazon_id,
-            'sellerID' => Configuration::get('MERCHANT_ID'),
+            'sellerID' => Configuration::get('AMZ_MERCHANT_ID'),
             'sandboxMode' => false
         ));
         

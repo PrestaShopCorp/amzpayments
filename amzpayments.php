@@ -145,7 +145,7 @@ class AmzPayments extends PaymentModule
     {
         $this->name = 'amzpayments';
         $this->tab = 'payments_gateways';
-        $this->version = '2.0.16';
+        $this->version = '2.0.17';
         $this->author = 'patworx multimedia GmbH';
         $this->need_instance = 1;
         
@@ -1268,7 +1268,7 @@ class AmzPayments extends PaymentModule
     }
 
     public function hookDisplayPayment($params)
-    {
+    { 
         return $this->hookPayment($params);
     }
 

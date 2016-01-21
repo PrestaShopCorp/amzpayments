@@ -1929,7 +1929,7 @@ class AmzPayments extends PaymentModule
 
     public static function formatAmount($amount)
     {
-        return number_format($amount, 2, ',', '');
+        return Tools::displayNumber($amount, Context::getContext()->currency);
     }
 
     public function translateTransactionType($str)

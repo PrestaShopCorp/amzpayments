@@ -433,10 +433,11 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                 $physical_destination = $reference_details_result_wrapper->GetOrderReferenceDetailsResult->getOrderReferenceDetails()
                                     ->getDestination()
                                     ->getPhysicalDestination();
-                                
+                                                                
                                 $iso_code = (string) $physical_destination->GetCountryCode();
                                 $city = (string) $physical_destination->GetCity();
                                 $postcode = (string) $physical_destination->GetPostalCode();
+                                $state = (string) $physical_destination->GetStateOrRegion();
                                 
                                 $names_array = explode(' ', (string) $physical_destination->getName(), 2);
                                 
@@ -487,6 +488,16 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                 if ($phone != '') {
                                     $address_delivery->phone = $phone;
                                 }
+                                if ($state != '') {
+                                    $state_id = State::getIdByIso($state);
+                                    if (!$state_id) {
+                                        $state_id = State::getIdByName($state);
+                                    }
+                                    if ($state_id) {
+                                        $address_delivery->id_state = $state_id;
+                                    }
+                                }
+                                
                                 $address_delivery->save();
                                 AmazonPaymentsAddressHelper::saveAddressAmazonReference($address_delivery, Tools::getValue('amazonOrderReferenceId'));
                                 
@@ -502,6 +513,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                     $iso_code = (string) $amz_billing_address->GetCountryCode();
                                     $city = (string) $amz_billing_address->GetCity();
                                     $postcode = (string) $amz_billing_address->GetPostalCode();
+                                    $state = (string) $amz_billing_address->GetStateOrRegion();
                                     
                                     $invoice_names_array = explode(' ', (string) $amz_billing_address->getName(), 2);
                                     
@@ -542,6 +554,15 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                     $address_invoice->id_country = Country::getByIso((string) $amz_billing_address->getCountryCode());
                                     if ($phone != '') {
                                         $address_invoice->phone = $phone;
+                                    }
+                                    if ($state != '') {
+                                        $state_id = State::getIdByIso($state);
+                                        if (!$state_id) {
+                                            $state_id = State::getIdByName($state);
+                                        }
+                                        if ($state_id) {
+                                            $address_invoice->id_state = $state_id;
+                                        }
                                     }
                                     $address_invoice->save();
                                     AmazonPaymentsAddressHelper::saveAddressAmazonReference($address_invoice, Tools::getValue('amazonOrderReferenceId') . '-inv');

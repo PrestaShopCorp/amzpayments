@@ -130,31 +130,14 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                             $this->context->cookie->amz_access_token_set_time = time();
                             
                             if (! $this->context->customer->isLogged() && self::$amz_payments->lpa_mode != 'pay') {
-                                $c = curl_init(self::$amz_payments->getLpaApiUrl() . '/auth/o2/tokeninfo?access_token=' . urlencode(AmzPayments::prepareCookieValueForAmazonPaymentsUse($this->context->cookie->amz_access_token)));
-                                
-                                curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
-                                curl_setopt($c, CURLOPT_CAINFO, self::$amz_payments->ca_bundle_file);
-                                $r = curl_exec($c);
-                                curl_close($c);
-                                
-                                $d = Tools::jsonDecode($r);
-                                
+                            	$d = self::$amz_payments->requestTokenInfo(AmzPayments::prepareCookieValueForAmazonPaymentsUse($this->context->cookie->amz_access_token));
+                                                                
                                 if ($d->aud != self::$amz_payments->client_id) {
                                     error_log('auth error LPA');
                                     die('error');
                                 }
                                 
-                                // exchange the access token for user profile
-                                $c = curl_init(self::$amz_payments->getLpaApiUrl() . '/user/profile');
-                                
-                                curl_setopt($c, CURLOPT_HTTPHEADER, array(
-                                    'Authorization: bearer ' . AmzPayments::prepareCookieValueForAmazonPaymentsUse($this->context->cookie->amz_access_token)
-                                ));
-                                curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
-                                curl_setopt($c, CURLOPT_CAINFO, self::$amz_payments->ca_bundle_file);
-                                $r = curl_exec($c);
-                                curl_close($c);
-                                $d = Tools::jsonDecode($r);
+                                $d = self::$amz_payments->requestProfile(AmzPayments::prepareCookieValueForAmazonPaymentsUse($this->context->cookie->amz_access_token));
                                 
                                 $customer_userid = $d->user_id;
                                 $customer_name = $d->name;

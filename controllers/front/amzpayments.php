@@ -1,5 +1,4 @@
 <?php
-
 /**
  * 2013-2015 Amazon Advanced Payment APIs Modul
  *
@@ -19,6 +18,7 @@
  *  @copyright 2013-2015 patworx multimedia GmbH
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
+
 class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
 {
 
@@ -128,6 +128,78 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                             $this->context->cookie->amazon_id = Tools::getValue('amazon_id');
                             $this->context->cookie->amz_access_token = AmzPayments::prepareCookieValueForPrestaShopUse(Tools::getValue('access_token'));
                             $this->context->cookie->amz_access_token_set_time = time();
+                            
+                            if (! $this->context->customer->isLogged() && self::$amz_payments->lpa_mode != 'pay') {
+                            	$d = self::$amz_payments->requestTokenInfo(AmzPayments::prepareCookieValueForAmazonPaymentsUse($this->context->cookie->amz_access_token));
+                                                                
+                                if ($d->aud != self::$amz_payments->client_id) {
+                                    error_log('auth error LPA');
+                                    die('error');
+                                }
+                                
+                                $d = self::$amz_payments->requestProfile(AmzPayments::prepareCookieValueForAmazonPaymentsUse($this->context->cookie->amz_access_token));
+                                
+                                $customer_userid = $d->user_id;
+                                $customer_name = $d->name;
+                                $customer_email = $d->email;
+                                
+                                if ($customers_local_id = AmazonPaymentsCustomerHelper::findByAmazonCustomerId($customer_userid)) {
+                                    
+                                    Hook::exec('actionBeforeAuthentication');
+                                    $customer = new Customer();
+                                    $authentication = AmazonPaymentsCustomerHelper::getByCustomerID($customers_local_id, true, $customer);
+                                    
+                                    if (isset($authentication->active) && ! $authentication->active) {
+                                        exit();
+                                    } elseif (! $authentication || ! $customer->id) {
+                                        exit();
+                                    } else {
+                                        $this->context->cookie->id_compare = isset($this->context->cookie->id_compare) ? $this->context->cookie->id_compare : CompareProduct::getIdCompareByIdCustomer($customer->id);
+                                        $this->context->cookie->id_customer = (int) $customer->id;
+                                        $this->context->cookie->customer_lastname = $customer->lastname;
+                                        $this->context->cookie->customer_firstname = $customer->firstname;
+                                        $this->context->cookie->logged = 1;
+                                        $customer->logged = 1;
+                                        $this->context->cookie->is_guest = $customer->isGuest();
+                                        $this->context->cookie->passwd = $customer->passwd;
+                                        $this->context->cookie->email = $customer->email;
+                                        
+                                        // Add customer to the context
+                                        $this->context->customer = $customer;
+                                        
+                                        if (Configuration::get('PS_CART_FOLLOWING') && (empty($this->context->cookie->id_cart) || Cart::getNbProducts($this->context->cookie->id_cart) == 0) && $id_cart = (int) Cart::lastNoneOrderedCart($this->context->customer->id)) {
+                                            $this->context->cart = new Cart($id_cart);
+                                        } else {
+                                            $id_carrier = (int) $this->context->cart->id_carrier;
+                                            $this->context->cart->id_carrier = 0;
+                                            $this->context->cart->setDeliveryOption(null);
+                                            $this->context->cart->id_address_delivery = (int) Address::getFirstCustomerAddressId((int) $customer->id);
+                                            $this->context->cart->id_address_invoice = (int) Address::getFirstCustomerAddressId((int) $customer->id);
+                                        }
+                                        $this->context->cart->id_customer = (int) $customer->id;
+                                        $this->context->cart->secure_key = $customer->secure_key;
+                                        
+                                        if ($this->ajax && isset($id_carrier) && $id_carrier && Configuration::get('PS_ORDER_PROCESS_TYPE')) {
+                                            $delivery_option = array(
+                                                $this->context->cart->id_address_delivery => $id_carrier . ','
+                                            );
+                                            $this->context->cart->setDeliveryOption($delivery_option);
+                                        }
+                                        
+                                        $this->context->cart->save();
+                                        $this->context->cookie->id_cart = (int) $this->context->cart->id;
+                                        $this->context->cookie->write();
+                                        $this->context->cart->autosetProductAddress();
+                                        
+                                        Hook::exec('actionAuthentication');
+                                        
+                                        // Login information have changed, so we check if the cart rules still apply
+                                        CartRule::autoRemoveFromCart($this->context);
+                                        CartRule::autoAddToCart($this->context);
+                                    }
+                                }
+                            }
+                            
                             exit();
                         
                         case 'updateMessage':
@@ -433,10 +505,11 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                 $physical_destination = $reference_details_result_wrapper->GetOrderReferenceDetailsResult->getOrderReferenceDetails()
                                     ->getDestination()
                                     ->getPhysicalDestination();
-                                
+
                                 $iso_code = (string) $physical_destination->GetCountryCode();
                                 $city = (string) $physical_destination->GetCity();
                                 $postcode = (string) $physical_destination->GetPostalCode();
+                                $state = (string) $physical_destination->GetStateOrRegion();
                                 
                                 $names_array = explode(' ', (string) $physical_destination->getName(), 2);
                                 
@@ -487,6 +560,16 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                 if ($phone != '') {
                                     $address_delivery->phone = $phone;
                                 }
+                                if ($state != '') {
+                                    $state_id = State::getIdByIso($state);
+                                    if (!$state_id) {
+                                        $state_id = State::getIdByName($state);
+                                    }
+                                    if ($state_id) {
+                                        $address_delivery->id_state = $state_id;
+                                    }
+                                }
+                                
                                 $address_delivery->save();
                                 AmazonPaymentsAddressHelper::saveAddressAmazonReference($address_delivery, Tools::getValue('amazonOrderReferenceId'));
                                 
@@ -502,6 +585,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                     $iso_code = (string) $amz_billing_address->GetCountryCode();
                                     $city = (string) $amz_billing_address->GetCity();
                                     $postcode = (string) $amz_billing_address->GetPostalCode();
+                                    $state = (string) $amz_billing_address->GetStateOrRegion();
                                     
                                     $invoice_names_array = explode(' ', (string) $amz_billing_address->getName(), 2);
                                     
@@ -542,6 +626,15 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                     $address_invoice->id_country = Country::getByIso((string) $amz_billing_address->getCountryCode());
                                     if ($phone != '') {
                                         $address_invoice->phone = $phone;
+                                    }
+                                    if ($state != '') {
+                                        $state_id = State::getIdByIso($state);
+                                        if (!$state_id) {
+                                            $state_id = State::getIdByName($state);
+                                        }
+                                        if ($state_id) {
+                                            $address_invoice->id_state = $state_id;
+                                        }
                                     }
                                     $address_invoice->save();
                                     AmazonPaymentsAddressHelper::saveAddressAmazonReference($address_invoice, Tools::getValue('amazonOrderReferenceId') . '-inv');

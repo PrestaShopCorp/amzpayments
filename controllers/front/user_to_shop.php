@@ -91,15 +91,8 @@ class AmzpaymentsUser_To_ShopModuleFrontController extends ModuleFrontController
                         } else {
                             $accessTokenValue = Tools::getValue('access_token');
                         }
-                       
-                        $c = curl_init(self::$amz_payments->getLpaApiUrl() . '/auth/o2/tokeninfo?access_token=' . urlencode($accessTokenValue));
                         
-                        curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
-                        curl_setopt($c, CURLOPT_CAINFO, self::$amz_payments->ca_bundle_file);
-                        $r = curl_exec($c);
-                        curl_close($c);
-                        
-                        $d = Tools::jsonDecode($r);
+                        $d = self::$amz_payments->requestTokenInfo($accessTokenValue);
                         
                         if ($d->aud != self::$amz_payments->client_id) {
                             if (Tools::getValue('method') == 'redirectAuthentication') {
@@ -110,17 +103,7 @@ class AmzpaymentsUser_To_ShopModuleFrontController extends ModuleFrontController
                             }
                         }
                         
-                        // exchange the access token for user profile
-                        $c = curl_init(self::$amz_payments->getLpaApiUrl() . '/user/profile');
-                        
-                        curl_setopt($c, CURLOPT_HTTPHEADER, array(
-                            'Authorization: bearer ' . $accessTokenValue
-                        ));
-                        curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
-                        curl_setopt($c, CURLOPT_CAINFO, self::$amz_payments->ca_bundle_file);
-                        $r = curl_exec($c);
-                        curl_close($c);
-                        $d = Tools::jsonDecode($r);
+                        $d = self::$amz_payments->requestProfile($accessTokenValue);
                         
                         $customer_userid = $d->user_id;
                         $customer_name = $d->name;

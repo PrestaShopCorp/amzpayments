@@ -22,7 +22,7 @@
 if (!defined('_PS_VERSION_'))
 	exit;
 
-function upgrade_module_2_0_16($module)
+function upgrade_module_2_0_19($module)
 {
     $config_keys = array('BUTTON_VISIBILITY', 'POPUP', 'ALLOW_GUEST', 'IPN_STATUS', 'CRON_STATUS', 'SEND_MAILS_ON_DECLINE', 'PRESELECT_CREATE_ACCOUNT', 'FORCE_ACCOUNT_CREATION');
     foreach ($config_keys as $config_key) {

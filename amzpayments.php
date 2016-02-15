@@ -2099,4 +2099,31 @@ class AmzPayments extends PaymentModule
                 return 'en-GB';
         }
     }
+    
+    public function requestTokenInfo($accessTokenValue) {
+        $c = curl_init($this->getLpaApiUrl() . '/auth/o2/tokeninfo?access_token=' . urlencode($accessTokenValue));
+        
+    	curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
+    	curl_setopt($c, CURLOPT_CAINFO, $this->ca_bundle_file);
+    	$r = curl_exec($c);
+    	curl_close($c);
+    	
+    	$d = Tools::jsonDecode($r);  
+    	return $d;
+    }
+    
+    public function requestProfile($accessTokenValue) {
+    	$c = curl_init($this->getLpaApiUrl() . '/user/profile');
+    	
+    	curl_setopt($c, CURLOPT_HTTPHEADER, array(
+    			'Authorization: bearer ' . $accessTokenValue
+    	));
+    	curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
+    	curl_setopt($c, CURLOPT_CAINFO, $this->ca_bundle_file);
+    	$r = curl_exec($c);
+    	curl_close($c);
+    	$d = Tools::jsonDecode($r);
+    	return $d;
+    }
+    
 }

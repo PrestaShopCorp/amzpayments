@@ -145,7 +145,7 @@ class AmzPayments extends PaymentModule
     {
         $this->name = 'amzpayments';
         $this->tab = 'payments_gateways';
-        $this->version = '2.0.18';
+        $this->version = '2.0.19';
         $this->author = 'patworx multimedia GmbH';
         $this->need_instance = 1;
         
@@ -577,7 +577,7 @@ class AmzPayments extends PaymentModule
                             ),
                             array(
                                 'id' => 'active_off_bv',
-                                'value' => false,
+                                'value' => '0',
                                 'label' => $this->l('Disabled')
                             )
                         )
@@ -731,7 +731,7 @@ class AmzPayments extends PaymentModule
                             ),
                             array(
                                 'id' => 'active_off_popup',
-                                'value' => false,
+                                'value' => '0',
                                 'label' => $this->l('Disabled')
                             )
                         )
@@ -763,7 +763,7 @@ class AmzPayments extends PaymentModule
                             ),
                             array(
                                 'id' => 'active_off_guests',
-                                'value' => false,
+                                'value' => '0',
                                 'label' => $this->l('Disabled')
                             )
                         )
@@ -957,7 +957,7 @@ class AmzPayments extends PaymentModule
                             ),
                             array(
                                 'id' => 'active_off_ipn',
-                                'value' => false,
+                                'value' => '0',
                                 'label' => $this->l('Disabled')
                             )
                         )
@@ -976,7 +976,7 @@ class AmzPayments extends PaymentModule
                             ),
                             array(
                                 'id' => 'active_off_cron',
-                                'value' => false,
+                                'value' => '0',
                                 'label' => $this->l('Disabled')
                             )
                         )
@@ -1001,7 +1001,7 @@ class AmzPayments extends PaymentModule
                             ),
                             array(
                                 'id' => 'active_off_send_decline',
-                                'value' => false,
+                                'value' => '0',
                                 'label' => $this->l('Disabled')
                             )
                         )
@@ -1019,7 +1019,7 @@ class AmzPayments extends PaymentModule
                             ),
                             array(
                                 'id' => 'active_off_preselect',
-                                'value' => false,
+                                'value' => '0',
                                 'label' => $this->l('Disabled')
                             )
                         )
@@ -1037,7 +1037,7 @@ class AmzPayments extends PaymentModule
                             ),
                             array(
                                 'id' => 'active_off_force',
-                                'value' => false,
+                                'value' => '0',
                                 'label' => $this->l('Disabled')
                             )
                         )
@@ -1929,7 +1929,7 @@ class AmzPayments extends PaymentModule
 
     public static function formatAmount($amount)
     {
-        return Tools::displayNumber($amount, Context::getContext()->currency);
+        return Tools::displayPrice($amount, Context::getContext()->currency);
     }
 
     public function translateTransactionType($str)

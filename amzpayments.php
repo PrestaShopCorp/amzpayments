@@ -96,6 +96,8 @@ class AmzPayments extends PaymentModule
     public $preselect_create_account = 0;
 
     public $force_account_creation = 0;
+    
+    public $template_variant_bs = 1;
 
     public $ca_bundle_file;
 
@@ -138,18 +140,20 @@ class AmzPayments extends PaymentModule
         'cron_password' => 'CRON_PASSWORD',
         'send_mails_on_decline' => 'SEND_MAILS_ON_DECLINE',
         'preselect_create_account' => 'PRESELECT_CREATE_ACCOUNT',
-        'force_account_creation' => 'FORCE_ACCOUNT_CREATION'
+        'force_account_creation' => 'FORCE_ACCOUNT_CREATION',
+        'template_variant_bs' => 'TEMPLATE_VARIANT_BS'
     );
 
     public function __construct()
     {
         $this->name = 'amzpayments';
         $this->tab = 'payments_gateways';
-        $this->version = '2.0.19';
+        $this->version = '2.0.20';
         $this->author = 'patworx multimedia GmbH';
         $this->need_instance = 1;
         
         $this->bootstrap = true;
+        $this->module_key = '26d778fa5cb6735a816107ce4345b32d';
         
         $this->ps_versions_compliancy = array(
             'min' => '1.6',
@@ -1041,7 +1045,25 @@ class AmzPayments extends PaymentModule
                                 'label' => $this->l('Disabled')
                             )
                         )
-                    )
+                    ),
+                    array(
+                        'type' => 'switch',
+                        'label' => $this->l('template_variant_bs'),
+                        'name' => 'TEMPLATE_VARIANT_BS',
+                        'is_bool' => true,
+                        'values' => array(
+                            array(
+                                'id' => 'active_on_tpl_variant_bs',
+                                'value' => true,
+                                'label' => $this->l('Enabled')
+                            ),
+                            array(
+                                'id' => 'active_off_tpl_variant_bs',
+                                'value' => '0',
+                                'label' => $this->l('Disabled')
+                            )
+                        )
+                    ),
                 ),
                 'submit' => array(
                     'title' => $this->l('Save')
@@ -1151,35 +1173,59 @@ class AmzPayments extends PaymentModule
 
     protected function checkForTemporarySessionVarsAndKillThem()
     {
+        $need_update = false;
         if (isset($this->context->cart->id_address_delivery)) {
             $check_address = new Address((int) $this->context->cart->id_address_delivery);
             if ($check_address->lastname == 'amzLastname' || $check_address->firstname == 'amzFirstname' || $check_address->address1 == 'amzAddress1') {
                 $check_address->delete();
                 $this->context->cart->id_address_delivery = 0;
-                $this->context->cart->update();
+				
+                $sql = 'UPDATE `'._DB_PREFIX_.'cart_product`
+                SET `id_address_delivery` = NULL
+                WHERE  `id_cart` = '.(int)$this->context->cart->id;
+                Db::getInstance()->execute($sql);
+		
+                $sql = 'UPDATE `'._DB_PREFIX_.'customization`
+                SET `id_address_delivery` = NULL
+                WHERE  `id_cart` = '.(int)$this->context->cart->id;
+                Db::getInstance()->execute($sql);			
+				
+                $need_update = true;
             }
         }
         if (isset($this->context->cart->id_address_invoice)) {
             $check_address = new Address((int) $this->context->cart->id_address_invoice);
             if ($check_address->lastname == 'amzLastname' || $check_address->firstname == 'amzFirstname' || $check_address->address1 == 'amzAddress1') {
                 $check_address->delete();
-                $this->context->cart->id_address_invoice = 0;
-                $this->context->cart->update();
+                $this->context->cart->id_address_invoice = 0;		
+				
+                $sql = 'UPDATE `'._DB_PREFIX_.'cart_product`
+                SET `id_address_delivery` = NULL
+                WHERE  `id_cart` = '.(int)$this->context->cart->id;
+                Db::getInstance()->execute($sql);
+		
+                $sql = 'UPDATE `'._DB_PREFIX_.'customization`
+                SET `id_address_delivery` = NULL
+                WHERE  `id_cart` = '.(int)$this->context->cart->id;
+                Db::getInstance()->execute($sql);	
+				
+                $need_update = true;
             }
+        }
+        if ($need_update) {						
+            $this->context->cart->update();	
         }
     }
 
     public function hookDisplayShoppingCartFooter($params)
     {
-        $this->checkForTemporarySessionVarsAndKillThem();
+        //$this->checkForTemporarySessionVarsAndKillThem();
         
         $show_amazon_button = true;
         if (isset($this->context->controller->module)) {
             if ($this->context->controller->module->name == 'amzpayments')
                 $show_amazon_button = false;
         }
-        if ($this->context->controller->php_self == 'cart' && Tools::isSubmit('ajax'))
-            $show_amazon_button = false;
         
         if (! $this->checkIfCurrencyMatchesModuleRegion())
             $show_amazon_button = false;
@@ -1274,6 +1320,9 @@ class AmzPayments extends PaymentModule
 
     public function hookDisplayHeader($params)
     {
+        if (Tools::getValue('controller') == 'order') {
+            $this->checkForTemporarySessionVarsAndKillThem();
+        }
         
         if (isset($this->context->cookie->amz_access_token) && ! $this->context->customer->isLogged()) {
             unset($this->context->cookie->amz_access_token);
@@ -1387,7 +1436,7 @@ class AmzPayments extends PaymentModule
         ), $js_file);
         $this->context->cookie->amz_js_string = self::prepareCookieValueForPrestaShopUse($amz_login_ready);
         $amz_login_ready = '<script type="text/javascript" src="' . Tools::str_replace_once((Configuration::get('PS_SSL_ENABLED') ? 'http://' : ''), (Configuration::get('PS_SSL_ENABLED') ? 'https://' : ''), $this->context->link->getModuleLink('amzpayments', 'jsmode')) . '?c=amz_js_string&t=' . time() . '"></script>';
-        return $css_string . $amz_login_ready . $ext_js . '<script type="text/javascript"> var AMZACTIVE = \'' . ($show_amazon_button ? '1' : '0') . '\'; var AMZSELLERID = "' . $this->merchant_id . '"; var AMZ_BUTTON_TYPE_LOGIN = "' . $this->type_login . '"; var AMZ_BUTTON_TYPE_PAY = "' . $this->type_pay . '"; var AMZ_BUTTON_SIZE_LPA = "' . $this->button_size_lpa . '"; var AMZ_BUTTON_COLOR_LPA = "' . $this->button_color_lpa . '"; var AMZ_BUTTON_COLOR_LPA_NAVI = "' . $this->button_color_lpa_navi . '"; var AMZ_WIDGET_LANGUAGE = "' . $this->getWidgetLanguageCode() . '"; var CLIENT_ID = "' . $this->client_id . '"; var useRedirect = ' . (! self::currentSiteIsSSL() || $this->popup == '0' ? 'true' : 'false') . '; var LPA_MODE = "' . $this->lpa_mode . '"; var REDIRECTAMZ = "' . $redirect . '"; var LOGINREDIRECTAMZ_CHECKOUT = "' . $login_checkout_redirect . '"; var LOGINREDIRECTAMZ = "' . $login_redirect . '"; var is_logged = ' . $is_logged . '; var AMZACCTK = "' . $acc_tk . '"; var SETUSERAJAX = "' . $set_user_ajax . '";' . $js_file . ' </script>' . $logout_str;
+        return $css_string . $amz_login_ready . $ext_js . '<script type="text/javascript"> var AMZACTIVE = \'' . ($show_amazon_button ? '1' : '0') . '\'; var AMZSELLERID = "' . $this->merchant_id . '"; var AMZ_BUTTON_TYPE_LOGIN = "' . $this->type_login . '"; var AMZ_BUTTON_TYPE_PAY = "' . $this->type_pay . '"; var AMZ_BUTTON_SIZE_PAY = "' . $this->button_size . '"; var AMZ_BUTTON_SIZE_LPA = "' . $this->button_size_lpa . '"; var AMZ_BUTTON_COLOR_LPA = "' . $this->button_color_lpa . '"; var AMZ_BUTTON_COLOR_PAY = "' . $this->button_color . '"; var AMZ_BUTTON_COLOR_LPA_NAVI = "' . $this->button_color_lpa_navi . '"; var AMZ_WIDGET_LANGUAGE = "' . $this->getWidgetLanguageCode() . '"; var CLIENT_ID = "' . $this->client_id . '"; var useRedirect = ' . (! self::currentSiteIsSSL() || $this->popup == '0' ? 'true' : 'false') . '; var LPA_MODE = "' . $this->lpa_mode . '"; var REDIRECTAMZ = "' . $redirect . '"; var LOGINREDIRECTAMZ_CHECKOUT = "' . $login_checkout_redirect . '"; var LOGINREDIRECTAMZ = "' . $login_redirect . '"; var is_logged = ' . $is_logged . '; var AMZACCTK = "' . $acc_tk . '"; var SETUSERAJAX = "' . $set_user_ajax . '";' . $js_file . ' </script>' . $logout_str;
     }
 
     public function hookDisplayAdminOrder($params)

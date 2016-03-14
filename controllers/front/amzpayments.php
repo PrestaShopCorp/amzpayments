@@ -307,6 +307,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                             $iso_code = (string) $physical_destination->GetCountryCode();
                             $city = (string) $physical_destination->GetCity();
                             $postcode = (string) $physical_destination->GetPostalCode();
+                            $state = (string) $physical_destination->GetStateOrRegion();
                             
                             $address_delivery = AmazonPaymentsAddressHelper::findByAmazonOrderReferenceIdOrNew(Tools::getValue('amazonOrderReferenceId'));
                             $address_delivery->id_country = Country::getByIso($iso_code);
@@ -316,6 +317,15 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                             $address_delivery->address1 = 'amzAddress1';
                             $address_delivery->city = $city;
                             $address_delivery->postcode = $postcode;
+                            if ($state != '') {
+                                $state_id = State::getIdByIso($state);
+                                if (!$state_id) {
+                                    $state_id = State::getIdByName($state);
+                                }
+                                if ($state_id) {
+                                    $address_delivery->id_state = $state_id;
+                                }
+                            }                            
                             $address_delivery->save();
                             AmazonPaymentsAddressHelper::saveAddressAmazonReference($address_delivery, Tools::getValue('amazonOrderReferenceId'));
                             

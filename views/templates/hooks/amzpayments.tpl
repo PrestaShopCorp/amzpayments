@@ -14,3 +14,4 @@
 		{/if}
 	</div>
 </div>
+{literal}<script> bindCartButton('payWithAmazonDiv'); </script>{/literal}

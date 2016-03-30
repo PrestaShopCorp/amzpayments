@@ -237,3 +237,33 @@ function checkForAmazonListButton() {
 	}
 }
 
+function bindCartButton(div_id) {
+	if (jQuery('#' + div_id).attr('data-is-set') != '1') {
+		    OffAmazonPayments.Button(div_id, AMZSELLERID, {
+	            type: AMZ_BUTTON_TYPE_PAY,
+	            size: AMZ_BUTTON_SIZE_LPA,
+	            color: AMZ_BUTTON_COLOR_LPA,
+	            language: AMZ_WIDGET_LANGUAGE,
+	            authorization: function() {
+	            loginOptions =  {scope: 'profile postal_code payments:widget payments:shipping_address payments:billing_address', popup: !useRedirect };
+	            authRequest = amazon.Login.authorize (loginOptions, (useRedirect ? LOGINREDIRECTAMZ_CHECKOUT : null));
+	        },
+	        onSignIn: function(orderReference) {
+	            amazonOrderReferenceId = orderReference.getAmazonOrderReferenceId();		            
+	            jQuery(div_id).html('');
+	            jQuery.ajax({
+	                    type: 'GET',
+	                    url: REDIRECTAMZ,
+	                    data: 'ajax=true&method=setsession&access_token=' + authRequest.access_token + '&amazon_id=' + amazonOrderReferenceId,
+	                    success: function(htmlcontent){
+	                    	window.location = REDIRECTAMZ + amazonOrderReferenceId;
+	                    }
+	            });
+	        },
+	        onError: function(error) {
+	            console.log(error); 
+	        }
+	    });
+	    jQuery('#' + div_id).attr('data-is-set', '1');
+	}	
+}

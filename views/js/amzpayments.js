@@ -103,3 +103,19 @@ function checkForAmazonListButton() {
 		}
 	}	
 }
+
+function bindCartButton(div_id) {
+	if (jQuery('#' + div_id).attr('data-is-set') != '1') {
+		new OffAmazonPayments.Widgets.Button ({
+			sellerId: AMZSELLERID,
+			buttonSettings: {size: AMZ_BUTTON_SIZE_PAY, color: AMZ_BUTTON_COLOR_PAY},
+			onSignIn: function(orderReference) {
+				amazonOrderReferenceId = orderReference.getAmazonOrderReferenceId();
+				window.location = REDIRECTAMZ + amazonOrderReferenceId;
+			},
+			onError: function(error) {
+			}
+		}).bind(div_id);
+	    jQuery('#' + div_id).attr('data-is-set', '1');
+	}	
+}

@@ -41,6 +41,12 @@ function initAmazon(){
 	   		var amzBtnColor = AMZ_BUTTON_COLOR_LPA;
 	   		if ($(this).attr("id") == "amazonLogin")
 	   			amzBtnColor = AMZ_BUTTON_COLOR_LPA_NAVI;
+	   		var redirectURL = LOGINREDIRECTAMZ;
+	   		var redirectToCheckout = false;
+	   		if ($(this).attr("id") == "jsLoginAuthPage" && location.href.indexOf('display_guest_checkout') > 1) {
+	   			redirectURL = LOGINREDIRECTAMZ_CHECKOUT;
+	   			redirectToCheckout = true;
+	   		}
 	        OffAmazonPayments.Button($(this).attr('id'), AMZSELLERID, {
 	                type: AMZ_BUTTON_TYPE_LOGIN, 
 	                size: AMZ_BUTTON_SIZE_LPA,
@@ -48,14 +54,14 @@ function initAmazon(){
 	                language: AMZ_WIDGET_LANGUAGE,
 	                authorization: function() {
 	                loginOptions =  {scope: 'profile postal_code payments:widget payments:shipping_address payments:billing_address', popup: !useRedirect };
-	                authRequest = amazon.Login.authorize (loginOptions, useRedirect ? LOGINREDIRECTAMZ : null);
+	                authRequest = amazon.Login.authorize (loginOptions, useRedirect ? redirectURL : null);
 	            },    
 	            onSignIn: function(orderReference) {
 	                var amazonOrderReferenceId = orderReference.getAmazonOrderReferenceId();
 	                $.ajax({
 	                    type: 'GET',
 	                    url: SETUSERAJAX,
-	                    data: 'ajax=true&method=setusertoshop&access_token=' + authRequest.access_token + '&amazon_id=' + amazonOrderReferenceId,
+	                    data: 'ajax=true&method=setusertoshop&access_token=' + authRequest.access_token + '&amazon_id=' + amazonOrderReferenceId + (redirectToCheckout ? '&action=checkout' : null),
 	                    success: function(htmlcontent){
 	                        if (htmlcontent == 'error') {
 	                            alert('An error occured - please try again or contact our support');

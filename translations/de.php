@@ -88,6 +88,7 @@ $_MODULE['<{amzpayments}prestashop>amzpayments_e238b685f634947eb0ed378e3196abf9'
 $_MODULE['<{amzpayments}prestashop>amzpayments_d1d51c8dcba4c98ea5cec6f56cf7413d'] = 'Kunden automatisch benachrichtigen, wenn Zahlungen abgelehnt wurden';
 $_MODULE['<{amzpayments}prestashop>amzpayments_a2cfec4ef5bb5c2b81eded6ec7e82ccc'] = 'Checkbox f. Kontoerstellung in Checkout vorselektieren';
 $_MODULE['<{amzpayments}prestashop>amzpayments_2fac096fc5c586bcfecb255c585a3ef1'] = 'Kontoerstellung erzwingen';
+$_MODULE['<{amzpayments}prestashop>amzpayments_6deb26d36a88344bcd7f71914a086055'] = 'Template Bootstrap';
 $_MODULE['<{amzpayments}prestashop>amzpayments_c9cc8cce247e49bae79f15173ce97354'] = 'Speichern';
 $_MODULE['<{amzpayments}prestashop>amzpayments_f8928b5290746aa6041f3caa35d3e182'] = 'Authorisierung';
 $_MODULE['<{amzpayments}prestashop>amzpayments_a240fa27925a635b08dc28c9e4f9216d'] = 'Bestellung';

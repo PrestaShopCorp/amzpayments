@@ -31,6 +31,10 @@ body#module-amzpayments-amzpayments #center_column {width: 100%; margin-bottom: 
 	width: 400px;
 	height: 100px;
 }
+.amz_cart_widgets_bs #gift_div #gift_message,
+.amz_cart_widgets_bs textarea#message {
+	height: 100px;
+}
 
 body#module-amzpayments-amzpayments .delivery_options_address h3 {
 	background: url("../../../themes/default/img/bg_table_th.png") repeat-x scroll 0 -15px #999999;
@@ -72,6 +76,7 @@ body#module-amzpayments-amzpayments .delivery_option label {
 	top: 50%;
 }
 
+#module-amzpayments-amzpayments td.cart_delete.text-center div,
 #module-amzpayments-amzpayments td.cart_quantity.text-center,
 #module-amzpayments-amzpayments th.cart_quantity.item.text-center,
 #module-amzpayments-amzpayments #order_step {
@@ -151,6 +156,13 @@ p.payment_module a.amzPayments::after {
 	max-width: 800px; 
 	height: 185px;
 }
+#walletWidgetDivBs,
+#addressBookWidgetDivBs {
+	height: 290px;
+	min-height: 290px;
+	max-height: 400px;
+}
+
 /* Smartphone and small window */
 #addressBookWidgetDiv {
 	width: 100%; 

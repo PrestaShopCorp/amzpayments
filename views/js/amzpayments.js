@@ -25,6 +25,7 @@ jQuery(document).ready(function($) {
 			$('#button_order_cart').before('<div id="payWithAmazonCartDiv"></div>');
 			new OffAmazonPayments.Widgets.Button ({
 				sellerId: AMZSELLERID,
+				buttonSettings: {size: AMZ_BUTTON_SIZE_PAY, color: AMZ_BUTTON_COLOR_PAY},
 				onSignIn: function(orderReference) {
 					amazonOrderReferenceId = orderReference.getAmazonOrderReferenceId();
 					window.location = REDIRECTAMZ + amazonOrderReferenceId;
@@ -37,6 +38,7 @@ jQuery(document).ready(function($) {
 			$("#pay_with_amazon_list_button").append('<span id="payWithAmazonListDiv"></span>');
 			new OffAmazonPayments.Widgets.Button ({
 				sellerId: AMZSELLERID,
+				buttonSettings: {size: AMZ_BUTTON_SIZE_PAY, color: AMZ_BUTTON_COLOR_PAY},
 				onSignIn: function(orderReference) {
 					amazonOrderReferenceId = orderReference.getAmazonOrderReferenceId();
 					window.location = REDIRECTAMZ + amazonOrderReferenceId;
@@ -75,6 +77,7 @@ function checkForAmazonListButton() {
 			jQuery("#pay_with_amazon_list_button").append('<span id="payWithAmazonListDiv"></span>');
 			new OffAmazonPayments.Widgets.Button ({
 				sellerId: AMZSELLERID,
+				buttonSettings: {size: AMZ_BUTTON_SIZE_PAY, color: AMZ_BUTTON_COLOR_PAY},
 				onSignIn: function(orderReference) {
 					amazonOrderReferenceId = orderReference.getAmazonOrderReferenceId();
 					window.location = REDIRECTAMZ + amazonOrderReferenceId;
@@ -89,6 +92,7 @@ function checkForAmazonListButton() {
 			jQuery("#HOOK_ADVANCED_PAYMENT").append('<span id="payWithAmazonListDiv"></span>');
 			new OffAmazonPayments.Widgets.Button ({
 				sellerId: AMZSELLERID,
+				buttonSettings: {size: AMZ_BUTTON_SIZE_PAY, color: AMZ_BUTTON_COLOR_PAY},
 				onSignIn: function(orderReference) {
 					amazonOrderReferenceId = orderReference.getAmazonOrderReferenceId();
 					window.location = REDIRECTAMZ + amazonOrderReferenceId;
@@ -97,5 +101,21 @@ function checkForAmazonListButton() {
 				}
 			}).bind("payWithAmazonListDiv");
 		}
+	}	
+}
+
+function bindCartButton(div_id) {
+	if (jQuery('#' + div_id).attr('data-is-set') != '1') {
+		new OffAmazonPayments.Widgets.Button ({
+			sellerId: AMZSELLERID,
+			buttonSettings: {size: AMZ_BUTTON_SIZE_PAY, color: AMZ_BUTTON_COLOR_PAY},
+			onSignIn: function(orderReference) {
+				amazonOrderReferenceId = orderReference.getAmazonOrderReferenceId();
+				window.location = REDIRECTAMZ + amazonOrderReferenceId;
+			},
+			onError: function(error) {
+			}
+		}).bind(div_id);
+	    jQuery('#' + div_id).attr('data-is-set', '1');
 	}	
 }

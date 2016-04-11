@@ -51,6 +51,7 @@ $_MODULE['<{amzpayments}prestashop>amzpayments_28c6194859e3104cfb02445b83efadc5'
 $_MODULE['<{amzpayments}prestashop>amzpayments_05033bc4d960e0f74efacd29dbfb91fd'] = 'subito dopo l\'autorizzazione';
 $_MODULE['<{amzpayments}prestashop>amzpayments_f38911eda842056931cbcf497a2f8fe5'] = 'Stato ordine per acquisizione pagamento';
 $_MODULE['<{amzpayments}prestashop>amzpayments_9d57203f843f48a4cbc5da56cd9eba9a'] = 'Stato ordine dopo acquisizione completata';
+$_MODULE['<{amzpayments}prestashop>amzpayments_6deb26d36a88344bcd7f71914a086055'] = 'Template Bootstrap';
 $_MODULE['<{amzpayments}prestashop>amzpayments_da7bc25895336d39dfb2603378728d86'] = 'Provoca errori (solo Sandbox)';
 $_MODULE['<{amzpayments}prestashop>amzpayments_bafd7322c6e97d25b6299b5d6fe8920b'] = 'No';
 $_MODULE['<{amzpayments}prestashop>amzpayments_63d098bd60c469852c135349eb50c6ad'] = 'Rifiuto definitivo';

@@ -148,7 +148,7 @@ class AmzPayments extends PaymentModule
     {
         $this->name = 'amzpayments';
         $this->tab = 'payments_gateways';
-        $this->version = '2.0.22';
+        $this->version = '2.0.23';
         $this->author = 'patworx multimedia GmbH';
         $this->need_instance = 1;
         
@@ -305,7 +305,7 @@ class AmzPayments extends PaymentModule
         
         $this->installOrderStates();
         
-        return parent::install() && $this->registerHook('displayShoppingCartFooter') && $this->registerHook('displayNav') && $this->registerHook('adminOrder') && $this->registerHook('updateOrderStatus') && $this->registerHook('displayBackOfficeFooter') && $this->registerHook('displayPayment') && $this->registerHook('paymentReturn') && $this->registerHook('payment') && $this->registerhook('displayPaymentEU') && $this->registerHook('header');
+        return parent::install() && $this->registerHook('displayBackOfficeHeader') && $this->registerHook('displayShoppingCartFooter') && $this->registerHook('displayNav') && $this->registerHook('adminOrder') && $this->registerHook('updateOrderStatus') && $this->registerHook('displayBackOfficeFooter') && $this->registerHook('displayPayment') && $this->registerHook('paymentReturn') && $this->registerHook('payment') && $this->registerhook('displayPaymentEU') && $this->registerHook('header');
     }
 
     protected function installOrderStates()
@@ -1094,6 +1094,29 @@ class AmzPayments extends PaymentModule
         $this->context->smarty->assign('allowed_return_url_2', $this->getAllowedReturnUrls(2));
         $this->context->smarty->assign('allowed_js_origins', str_replace('http://', 'https://', _PS_BASE_URL_));
         
+        if ($this->context->language->iso_code == 'de') {            
+            $register_link = 'https://payments.amazon.de/preregistration/lpa?ld=SPEXDEAPA-Prestashop-core_DE';
+            $let_customer_know_link = 'https://payments.amazon.de/merchant/tools?ld=SPEXDEAPA-prestashop-2016-03-Configuration';
+            $integration_guide_link = 'http://www.patworx.de/LoginUndBezahlen/MitAmazon/PrestaShop/Dokumentation';
+            $youtube_video_link = 'https://www.youtube.com/watch?v=pbv64mDMqc8';
+            $youtube_video_embed_link = 'https://www.youtube.com/embed/pbv64mDMqc8?rel=0&showinfo=0';
+        } else {
+            if ($this->context->language->language_code == 'en-us') {
+                $register_link = 'https://payments.amazon.com/signup?ld=SPEXUSAPA-Prestashop-core_US';
+            } else {                
+                $register_link = 'https://payments.amazon.co.uk/preregistration/lpa?ld=SPEXUKAPA-Prestashop-core_UK';
+            }
+            $let_customer_know_link = 'https://payments.amazon.co.uk/merchant/tools?ld=SPEXUKAPA-prestashop-2016-03-Configuration';
+            $integration_guide_link = 'http://www.patworx.de/LoginAndPay/WithAmazon/PrestaShopUK/Documentation';            
+            $youtube_video_link = false;
+            $youtube_video_embed_link = false;
+        }
+        $this->context->smarty->assign('register_link', $register_link);
+        $this->context->smarty->assign('let_customer_know_link', $let_customer_know_link);
+        $this->context->smarty->assign('youtube_video_link', $youtube_video_link);
+        $this->context->smarty->assign('youtube_video_embed_link', $youtube_video_embed_link);
+        $this->context->smarty->assign('integration_guide_link', $integration_guide_link);
+        
         $this->reloadConfigVars();
         $this->context->smarty->assign('module_dir', $this->_path);
         $this->context->smarty->assign('configform', $this->_displayForm());
@@ -1114,8 +1137,13 @@ class AmzPayments extends PaymentModule
         return '';
     }
 
+    public function hookDisplayBackOfficeHeader() {
+        $this->context->controller->addCSS(($this->_path) . 'views/css/admin.css');
+    }
+    
     public function hookDisplayBackOfficeFooter()
     {
+        $this->context->controller->addCSS(($this->_path) . 'views/css/admin.css');
         if ($this->capture_mode == 'after_shipping') {
             $this->shippingCapture();
         }

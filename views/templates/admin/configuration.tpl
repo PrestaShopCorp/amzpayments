@@ -81,10 +81,57 @@
 	</div>
 </div>
 
+<div class="panel" id="amzSimplePath">
+	<div class="panel-heading">
+		<i class="icon-cogs"></i>
+		{l s='Quick configuration' mod='amzpayments'}
+	</div>
+	<div class="row">
+		<div class="col-xs-12">
+			<p>
+				{l s='Just use copy and paste to configure the module with your Amazon Payments credentials, directly out of the Seller Central.' mod='amzpayments'}
+			</p>
+			<textarea name="simple_path" id="simple_path"></textarea>
+			<input type="button" name="simple_path_parse" id="simple_path_parse" value="{l s='Parse data' mod='amzpayments'}" />
+		</div>
+	</div>
+</div>
+
+{$configform}
+
+<div class="panel">
+	<div class="panel-heading">
+		<i class="icon-info"></i>
+		{l s='URL and Configuration Infos' mod='amzpayments'}
+	</div>
+	<div class="row">
+		<div class="col-xs-12">
+			<p>
+				{l s='Allowed Return URLs - Enter these URLs in your Amazon SellerCentral Configuration-Panel!' mod='amzpayments'}
+			</p>
+			<ul>
+				<li>{$allowed_return_url_1|escape:'htmlall':'UTF-8'}</li>
+				<li>{$allowed_return_url_2|escape:'htmlall':'UTF-8'}</li>
+			</ul>
+			<p>
+				{l s='Allowed JavaScript Origins - Enter these URLs in your Amazon SellerCentral Configuration-Panel!' mod='amzpayments'}
+			</p>
+			<ul>
+				<li>{$allowed_js_origins|escape:'htmlall':'UTF-8'}</li>
+			</ul>
+			<p>
+				{l s='You can integrate the "Login with Amazon"-Button at any part of your template. Just use the following HTML-Code, but be aware to always (!) use a unique value for the attribute "id":' mod='amzpayments'}
+			</p>
+			<code> &lt;div id=&quot;&quot; class=&quot;amazonLoginWr&quot;&gt;&lt;/div&gt; </code>
+		</div>
+	</div>
+</div>
+
+
 <div class="panel" id="amzVersionChecker">
 	<div class="panel-heading">
 		<i class="icon-cogs"></i>
-		{l s='Version-Checker'}
+		{l s='Version-Checker' mod='amzpayments'}
 	</div>
 	<div class="row">
 		<div class="col-xs-12">
@@ -124,34 +171,3 @@
 	});
 	{/literal}
 </script>
-
-
-{$configform}
-
-<div class="panel">
-	<div class="panel-heading">
-		<i class="icon-info"></i>
-		{l s='URL and Configuration Infos' mod='amzpayments'}
-	</div>
-	<div class="row">
-		<div class="col-xs-12">
-			<p>
-				{l s='Allowed Return URLs - Enter these URLs in your Amazon SellerCentral Configuration-Panel!' mod='amzpayments'}
-			</p>
-			<ul>
-				<li>{$allowed_return_url_1|escape:'htmlall':'UTF-8'}</li>
-				<li>{$allowed_return_url_2|escape:'htmlall':'UTF-8'}</li>
-			</ul>
-			<p>
-				{l s='Allowed JavaScript Origins - Enter these URLs in your Amazon SellerCentral Configuration-Panel!' mod='amzpayments'}
-			</p>
-			<ul>
-				<li>{$allowed_js_origins|escape:'htmlall':'UTF-8'}</li>
-			</ul>
-			<p>
-				{l s='You can integrate the "Login with Amazon"-Button at any part of your template. Just use the following HTML-Code, but be aware to always (!) use a unique value for the attribute "id":' mod='amzpayments'}
-			</p>
-			<code> &lt;div id=&quot;&quot; class=&quot;amazonLoginWr&quot;&gt;&lt;/div&gt; </code>
-		</div>
-	</div>
-</div>

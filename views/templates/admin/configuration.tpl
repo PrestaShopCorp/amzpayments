@@ -31,7 +31,25 @@
 			
 			<ol>
 				<li><span>{l s='Register for Amazon Payments and complete your account setup by upload your verification documents on Seller Central.*' mod='amzpayments'}
-					<br /><a href="{$register_link|escape:'htmlall':'UTF-8'}" class="registerButton" target="_blank">{l s='Start Registration Now' mod='amzpayments'}</a></span></li>
+					<br />
+					{if $use_simple_path}
+						<form method="POST" action="https://sellercentral-europe.amazon.com/hz/me/sp/redirect" target="_blank" id="amazonRegForm"> 
+							<input type="hidden" value="US" name="locale" />  
+							<input type="hidden" value="{$simple_path.spId|escape:'htmlall':'UTF-8'}" name="spId" />  
+							<input type="hidden" value="{$simple_path.uniqueId|escape:'htmlall':'UTF-8'}" name="uniqueId" />  
+							<input type="hidden" value="{$simple_path.allowedLoginDomains|escape:'htmlall':'UTF-8'}" name="allowedLoginDomains[]" />  
+							<input type="hidden" value="{$simple_path.loginRedirectURLs_1|escape:'htmlall':'UTF-8'}" name="loginRedirectURLs[]" />  
+							<input type="hidden" value="{$simple_path.loginRedirectURLs_2|escape:'htmlall':'UTF-8'}" name="loginRedirectURLs[]" /> 
+							<input type="hidden" value="{$simple_path.storeDescription|escape:'htmlall':'UTF-8'}" name="storeDescription" />  
+							<input type="hidden" value="{$simple_path.language|escape:'htmlall':'UTF-8'}" name="language" />  
+							<input type="hidden" value="{$simple_path.returnMethod|escape:'htmlall':'UTF-8'}" name="returnMethod" />
+							<a href="JavaScript:void(0)" onclick="jQuery('#amazonRegForm').submit();" class="registerButton">{l s='Start Registration Now' mod='amzpayments'}</a>  
+						</form> 						
+					{else}
+						<a href="{$register_link|escape:'htmlall':'UTF-8'}" class="registerButton" target="_blank">{l s='Start Registration Now' mod='amzpayments'}</a>
+					{/if}	
+					</span></li>
+						
 				<li><span>{l s='Wait for an email of Amazon Payments that will inform you about successful account verification.' mod='amzpayments'}</span></li>
 				<li><span><a href="{$let_customer_know_link|escape:'htmlall':'UTF-8'}" target="_blank">{l s='Let your customers know' mod='amzpayments'}</a> {l s='that they now can use Amazon Payments on your website.' mod='amzpayments'}</span></li>
 			</ol>

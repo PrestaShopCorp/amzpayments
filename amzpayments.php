@@ -63,7 +63,7 @@ class AmzPayments extends PaymentModule
 
     public $provocation = 0;
 
-    public $popup = 0;
+    public $popup = 1;
 
     public $shippings_not_allowed = '';
 
@@ -148,7 +148,7 @@ class AmzPayments extends PaymentModule
     {
         $this->name = 'amzpayments';
         $this->tab = 'payments_gateways';
-        $this->version = '2.0.24';
+        $this->version = '2.0.23';
         $this->author = 'patworx multimedia GmbH';
         $this->need_instance = 1;
         
@@ -304,6 +304,13 @@ class AmzPayments extends PaymentModule
 				');
         
         $this->installOrderStates();
+        
+        Configuration::updateValue('BUTTON_VISIBILITY', true);
+        Configuration::updateValue('POPUP', true);
+        Configuration::updateValue('ALLOW_GUEST', true);
+        Configuration::updateValue('ENVIRONMENT', 'LIVE');
+        Configuration::updateValue('BUTTON_SIZE', 'medium');
+        Configuration::updateValue('BUTTON_SIZE_LPA', 'medium');        
         
         return parent::install() && $this->registerHook('displayBackOfficeHeader') && $this->registerHook('displayShoppingCartFooter') && $this->registerHook('displayNav') && $this->registerHook('adminOrder') && $this->registerHook('updateOrderStatus') && $this->registerHook('displayBackOfficeFooter') && $this->registerHook('displayPayment') && $this->registerHook('paymentReturn') && $this->registerHook('payment') && $this->registerhook('displayPaymentEU') && $this->registerHook('header');
     }
@@ -1117,6 +1124,20 @@ class AmzPayments extends PaymentModule
         $this->context->smarty->assign('youtube_video_embed_link', $youtube_video_embed_link);
         $this->context->smarty->assign('integration_guide_link', $integration_guide_link);
         
+        $this->context->smarty->assign('use_simple_path', true);
+        $simple_path_data = array('spId' => $this->getPfId(),
+            'uniqueId' => Tools::encryptIV('amzPaymentsSimplePath'),
+            'locale' => $this->getLocalCodeForSimplePath(),
+            'loginRedirectURLs_1' => $this->getAllowedReturnUrls(1),
+            'loginRedirectURLs_2' => $this->getAllowedReturnUrls(2),
+            'allowedLoginDomains' => str_replace('http://', 'https://', _PS_BASE_URL_),
+            'storeDescription' => Configuration::get('PS_SHOP_NAME'),
+            'language' => $this->getWidgetLanguageCode(),
+            'returnMethod' => 'GET'
+        );
+        
+        $this->context->smarty->assign('simple_path', $simple_path_data);
+        
         $this->reloadConfigVars();
         $this->context->smarty->assign('module_dir', $this->_path);
         $this->context->smarty->assign('configform', $this->_displayForm());
@@ -1159,6 +1180,18 @@ class AmzPayments extends PaymentModule
         elseif (Tools::strtolower($this->region) == 'us')
             return 'us';
         return 'de';
+    }
+
+    private function getLocalCodeForSimplePath()
+    {
+        $currency = Currency::getCurrent();
+        if ($currency->iso_code == 'EUR')
+            return 'EUR';
+        elseif ($currency->iso_code == 'GBP')
+            return 'GBP';
+        elseif ($currency->iso_code == 'USD')
+            return 'USD';
+        return 'USD';
     }
 
     public function getButtonURL()

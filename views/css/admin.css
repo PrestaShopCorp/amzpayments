@@ -1,0 +1,67 @@
+@CHARSET "UTF-8";
+#amzIntroduction ol {
+    counter-reset: li; /* Initiate a counter */
+    list-style: none; /* Remove default numbering */
+    *list-style: decimal; /* Keep using default numbering for IE6/7 */    
+    padding: 0;
+    margin-bottom: 4em;
+}
+#amzIntroduction ol li {
+	min-height: 3em;
+}
+#amzIntroduction ol li span {
+    position: relative;
+    display: block;
+    padding: .4em .4em .4em 3.7em;
+    *padding: .4em;
+    margin: 1.5em 0;    
+    text-decoration: none;
+    border-radius: .3em;
+    transition: all .3s ease-out;   
+   }
+#amzIntroduction ol li span:before {
+	font-size: 12px;
+    content: counter(li);
+    counter-increment: li;
+    position: absolute; 
+    left: 0;
+    top: 50%;
+    margin-top: -1.5em;
+    background: #fff;
+    height: 3em;
+    width: 3em;
+    line-height: 2.4em;
+    color: #f59900;
+    border: .3em solid #f59900;
+    text-align: center;
+    font-weight: bold;
+    border-radius: 3em;
+    transition: all .3s ease-out;
+}
+a.registerButton {
+	border: 1px solid #c2a147;
+	color: #000;
+	line-height: 2.7em;
+	padding-left: 1.5em; 
+	padding-right: 1.5em;
+	text-align: center;
+	display: inline-block;
+	background: #feeaad; /* Old browsers */
+	background: -moz-linear-gradient(top, #feeaad 0%, #f9ca49 100%); /* FF3.6-15 */
+	background: -webkit-linear-gradient(top, #feeaad 0%,#f9ca49 100%); /* Chrome10-25,Safari5.1-6 */
+	background: linear-gradient(to bottom, #feeaad 0%,#f9ca49 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#feeaad', endColorstr='#f9ca49',GradientType=0 ); /* IE6-9 */	
+}
+a.registerButton:hover {
+	color: #000;
+}
+.amzTick:after {
+	content: "\2713"; 
+	width: 15px;
+	height: 15px;
+	color: #f59900;
+	display: inline-block;
+}
+.amz_integration_video_yt {
+	margin-top: 15px;
+}

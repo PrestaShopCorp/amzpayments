@@ -17,6 +17,26 @@ var lastSummary;
 $(document).ready(function(){
     ajaxHandler = $('.amzAjaxHandler').val();   
     $(".amzContainer15").parent("fieldset").parent("div").css("overflow", "scroll");
+    
+    $("#simple_path_parse").click(function() {
+    	var json = $.trim($("#simple_path").val());
+    	try {
+    	    jsonData = $.parseJSON(json);
+    	    if (jsonData === null) {
+    	    	alert('Parsing error: Please enter a correct string!');
+    	    } else {
+    	    	if (typeof jsonData.merchant_id != 'undefined') { $("#AMZ_MERCHANT_ID").val(jsonData.merchant_id); }
+    	    	if (typeof jsonData.access_key != 'undefined') { $("#ACCESS_KEY").val(jsonData.access_key); }
+    	    	if (typeof jsonData.secret_key != 'undefined') { $("#SECRET_KEY").val(jsonData.secret_key); }
+    	    	if (typeof jsonData.client_id != 'undefined') { $("#AMZ_CLIENT_ID").val(jsonData.client_id); }
+    	    	$("#simple_path").val('');
+    	    	alert('Parsing successful.');
+    	    }
+    	} catch (e) {
+    	    alert('Parsing error: Please check your pasted data!');
+    	}
+    });
+    
 });
 
 $(document).on('click', '.amzAjaxLink', function(e){

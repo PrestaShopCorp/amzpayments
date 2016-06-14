@@ -148,7 +148,7 @@ class AmzPayments extends PaymentModule
     {
         $this->name = 'amzpayments';
         $this->tab = 'payments_gateways';
-        $this->version = '2.0.24';
+        $this->version = '2.0.25';
         $this->author = 'patworx multimedia GmbH';
         $this->need_instance = 1;
         
@@ -488,12 +488,22 @@ class AmzPayments extends PaymentModule
         return str_replace('http://', 'https://', $this->context->link->getModuleLink('amzpayments','ipn.php'));
     }
 
-    protected function getAllowedReturnUrls($type = 1)
+    protected function getAllowedReturnUrls($type = 1, $joined = false)
     {
-        $url = str_replace('http://', 'https://', $this->context->link->getModuleLink('amzpayments','process_login'));
-        if ($type == 2)
-            $url .= '?toCheckout=1';
-        return $url;
+        $urls = array();
+        $language_ids = Language::getLanguages(true, false, true);
+        foreach ($language_ids as $id_lang) {
+            $url = str_replace('http://', 'https://', $this->context->link->getModuleLink('amzpayments','process_login', array(), null, (int)$id_lang));
+            if ($type == 2) {
+                $url .= '?toCheckout=1';
+            }
+            $urls[] = $url;
+        }
+        if ($joined) {
+            return join($joined, $urls);
+        } else {
+            return $urls;
+        }
     }
 
     public function getConfigFormValues()
@@ -1457,7 +1467,7 @@ class AmzPayments extends PaymentModule
         
         $acc_tk = '';
         $is_logged = 'false';
-        if (isset($this->context->cookie->amz_access_token) && $this->context->cookie->amz_access_token != '' && $this->popup == '0') {
+        if (isset($this->context->cookie->amz_access_token) && $this->context->cookie->amz_access_token != ''/* && $this->popup == '0'*/) {
             $is_logged = 'true';
             if (! isset($this->context->cookie->amazon_id)) {
                 $acc_tk = self::prepareCookieValueForAmazonPaymentsUse($this->context->cookie->amz_access_token);
@@ -1468,7 +1478,6 @@ class AmzPayments extends PaymentModule
 			}
 			window.onAmazonLoginReady = function() {
 			amazon.Login.setClientId("' . $this->client_id . '");
-			amazon.Login.setUseCookie(true);
 			};
 			';
             }

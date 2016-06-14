@@ -37,9 +37,13 @@
 							<input type="hidden" value="US" name="locale" />  
 							<input type="hidden" value="{$simple_path.spId|escape:'htmlall':'UTF-8'}" name="spId" />  
 							<input type="hidden" value="{$simple_path.uniqueId|escape:'htmlall':'UTF-8'}" name="uniqueId" />  
-							<input type="hidden" value="{$simple_path.allowedLoginDomains|escape:'htmlall':'UTF-8'}" name="allowedLoginDomains[]" />  
-							<input type="hidden" value="{$simple_path.loginRedirectURLs_1|escape:'htmlall':'UTF-8'}" name="loginRedirectURLs[]" />  
-							<input type="hidden" value="{$simple_path.loginRedirectURLs_2|escape:'htmlall':'UTF-8'}" name="loginRedirectURLs[]" /> 
+							<input type="hidden" value="{$simple_path.allowedLoginDomains|escape:'htmlall':'UTF-8'}" name="allowedLoginDomains[]" />
+							{foreach from=$simple_path.loginRedirectURLs_1 item=splr}
+								<input type="hidden" value="{$splr|escape:'htmlall':'UTF-8'}" name="loginRedirectURLs[]" />
+							{/foreach}
+							{foreach from=$simple_path.loginRedirectURLs_2 item=splr}
+								<input type="hidden" value="{$splr|escape:'htmlall':'UTF-8'}" name="loginRedirectURLs[]" />
+							{/foreach}
 							<input type="hidden" value="{$simple_path.storeDescription|escape:'htmlall':'UTF-8'}" name="storeDescription" />  
 							<input type="hidden" value="{$simple_path.language|escape:'htmlall':'UTF-8'}" name="language" />  
 							<input type="hidden" value="{$simple_path.returnMethod|escape:'htmlall':'UTF-8'}" name="returnMethod" />
@@ -128,8 +132,12 @@
 				{l s='Allowed Return URLs - Enter these URLs in your Amazon SellerCentral Configuration-Panel!' mod='amzpayments'}
 			</p>
 			<ul>
-				<li>{$allowed_return_url_1|escape:'htmlall':'UTF-8'}</li>
-				<li>{$allowed_return_url_2|escape:'htmlall':'UTF-8'}</li>
+				{foreach from=$allowed_return_url_1 item=aru}
+					<li>{$aru|escape:'htmlall':'UTF-8'}</li>
+				{/foreach}
+				{foreach from=$allowed_return_url_2 item=aru}
+					<li>{$aru|escape:'htmlall':'UTF-8'}</li>
+				{/foreach}
 			</ul>
 			<p>
 				{l s='Allowed JavaScript Origins - Enter these URLs in your Amazon SellerCentral Configuration-Panel!' mod='amzpayments'}

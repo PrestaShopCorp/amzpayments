@@ -144,6 +144,9 @@ $_MODULE['<{amzpayments}prestashop>order_summary_9f8c310d4b0402a61723b22c34fbd31
 $_MODULE['<{amzpayments}prestashop>amzpayments_fa31ce6046882558f0637d428a96abeb'] = 'Crear cuenta de cliente.';
 $_MODULE['<{amzpayments}prestashop>amzpayments_9a1ff3881b92951d9663aaef38e8b637'] = 'No necesitas hacer nada más. Crearemos la cuenta con los datos de tu pedido actual.';
 $_MODULE['<{amzpayments}prestashop>amzpayments_eeceac1af4e7620894d6d2083921bb73'] = '¡Comprar ahora!';
+$_MODULE['<{amzpayments}prestashop>amzpayments_bs_fa31ce6046882558f0637d428a96abeb'] = 'Crear cuenta de cliente.';
+$_MODULE['<{amzpayments}prestashop>amzpayments_bs_9a1ff3881b92951d9663aaef38e8b637'] = 'No necesitas hacer nada más. Crearemos la cuenta con los datos de tu pedido actual.';
+$_MODULE['<{amzpayments}prestashop>amzpayments_bs_eeceac1af4e7620894d6d2083921bb73'] = '¡Comprar ahora!';
 $_MODULE['<{amzpayments}prestashop>connect_accounts_633dfeead551299f8224bc60eb5aaca9'] = 'Gracias por iniciar sesión con Amazon Payments';
 $_MODULE['<{amzpayments}prestashop>connect_accounts_eafa313a0fc72443ff59653adb7fdebb'] = 'Ya hay una cuenta de cliente con esta dirección de correo electrónico en nuestra tienda. Introduce tu contraseña para vincularla a tu cuenta de Amazon.';
 $_MODULE['<{amzpayments}prestashop>connect_accounts_dc647eb65e6711e155375218212b3964'] = 'Contraseña';

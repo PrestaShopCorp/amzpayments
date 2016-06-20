@@ -144,6 +144,9 @@ $_MODULE['<{amzpayments}prestashop>order_summary_9f8c310d4b0402a61723b22c34fbd31
 $_MODULE['<{amzpayments}prestashop>amzpayments_fa31ce6046882558f0637d428a96abeb'] = 'Crea account cliente.';
 $_MODULE['<{amzpayments}prestashop>amzpayments_9a1ff3881b92951d9663aaef38e8b637'] = 'Non devi fare nulla. L\'account verrà creato con i dati del tuo ordine attuale.';
 $_MODULE['<{amzpayments}prestashop>amzpayments_eeceac1af4e7620894d6d2083921bb73'] = 'Acquista ora!';
+$_MODULE['<{amzpayments}prestashop>amzpayments_bs_fa31ce6046882558f0637d428a96abeb'] = 'Crea account cliente.';
+$_MODULE['<{amzpayments}prestashop>amzpayments_bs_9a1ff3881b92951d9663aaef38e8b637'] = 'Non devi fare nulla. L\'account verrà creato con i dati del tuo ordine attuale.';
+$_MODULE['<{amzpayments}prestashop>amzpayments_bs_eeceac1af4e7620894d6d2083921bb73'] = 'Acquista ora!';
 $_MODULE['<{amzpayments}prestashop>connect_accounts_633dfeead551299f8224bc60eb5aaca9'] = 'Grazie per aver effettuato l\'accesso ad Amazon Payments';
 $_MODULE['<{amzpayments}prestashop>connect_accounts_eafa313a0fc72443ff59653adb7fdebb'] = 'Nel nostro negozio esiste già un account cliente con questo indirizzo e-mail. Inserisci la password per associarlo al tuo account Amazon.';
 $_MODULE['<{amzpayments}prestashop>connect_accounts_dc647eb65e6711e155375218212b3964'] = 'Password';

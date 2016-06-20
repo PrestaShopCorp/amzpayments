@@ -35,6 +35,10 @@ body#module-amzpayments-amzpayments #center_column {width: 100%; margin-bottom: 
 .amz_cart_widgets_bs textarea#message {
 	height: 100px;
 }
+.amz_cart_widgets_summary_bs h1#cart_title span.heading-counter,
+.amz_cart_widgets_bs #carrier_area h1.step-num span {
+	display: none;	
+}
 
 body#module-amzpayments-amzpayments .delivery_options_address h3 {
 	background: url("../../../themes/default/img/bg_table_th.png") repeat-x scroll 0 -15px #999999;

@@ -8,11 +8,6 @@
 *  @license    Released under the GNU General Public License
 *}
 <div id="amzOverlay"><img src="{$amz_module_path|escape:'htmlall':'UTF-8'}views/img/loading_indicator.gif" /></div>
-<div class="row">
-	<div class="col-xs-12 amz_cart_widgets_summary" id="amz_cart_widgets_summary">
-		{include file="$tpl_dir./shopping-cart.tpl"}
-	</div>
-</div>
 
 <div class="row">
 	<div class="col-xs-12 col-sm-6" id="addressBookWidgetDivBs">
@@ -29,7 +24,11 @@
 		</div>	
 	</div>
 </div>
-
+<div class="row">
+	<div class="col-xs-12 amz_cart_widgets_summary amz_cart_widgets_summary_bs" id="amz_cart_widgets_summary">
+		{include file="$tpl_dir./shopping-cart.tpl"}
+	</div>
+</div>
 
 <div class="row">
 	<div class="col-xs-12 text-right">

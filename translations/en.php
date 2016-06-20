@@ -142,6 +142,9 @@ $_MODULE['<{amzpayments}prestashop>order_summary_9f8c310d4b0402a61723b22c34fbd31
 $_MODULE['<{amzpayments}prestashop>amzpayments_fa31ce6046882558f0637d428a96abeb'] = 'Create customer account.';
 $_MODULE['<{amzpayments}prestashop>amzpayments_9a1ff3881b92951d9663aaef38e8b637'] = 'You don\'t need to do anything. We create the account with the data of your current order.';
 $_MODULE['<{amzpayments}prestashop>amzpayments_eeceac1af4e7620894d6d2083921bb73'] = 'Buy now!';
+$_MODULE['<{amzpayments}prestashop>amzpayments_bs_fa31ce6046882558f0637d428a96abeb'] = 'Create customer account.';
+$_MODULE['<{amzpayments}prestashop>amzpayments_bs_9a1ff3881b92951d9663aaef38e8b637'] = 'You don\'t need to do anything. We create the account with the data of your current order.';
+$_MODULE['<{amzpayments}prestashop>amzpayments_bs_eeceac1af4e7620894d6d2083921bb73'] = 'Buy now';
 $_MODULE['<{amzpayments}prestashop>amzpayments_orderdetails_summary_deb10517653c255364175796ace3553f'] = 'Product';
 $_MODULE['<{amzpayments}prestashop>amzpayments_orderdetails_summary_b5a7adde1af5c87d7fd797b6245c2a39'] = 'Description';
 $_MODULE['<{amzpayments}prestashop>amzpayments_orderdetails_summary_9ff9c46512c186ebae182519a55dc6a9'] = 'Avail.';

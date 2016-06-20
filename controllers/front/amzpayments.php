@@ -902,7 +902,11 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
         $this->context->smarty->assign('preselect_create_account', Configuration::get('PRESELECT_CREATE_ACCOUNT') == 1);
         $this->context->smarty->assign('force_account_creation', Configuration::get('FORCE_ACCOUNT_CREATION') == 1);
         
-        $this->setTemplate('amzpayments.tpl');
+        if (Configuration::get('TEMPLATE_VARIANT_BS') == 1) {
+            $this->setTemplate('amzpayments_bs.tpl');            
+        } else {
+            $this->setTemplate('amzpayments.tpl');
+        }
     }
 
     public function setMedia()

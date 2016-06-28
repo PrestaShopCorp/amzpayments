@@ -60,6 +60,8 @@ class AmzPayments extends PaymentModule
     public $capture_status_id = 5;
 
     public $capture_success_status_id = 5;
+    
+    public $decline_status_id = 0;
 
     public $provocation = 0;
 
@@ -123,6 +125,7 @@ class AmzPayments extends PaymentModule
         'capture_mode' => 'CAPTURE_MODE',
         'capture_status_id' => 'CAPTURE_STATUS_ID',
         'capture_success_status_id' => 'CAPTURE_SUCCESS_STATUS_ID',
+        'decline_status_id' => 'AMZ_DECLINE_STATUS_ID',
         'provocation' => 'PROVOCATION',
         'popup' => 'POPUP',
         'shippings_not_allowed' => 'SHIPPINGS_NOT_ALLOWED',
@@ -148,7 +151,7 @@ class AmzPayments extends PaymentModule
     {
         $this->name = 'amzpayments';
         $this->tab = 'payments_gateways';
-        $this->version = '2.0.27';
+        $this->version = '2.0.28';
         $this->author = 'patworx multimedia GmbH';
         $this->need_instance = 1;
         
@@ -386,7 +389,7 @@ class AmzPayments extends PaymentModule
 
     public function uninstall()
     {
-        if (! Configuration::deleteByName('AMZ_MERCHANT_ID') || ! Configuration::deleteByName('ACCESS_KEY') || ! Configuration::deleteByName('SECRET_KEY') || ! Configuration::deleteByName('REGION') || ! Configuration::deleteByName('BUTTON_VISIBILITY') || ! Configuration::deleteByName('ENVIRONMENT') || ! Configuration::deleteByName('AUTHORIZATION_MODE') || ! Configuration::deleteByName('CAPTURE_MODE') || ! Configuration::deleteByName('CAPTURE_STATUS_ID') || ! parent::uninstall())
+        if (! Configuration::deleteByName('AMZ_MERCHANT_ID') || ! Configuration::deleteByName('ACCESS_KEY') || ! Configuration::deleteByName('SECRET_KEY') || ! Configuration::deleteByName('REGION') || ! Configuration::deleteByName('BUTTON_VISIBILITY') || ! Configuration::deleteByName('ENVIRONMENT') || ! Configuration::deleteByName('AMZ_DECLINE_STATUS_ID') || ! Configuration::deleteByName('AUTHORIZATION_MODE') || ! Configuration::deleteByName('CAPTURE_MODE') || ! Configuration::deleteByName('CAPTURE_STATUS_ID') || ! parent::uninstall())
             return false;
         return true;
     }
@@ -516,7 +519,7 @@ class AmzPayments extends PaymentModule
     }
 
     public function getConfigForm()
-    {
+    {        
         return array(
             'form' => array(
                 'legend' => array(
@@ -706,6 +709,18 @@ class AmzPayments extends PaymentModule
                         'label' => $this->l('capture_success_status_id'),
                         'options' => array(
                             'query' => OrderState::getOrderStates((int) Configuration::get('PS_LANG_DEFAULT')),
+                            'id' => 'id_order_state',
+                            'name' => 'name'
+                        )
+                    ),
+                    array(
+                        'col' => 3,
+                        'type' => 'select',
+                        'prefix' => '<i class="icon icon-tag"></i>',
+                        'name' => 'AMZ_DECLINE_STATUS_ID',
+                        'label' => $this->l('decline_status_id'),
+                        'options' => array(
+                            'query' => array_merge(array(array('id_order_state' => 0, 'id_lang' => (int) Configuration::get('PS_LANG_DEFAULT'), 'name' => '')), OrderState::getOrderStates((int) Configuration::get('PS_LANG_DEFAULT'))),
                             'id' => 'id_order_state',
                             'name' => 'name'
                         )

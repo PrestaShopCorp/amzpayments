@@ -51,6 +51,7 @@ $_MODULE['<{amzpayments}prestashop>amzpayments_28c6194859e3104cfb02445b83efadc5'
 $_MODULE['<{amzpayments}prestashop>amzpayments_05033bc4d960e0f74efacd29dbfb91fd'] = 'direkt nach der Autorisierung';
 $_MODULE['<{amzpayments}prestashop>amzpayments_f38911eda842056931cbcf497a2f8fe5'] = 'Bestellstatus zum Auslösen des Geldeinzugs';
 $_MODULE['<{amzpayments}prestashop>amzpayments_9d57203f843f48a4cbc5da56cd9eba9a'] = 'Bestellstatus nach erfolgreichem Geldeinzug';
+$_MODULE['<{amzpayments}prestashop>amzpayments_1a357f75f77b4eaa734c35cc15fa4ca7'] = 'Bestellstatus bei abgelehnter Autorisierung';
 $_MODULE['<{amzpayments}prestashop>amzpayments_da7bc25895336d39dfb2603378728d86'] = 'Fehler provozieren (nur Sandbox)';
 $_MODULE['<{amzpayments}prestashop>amzpayments_bafd7322c6e97d25b6299b5d6fe8920b'] = 'Nein';
 $_MODULE['<{amzpayments}prestashop>amzpayments_63d098bd60c469852c135349eb50c6ad'] = 'Hard Decline';

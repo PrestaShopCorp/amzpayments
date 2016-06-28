@@ -87,6 +87,9 @@ if ($amz_payments->ipn_status == '1') {
             } elseif ($sqlArr['amz_tx_status'] == 'Declined') {
                 $reason = (string) $response_xml->AuthorizationDetails->AuthorizationStatus->ReasonCode;
                 $amz_payments->intelligentDeclinedMail($response_xml->AuthorizationDetails->AmazonAuthorizationId, $reason);
+                if ($amz_payments->decline_status_id > 0) {
+                    AmazonTransactions::setOrderStatusDeclined(r['amz_tx_order_reference']);                    
+                }
             }
             
             break;

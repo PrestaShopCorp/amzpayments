@@ -333,6 +333,16 @@ class AmazonTransactions
             Context::getContext()->cookie->amzSetStatusCaptured = serialize($tmpData);
         }
     }
+    
+    public static function setOrderStatusDeclined($order_ref)
+    {
+        $oid = self::getOrdersIdFromOrderRef($order_ref);
+        if ($oid) {
+            $amz_payments = new AmzPayments();
+            $new_status = $amz_payments->decline_status_id;
+            self::setOrderStatus($oid, $new_status);
+        }
+    }
 
     public static function setOrderStatusCapturedSuccesfully($order_ref)
     {
@@ -386,5 +396,5 @@ class AmazonTransactions
 				WHERE amz_tx_amz_id = \'' . pSQL($amz_id) . '\'';
         $r = Db::getInstance()->getRow($q);
         return $r['amz_tx_order_reference'];
-    }
+    }    
 }

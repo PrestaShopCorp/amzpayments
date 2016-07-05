@@ -202,7 +202,7 @@ $("#amz_execute_order").live('click', function() {
 	
 	var connectRequest = '';
 	if ($("#connect_amz_account").length > 0) {
-		if ($("#connect_amz_account").is(':checked')) {
+		if ($("#connect_amz_account").is(':checked') || $("#connect_amz_account").attr("type") == 'hidden') {
 			connectRequest = '&connect_amz_account=' + $("#connect_amz_account").val();
 		}
 	}

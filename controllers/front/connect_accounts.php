@@ -75,6 +75,7 @@ class AmzpaymentsConnect_AccountsModuleFrontController extends ModuleFrontContro
         parent::initContent();
         
         $this->context->smarty->assign('toCheckout', Tools::getValue('checkout'));
+        $this->context->smarty->assign('fromCheckout', Tools::getValue('fromCheckout'));
         $this->context->smarty->assign('amzConnectEmail', $this->context->cookie->amzConnectEmail);
         
         $this->processForm();
@@ -143,6 +144,8 @@ class AmzpaymentsConnect_AccountsModuleFrontController extends ModuleFrontContro
                     
                     if (Tools::getValue('toCheckout') == '1') {
                         $goto = $this->context->link->getModuleLink('amzpayments', 'amzpayments');
+                    } elseif (Tools::getValue('fromCheckout') == '1') {
+                        $goto = 'index.php?controller=history';
                     } elseif ($this->context->cart->nbProducts()) {
                         $goto = 'index.php?controller=order';
                     } else {

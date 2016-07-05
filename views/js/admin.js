@@ -14,6 +14,8 @@ var ajaxHandler;
 var lastHistory;
 var lastActions;
 var lastSummary;
+var requestIsRunning = false;
+
 $(document).ready(function(){
     ajaxHandler = $('.amzAjaxHandler').val();   
     $(".amzContainer15").parent("fieldset").parent("div").css("overflow", "scroll");
@@ -41,29 +43,32 @@ $(document).ready(function(){
 
 $(document).on('click', '.amzAjaxLink', function(e){
 	e.preventDefault();
-    var action = $(this).attr('data-action');
-    var authId = $(this).attr('data-authid');
-    var captureId = $(this).attr('data-captureid');
-    var orderRef = $(this).attr('data-orderRef');
-    var amount = $(this).attr('data-amount');
-    if(action == 'captureAmountFromAuth'){
-        var amount = parseFloat($(this).parent().find('.amzAmountField').val().replace(',', '.'));
-    }else if(action == 'refundAmountFromField'){
-        var amount = parseFloat($(this).parent().find('.amzAmountField').val().replace(',', '.'));
-        action = 'refundAmount';
-    }
-    else if(action == 'authorizeAmountFromField'){
-        var amount = parseFloat($(this).parent().find('.amzAmountField').val().replace(',', '.'));
-        action = 'authorizeAmount';
-    }
-   
-    $.post(ajaxHandler, {action:action, authId:authId, amount:amount, orderRef:orderRef, captureId:captureId}, function(data){
-        /*var responseDiv = $('<div style="display:none;"/>').html(data);
-        $('body').append(responseDiv);
-        responseDiv.dialog();*/
-        amzRefresh();        
-    });
-
+	if (!requestIsRunning) {
+		requestIsRunning = true;
+	    var action = $(this).attr('data-action');
+	    var authId = $(this).attr('data-authid');
+	    var captureId = $(this).attr('data-captureid');
+	    var orderRef = $(this).attr('data-orderRef');
+	    var amount = $(this).attr('data-amount');
+	    if(action == 'captureAmountFromAuth'){
+	        var amount = parseFloat($(this).parent().find('.amzAmountField').val().replace(',', '.'));
+	    }else if(action == 'refundAmountFromField'){
+	        var amount = parseFloat($(this).parent().find('.amzAmountField').val().replace(',', '.'));
+	        action = 'refundAmount';
+	    }
+	    else if(action == 'authorizeAmountFromField'){
+	        var amount = parseFloat($(this).parent().find('.amzAmountField').val().replace(',', '.'));
+	        action = 'authorizeAmount';
+	    }
+	   
+	    $.post(ajaxHandler, {action:action, authId:authId, amount:amount, orderRef:orderRef, captureId:captureId}, function(data){
+	        /*var responseDiv = $('<div style="display:none;"/>').html(data);
+	        $('body').append(responseDiv);
+	        responseDiv.dialog();*/
+	        amzRefresh();
+	        requestIsRunning = false;
+	    });
+	}
 });
 function amzReloadLoop(wr){
     setTimeout(function(){amzReloadOrder(wr); amzReloadLoop(wr);}, 5000);

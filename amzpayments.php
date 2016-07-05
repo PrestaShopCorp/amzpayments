@@ -151,7 +151,7 @@ class AmzPayments extends PaymentModule
     {
         $this->name = 'amzpayments';
         $this->tab = 'payments_gateways';
-        $this->version = '2.0.28';
+        $this->version = '2.0.29';
         $this->author = 'patworx multimedia GmbH';
         $this->need_instance = 1;
         
@@ -1411,11 +1411,13 @@ class AmzPayments extends PaymentModule
             $this->checkForTemporarySessionVarsAndKillThem();
         }
         
+        /*
         if (isset($this->context->cookie->amz_access_token) && ! $this->context->customer->isLogged()) {
             unset($this->context->cookie->amz_access_token);
             unset($this->context->cookie->amazon_id);
             unset($this->context->cookie->amz_js_string);
-        }        
+        } 
+        */       
         
         $show_amazon_button = true;
         if (($this->allow_guests == '0') && (! $this->context->customer->isLogged()))

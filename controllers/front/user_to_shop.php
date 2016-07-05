@@ -266,6 +266,8 @@ class AmzpaymentsUser_To_ShopModuleFrontController extends ModuleFrontController
                                             
                                             if (Tools::getValue('action') == 'checkout') {
                                                 $goto = $this->context->link->getModuleLink('amzpayments', 'amzpayments');
+                                            } elseif (Tools::getValue('action') == 'fromCheckout') {
+                                                $goto = 'index.php?controller=history';
                                             } elseif ($this->context->cart->nbProducts()) {
                                                 $goto = 'index.php?controller=order';
                                             } else {

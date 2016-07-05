@@ -25,6 +25,7 @@ $(document).ready(function() {
 			<input type="hidden" name="action" value="tryConnect" />
 			<input type="hidden" name="email" value="{$amzConnectEmail|escape:'htmlall':'UTF-8'}" />
 			{if $toCheckout}<input type="hidden" name="toCheckout" value="1" />{/if}
+			{if $fromCheckout}<input type="hidden" name="fromCheckout" value="1" />{/if}
 			<p>{l s='There is already a customer account with this e-mail-address in our shop. Please enter your password to connect it with your Amazon-account.' mod='amzpayments'}</p>
 			<div class="form_content clearfix">				
 				<div class="form-group">

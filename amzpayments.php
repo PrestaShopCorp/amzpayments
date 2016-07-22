@@ -253,7 +253,7 @@ class AmzPayments extends PaymentModule
         Db::getInstance()->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'amz_customer`;');
         
         Db::getInstance()->execute('
-				CREATE TABLE `' . _DB_PREFIX_ . 'amz_transactions` (
+				CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'amz_transactions` (
 				`amz_tx_id` int(11) NOT NULL AUTO_INCREMENT,
 				`amz_tx_order_reference` varchar(255) NOT NULL,
 				`amz_tx_type` varchar(16) NOT NULL,
@@ -276,7 +276,7 @@ class AmzPayments extends PaymentModule
 				');
         
         Db::getInstance()->execute('
-				CREATE TABLE `' . _DB_PREFIX_ . 'amz_orders` (
+				CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'amz_orders` (
 				`id` int(11) NOT NULL AUTO_INCREMENT,
                 `id_order` int(11) NOT NULL,
 				`amazon_auth_reference_id` varchar(255) NOT NULL,
@@ -289,7 +289,7 @@ class AmzPayments extends PaymentModule
 				');
         
         Db::getInstance()->execute('
-				CREATE TABLE `' . _DB_PREFIX_ . 'amz_address` (
+				CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'amz_address` (
 				`id` int(11) NOT NULL AUTO_INCREMENT,
                 `id_address` int(11) NOT NULL,
 				`amazon_order_reference_id` varchar(255) NOT NULL,
@@ -298,22 +298,23 @@ class AmzPayments extends PaymentModule
 				');
         
         Db::getInstance()->execute('
-				CREATE TABLE `' . _DB_PREFIX_ . 'amz_customer` (
+				CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'amz_customer` (
 				`id` int(11) NOT NULL AUTO_INCREMENT,
                 `id_customer` int(11) NOT NULL,
 				`amazon_customer_id` varchar(255) NOT NULL,
 				PRIMARY KEY (`id`)
 		) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
 				');
-        
+
         $this->installOrderStates();
-        
+
         Configuration::updateValue('BUTTON_VISIBILITY', true);
         Configuration::updateValue('POPUP', true);
         Configuration::updateValue('ALLOW_GUEST', true);
         Configuration::updateValue('ENVIRONMENT', 'LIVE');
         Configuration::updateValue('BUTTON_SIZE', 'medium');
-        Configuration::updateValue('BUTTON_SIZE_LPA', 'medium');        
+        Configuration::updateValue('BUTTON_SIZE_LPA', 'medium');
+        Configuration::updateValue('TEMPLATE_VARIANT_BS', true);
         
         return parent::install() && $this->registerHook('displayBackOfficeHeader') && $this->registerHook('displayShoppingCartFooter') && $this->registerHook('displayNav') && $this->registerHook('adminOrder') && $this->registerHook('updateOrderStatus') && $this->registerHook('displayBackOfficeFooter') && $this->registerHook('displayPayment') && $this->registerHook('paymentReturn') && $this->registerHook('payment') && $this->registerhook('displayPaymentEU') && $this->registerHook('header');
     }
@@ -1184,6 +1185,7 @@ class AmzPayments extends PaymentModule
     }
 
     public function hookDisplayBackOfficeHeader() {
+        $this->context->controller->addJquery();
         $this->context->controller->addJS(($this->_path) . 'views/js/admin.js');
         $this->context->controller->addCSS(($this->_path) . 'views/css/admin.css');
     }

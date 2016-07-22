@@ -171,7 +171,8 @@ class AmazonTransactions
                 
                 self::setOrderStatusCapturedSuccesfully($order_ref);
             } catch (OffAmazonPaymentsService_Exception $e) {
-                echo 'ERROR: ' . $e->getMessage();
+                //echo 'ERROR: ' . $e->getMessage();
+                return false;
             }
             
             return $response;

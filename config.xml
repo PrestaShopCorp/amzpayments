@@ -2,7 +2,7 @@
 <module>
     <name>amzpayments</name>
 	<displayName>Payments Advanced</displayName>
-	<version><![CDATA[2.0.29]]></version>
+	<version><![CDATA[2.0.30]]></version>
 	<description><![CDATA[Simple integration of Amazon Payments for your prestaShop.]]></description>
 	<author><![CDATA[patworx multimedia GmbH]]></author>
     <tab><![CDATA[payments_gateways]]></tab>

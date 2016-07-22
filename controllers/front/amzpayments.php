@@ -701,12 +701,14 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                             ->getAmazonAuthorizationId();
                                         if (self::$amz_payments->capture_mode == 'after_auth') {
                                             $amazon_capture_response = AmazonTransactions::capture(self::$amz_payments, $this->service, $amazon_authorization_id, $total, $currency_code);
-                                            $amazon_capture_id = $amazon_capture_response->getCaptureResult()
-                                                ->getCaptureDetails()
-                                                ->getAmazonCaptureId();
-                                            $amazon_capture_reference_id = $amazon_capture_response->getCaptureResult()
-                                                ->getCaptureDetails()
-                                                ->getCaptureReferenceId();
+                                            if (is_object($amazon_capture_response)) {
+                                                $amazon_capture_id = $amazon_capture_response->getCaptureResult()
+                                                    ->getCaptureDetails()
+                                                    ->getAmazonCaptureId();
+                                                $amazon_capture_reference_id = $amazon_capture_response->getCaptureResult()
+                                                    ->getCaptureDetails()
+                                                    ->getCaptureReferenceId();
+                                            }
                                         }
                                     }
                                 }
@@ -726,12 +728,14 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                         ->getAmazonAuthorizationId();
                                     if (self::$amz_payments->capture_mode == 'after_auth' && isset($amazon_authorization_id) && $amazon_authorization_id !== false && $amazon_authorization_id != null) {
                                         $amazon_capture_response = AmazonTransactions::capture(self::$amz_payments, $this->service, $amazon_authorization_id, $total, $currency_code);
-                                        $amazon_capture_id = $amazon_capture_response->getCaptureResult()
-                                            ->getCaptureDetails()
-                                            ->getAmazonCaptureId();
-                                        $amazon_capture_reference_id = $amazon_capture_response->getCaptureResult()
-                                            ->getCaptureDetails()
-                                            ->getCaptureReferenceId();
+                                        if (is_object($amazon_capture_response)) {
+                                            $amazon_capture_id = $amazon_capture_response->getCaptureResult()
+                                                ->getCaptureDetails()
+                                                ->getAmazonCaptureId();
+                                            $amazon_capture_reference_id = $amazon_capture_response->getCaptureResult()
+                                                ->getCaptureDetails()
+                                                ->getCaptureReferenceId();
+                                        }
                                     }
                                 }
                                 

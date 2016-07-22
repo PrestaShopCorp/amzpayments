@@ -151,7 +151,7 @@ class AmzPayments extends PaymentModule
     {
         $this->name = 'amzpayments';
         $this->tab = 'payments_gateways';
-        $this->version = '2.0.29';
+        $this->version = '2.0.30';
         $this->author = 'patworx multimedia GmbH';
         $this->need_instance = 1;
         
@@ -253,7 +253,7 @@ class AmzPayments extends PaymentModule
         Db::getInstance()->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'amz_customer`;');
         
         Db::getInstance()->execute('
-				CREATE TABLE `' . _DB_PREFIX_ . 'amz_transactions` (
+				CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'amz_transactions` (
 				`amz_tx_id` int(11) NOT NULL AUTO_INCREMENT,
 				`amz_tx_order_reference` varchar(255) NOT NULL,
 				`amz_tx_type` varchar(16) NOT NULL,
@@ -276,7 +276,7 @@ class AmzPayments extends PaymentModule
 				');
         
         Db::getInstance()->execute('
-				CREATE TABLE `' . _DB_PREFIX_ . 'amz_orders` (
+				CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'amz_orders` (
 				`id` int(11) NOT NULL AUTO_INCREMENT,
                 `id_order` int(11) NOT NULL,
 				`amazon_auth_reference_id` varchar(255) NOT NULL,
@@ -289,7 +289,7 @@ class AmzPayments extends PaymentModule
 				');
         
         Db::getInstance()->execute('
-				CREATE TABLE `' . _DB_PREFIX_ . 'amz_address` (
+				CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'amz_address` (
 				`id` int(11) NOT NULL AUTO_INCREMENT,
                 `id_address` int(11) NOT NULL,
 				`amazon_order_reference_id` varchar(255) NOT NULL,
@@ -298,22 +298,23 @@ class AmzPayments extends PaymentModule
 				');
         
         Db::getInstance()->execute('
-				CREATE TABLE `' . _DB_PREFIX_ . 'amz_customer` (
+				CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'amz_customer` (
 				`id` int(11) NOT NULL AUTO_INCREMENT,
                 `id_customer` int(11) NOT NULL,
 				`amazon_customer_id` varchar(255) NOT NULL,
 				PRIMARY KEY (`id`)
 		) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
 				');
-        
+
         $this->installOrderStates();
-        
+
         Configuration::updateValue('BUTTON_VISIBILITY', true);
         Configuration::updateValue('POPUP', true);
         Configuration::updateValue('ALLOW_GUEST', true);
         Configuration::updateValue('ENVIRONMENT', 'LIVE');
         Configuration::updateValue('BUTTON_SIZE', 'medium');
-        Configuration::updateValue('BUTTON_SIZE_LPA', 'medium');        
+        Configuration::updateValue('BUTTON_SIZE_LPA', 'medium');
+        Configuration::updateValue('TEMPLATE_VARIANT_BS', true);
         
         return parent::install() && $this->registerHook('displayBackOfficeHeader') && $this->registerHook('displayShoppingCartFooter') && $this->registerHook('displayNav') && $this->registerHook('adminOrder') && $this->registerHook('updateOrderStatus') && $this->registerHook('displayBackOfficeFooter') && $this->registerHook('displayPayment') && $this->registerHook('paymentReturn') && $this->registerHook('payment') && $this->registerhook('displayPaymentEU') && $this->registerHook('header');
     }
@@ -1184,6 +1185,7 @@ class AmzPayments extends PaymentModule
     }
 
     public function hookDisplayBackOfficeHeader() {
+        $this->context->controller->addJquery();
         $this->context->controller->addJS(($this->_path) . 'views/js/admin.js');
         $this->context->controller->addCSS(($this->_path) . 'views/css/admin.css');
     }
@@ -1523,7 +1525,7 @@ class AmzPayments extends PaymentModule
             ' '
         ), $js_file);
         $this->context->cookie->amz_js_string = self::prepareCookieValueForPrestaShopUse($amz_login_ready);
-        $amz_login_ready = '<script type="text/javascript" src="' . Tools::str_replace_once((Configuration::get('PS_SSL_ENABLED') ? 'http://' : ''), (Configuration::get('PS_SSL_ENABLED') ? 'https://' : ''), $this->context->link->getModuleLink('amzpayments', 'jsmode')) . '?c=amz_js_string&t=' . time() . '"></script>';
+        $amz_login_ready = '<script type="text/javascript" src="' . Tools::str_replace_once((Configuration::get('PS_SSL_ENABLED') ? 'http://' : ''), (Configuration::get('PS_SSL_ENABLED') ? 'https://' : ''), $this->context->link->getModuleLink('amzpayments', 'jsmode', array('c' => 'amz_js_string', 't' => time()))) . '"></script>';
         return $css_string . $amz_login_ready . $ext_js . '<script type="text/javascript"> var AMZACTIVE = \'' . ($show_amazon_button ? '1' : '0') . '\'; var AMZSELLERID = "' . $this->merchant_id . '"; var AMZ_BUTTON_TYPE_LOGIN = "' . $this->type_login . '"; var AMZ_BUTTON_TYPE_PAY = "' . $this->type_pay . '"; var AMZ_BUTTON_SIZE_PAY = "' . $this->button_size . '"; var AMZ_BUTTON_SIZE_LPA = "' . $this->button_size_lpa . '"; var AMZ_BUTTON_COLOR_LPA = "' . $this->button_color_lpa . '"; var AMZ_BUTTON_COLOR_PAY = "' . $this->button_color . '"; var AMZ_BUTTON_COLOR_LPA_NAVI = "' . $this->button_color_lpa_navi . '"; var AMZ_WIDGET_LANGUAGE = "' . $this->getWidgetLanguageCode() . '"; var CLIENT_ID = "' . $this->client_id . '"; var useRedirect = ' . (! self::currentSiteIsSSL() || $this->popup == '0' ? 'true' : 'false') . '; var LPA_MODE = "' . $this->lpa_mode . '"; var REDIRECTAMZ = "' . $redirect . '"; var LOGINREDIRECTAMZ_CHECKOUT = "' . $login_checkout_redirect . '"; var LOGINREDIRECTAMZ = "' . $login_redirect . '"; var is_logged = ' . $is_logged . '; var AMZACCTK = "' . $acc_tk . '"; var SETUSERAJAX = "' . $set_user_ajax . '";' . $js_file . ' </script>' . $logout_str;
     }
 

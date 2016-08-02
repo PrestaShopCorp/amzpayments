@@ -308,6 +308,13 @@ class AmazonTransactions
         if ($oid) {
             $amz_payments = new AmzPayments();
             $new_status = $amz_payments->authorized_status_id;
+            if ($check) {
+                $order = new Order((int)$oid);
+                $history = $order->getHistory(Context::getContext()->language->id, $amz_payments->authorized_status_id);
+                if (sizeof($history) > 0) {
+                    return false;
+                }
+            }
             self::setOrderStatus($oid, $new_status);
         } else {
             if (! isset(Context::getContext()->cookie->amzSetStatusAuthorized)) {

@@ -151,7 +151,7 @@ class AmzPayments extends PaymentModule
     {
         $this->name = 'amzpayments';
         $this->tab = 'payments_gateways';
-        $this->version = '2.0.30';
+        $this->version = '2.0.32';
         $this->author = 'patworx multimedia GmbH';
         $this->need_instance = 1;
         
@@ -1867,6 +1867,9 @@ class AmzPayments extends PaymentModule
                     $this->cancelOrder($order_ref);
                 }
                 $this->intelligentDeclinedMail($auth_id, $reason);
+            } elseif ((string) $details->getAuthorizationStatus()->getState() == 'Open') {
+                $order_ref = AmazonTransactions::getOrderRefFromAmzId($auth_id);
+                AmazonTransactions::setOrderStatusAuthorized($order_ref, true);
             }
         } catch (OffAmazonPaymentsService_Exception $e) {
             echo 'ERROR: ' . $e->getErrorMessage();

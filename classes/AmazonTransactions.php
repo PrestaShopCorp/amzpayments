@@ -302,7 +302,7 @@ class AmazonTransactions
         return $response;
     }
 
-    public static function setOrderStatusAuthorized($order_ref)
+    public static function setOrderStatusAuthorized($order_ref, $check = false)
     {
         $oid = self::getOrdersIdFromOrderRef($order_ref);
         if ($oid) {

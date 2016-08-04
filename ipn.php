@@ -74,7 +74,7 @@ if ($amz_payments->ipn_status == '1') {
             Db::getInstance()->update('amz_transactions', $sqlArr, ' amz_tx_id = ' . (int) $r['amz_tx_id']);
             $amz_payments->refreshAuthorization($response_xml->AuthorizationDetails->AmazonAuthorizationId);
             if ($sqlArr['amz_tx_status'] == 'Open') {
-                AmazonTransactions::setOrderStatusAuthorized(r['amz_tx_order_reference'], true);  
+                AmazonTransactions::setOrderStatusAuthorized($r['amz_tx_order_reference'], true);  
                 if ($amz_payments->capture_mode == 'after_auth') {
                     $order_id = AmazonTransactions::getOrdersIdFromOrderRef($r['amz_tx_order_reference']);
                     $order = new Order((int) $order_id);

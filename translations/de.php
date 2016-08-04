@@ -45,6 +45,7 @@ $_MODULE['<{amzpayments}prestashop>amzpayments_6ea96e7901e5d7d960ae3ab51a460dfe'
 $_MODULE['<{amzpayments}prestashop>amzpayments_74dc5ba3b79de0d9c7b7a40826794a32'] = 'während des Checkouts / vor Abschluss der Bestellung';
 $_MODULE['<{amzpayments}prestashop>amzpayments_517fb462c524717a2862e7f5a4f4b582'] = 'direkt nach der Bestellung';
 $_MODULE['<{amzpayments}prestashop>amzpayments_3c78b35502b2693fefdfc51cba3a53a5'] = 'manuell';
+$_MODULE['<{amzpayments}prestashop>amzpayments_7dbe434224e885e859b7707fa3ebf141'] = 'Status für eingegangene Bestellung';
 $_MODULE['<{amzpayments}prestashop>amzpayments_c92a02ec287f5151bea1493f769b8817'] = 'Bestellstatus nach erfolgreicher Autorisierung';
 $_MODULE['<{amzpayments}prestashop>amzpayments_80d0c781220d833947e82a4bac83c66b'] = 'Wann/Wie soll die Zahlung eingezogen werden?';
 $_MODULE['<{amzpayments}prestashop>amzpayments_28c6194859e3104cfb02445b83efadc5'] = 'nach Versand';

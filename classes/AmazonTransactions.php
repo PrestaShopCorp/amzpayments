@@ -342,12 +342,19 @@ class AmazonTransactions
         }
     }
     
-    public static function setOrderStatusDeclined($order_ref)
+    public static function setOrderStatusDeclined($order_ref, $check = true)
     {
         $oid = self::getOrdersIdFromOrderRef($order_ref);
         if ($oid) {
             $amz_payments = new AmzPayments();
             $new_status = $amz_payments->decline_status_id;
+            if ($check) {
+                $order = new Order((int)$oid);
+                $history = $order->getHistory(Context::getContext()->language->id, $amz_payments->decline_status_id);
+                if (sizeof($history) > 0) {
+                    return false;
+                }
+            }            
             self::setOrderStatus($oid, $new_status);
         }
     }

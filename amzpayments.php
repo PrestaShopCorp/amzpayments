@@ -50,6 +50,8 @@ class AmzPayments extends PaymentModule
     public $button_visibility = 1;
 
     public $environment;
+    
+    public $order_status_id = 0;
 
     public $authorization_mode = 'after_checkout';
 
@@ -121,6 +123,7 @@ class AmzPayments extends PaymentModule
         'button_visibility' => 'BUTTON_VISIBILITY',
         'environment' => 'ENVIRONMENT',
         'authorization_mode' => 'AUTHORIZATION_MODE',
+        'order_status_id' => 'AMZ_ORDER_STATUS_ID',
         'authorized_status_id' => 'AUTHORIZED_STATUS_ID',
         'capture_mode' => 'CAPTURE_MODE',
         'capture_status_id' => 'CAPTURE_STATUS_ID',
@@ -151,7 +154,7 @@ class AmzPayments extends PaymentModule
     {
         $this->name = 'amzpayments';
         $this->tab = 'payments_gateways';
-        $this->version = '2.0.32';
+        $this->version = '2.0.33';
         $this->author = 'patworx multimedia GmbH';
         $this->need_instance = 1;
         
@@ -650,6 +653,18 @@ class AmzPayments extends PaymentModule
                                 )
                             ),
                             'id' => 'id_lpa_auth_mode',
+                            'name' => 'name'
+                        )
+                    ),
+                    array(
+                        'col' => 3,
+                        'type' => 'select',
+                        'prefix' => '<i class="icon icon-tag"></i>',
+                        'name' => 'AMZ_ORDER_STATUS_ID',
+                        'label' => $this->l('Status after order'),
+                        'options' => array(
+                            'query' => array_merge(array(array('id_order_state' => 0, 'id_lang' => (int) Configuration::get('PS_LANG_DEFAULT'), 'name' => '')), OrderState::getOrderStates((int) Configuration::get('PS_LANG_DEFAULT'))),
+                            'id' => 'id_order_state',
                             'name' => 'name'
                         )
                     ),
@@ -1867,6 +1882,10 @@ class AmzPayments extends PaymentModule
                     $this->cancelOrder($order_ref);
                 }
                 $this->intelligentDeclinedMail($auth_id, $reason);
+                if ($this->decline_status_id > 0) {
+                    $order_ref = AmazonTransactions::getOrderRefFromAmzId($auth_id);
+                    AmazonTransactions::setOrderStatusDeclined($order_ref, true);
+                }
             } elseif ((string) $details->getAuthorizationStatus()->getState() == 'Open') {
                 $order_ref = AmazonTransactions::getOrderRefFromAmzId($auth_id);
                 AmazonTransactions::setOrderStatusAuthorized($order_ref, true);

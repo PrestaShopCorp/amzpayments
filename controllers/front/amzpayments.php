@@ -718,7 +718,11 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                     $this->context->cart->save();
                                 }
                                 
-                                $this->module->validateOrder((int) $this->context->cart->id, Configuration::get('PS_OS_PREPARATION'), $total, $this->module->displayName, null, array(), null, false, $customer->secure_key);
+                                $new_order_status_id = (int)Configuration::get('PS_OS_PREPARATION');
+                                if ((int)Configuration::get('AMZ_ORDER_STATUS_ID') > 0) {
+                                    $new_order_status_id = Configuration::get('AMZ_ORDER_STATUS_ID');
+                                }
+                                $this->module->validateOrder((int) $this->context->cart->id, $new_order_status_id, $total, $this->module->displayName, null, array(), null, false, $customer->secure_key);
                                 
                                 if (self::$amz_payments->authorization_mode == 'after_checkout') {
                                     $authorization_reference_id = Tools::getValue('amazonOrderReferenceId');

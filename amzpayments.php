@@ -154,7 +154,7 @@ class AmzPayments extends PaymentModule
     {
         $this->name = 'amzpayments';
         $this->tab = 'payments_gateways';
-        $this->version = '2.0.33';
+        $this->version = '2.0.40';
         $this->author = 'patworx multimedia GmbH';
         $this->need_instance = 1;
         
@@ -482,7 +482,7 @@ class AmzPayments extends PaymentModule
 
     protected function getPossibleRegionEntries()
     {
-        return 'DE, UK, US';
+        return 'DE, UK, US, FR, IT, ES';
     }
 
     protected function getCronURL()
@@ -1215,7 +1215,7 @@ class AmzPayments extends PaymentModule
 
     public function getRegionalCodeForURL()
     {
-        if (Tools::strtolower($this->region) == 'de')
+        if (in_array(Tools::strtolower($this->region), array('de', 'fr', 'it', 'es')))
             return 'de';
         elseif (Tools::strtolower($this->region) == 'uk')
             return 'uk';
@@ -1240,14 +1240,14 @@ class AmzPayments extends PaymentModule
     {
         $this->registerHook('paymentReturn');
         if ($this->environment == 'SANDBOX') {
-            if (Tools::strtolower($this->region) == 'de')
+            if (in_array(Tools::strtolower($this->region), array('de', 'fr', 'it', 'es')))
                 return 'https://payments-sandbox.amazon.de/gp/widgets/button';
             elseif (Tools::strtolower($this->region) == 'uk')
                 return 'https://payments-sandbox.amazon.co.uk/gp/widgets/button';
             elseif (Tools::strtolower($this->region) == 'us')
                 return 'https://payments-sandbox.amazon.com/gp/widgets/button';
         } else {
-            if (Tools::strtolower($this->region) == 'de')
+            if (in_array(Tools::strtolower($this->region), array('de', 'fr', 'it', 'es')))
                 return 'https://payments.amazon.de/gp/widgets/button';
             elseif (Tools::strtolower($this->region) == 'uk')
                 return 'https://payments.amazon.co.uk/gp/widgets/button';
@@ -1259,14 +1259,14 @@ class AmzPayments extends PaymentModule
     public function getLpaApiUrl()
     {
         if ($this->environment == 'SANDBOX') {
-            if (Tools::strtolower($this->region) == 'de')
+            if (in_array(Tools::strtolower($this->region), array('de', 'fr', 'it', 'es')))
                 return 'https://api.sandbox.amazon.de';
             elseif (Tools::strtolower($this->region) == 'uk')
                 return 'https://api.sandbox.amazon.co.uk';
             elseif (Tools::strtolower($this->region) == 'us')
                 return 'https://api.sandbox.amazon.com';
         } else {
-            if (Tools::strtolower($this->region) == 'de')
+            if (in_array(Tools::strtolower($this->region), array('de', 'fr', 'it', 'es')))
                 return 'https://api.amazon.de';
             elseif (Tools::strtolower($this->region) == 'uk')
                 return 'https://api.amazon.co.uk';
@@ -1386,6 +1386,12 @@ class AmzPayments extends PaymentModule
         $currency = new Currency((int) (Context::getContext()->cart->id_currency));
         
         if (Tools::strtolower($this->region) == 'de' && Tools::strtoupper($currency->iso_code) == 'EUR')
+            return true;
+        elseif (Tools::strtolower($this->region) == 'fr' && Tools::strtoupper($currency->iso_code) == 'EUR')
+            return true;
+        elseif (Tools::strtolower($this->region) == 'it' && Tools::strtoupper($currency->iso_code) == 'EUR')
+            return true;
+        elseif (Tools::strtolower($this->region) == 'es' && Tools::strtoupper($currency->iso_code) == 'EUR')
             return true;
         elseif (Tools::strtolower($this->region) == 'uk' && Tools::strtoupper($currency->iso_code) == 'GBP')
             return true;

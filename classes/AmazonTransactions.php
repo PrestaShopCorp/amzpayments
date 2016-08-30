@@ -386,15 +386,10 @@ class AmazonTransactions
     public static function setOrderStatus($oid, $status, $comment = false)
     {
         unset($comment);
-        $sql_data_array = array(
-            'id_order' => pSQL($oid),
-            'id_order_state' => pSQL($status),
-            'date_add' => date('Y-m-d H:i:s')
-        );
-        Db::getInstance()->insert('order_history', $sql_data_array);
-        $q = 'UPDATE ' . _DB_PREFIX_ . 'orders SET current_state = ' . (int) $status . ' 
-				WHERE id_order = ' . (int) $oid;
-        Db::getInstance()->execute($q);
+        $order_history = new OrderHistory();
+        $order_history->id_order = (int)$oid;
+        $order_history->changeIdOrderState((int)$status, (int)$oid, true);
+        $order_history->addWithemail(true);        
     }
 
     public static function getOrderRefTotal($order_ref)

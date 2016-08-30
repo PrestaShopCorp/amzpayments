@@ -41,6 +41,9 @@ class OffAmazonPaymentsService_RegionSpecificProperties
 	
 	private $_currencyCodes = array(
 		'de' => 'EUR',
+		'fr' => 'EUR',
+		'it' => 'EUR',
+		'es' => 'EUR',
 		'uk' => 'GBP',
 		'us' => 'USD',
 		'na' => 'USD'
@@ -48,6 +51,9 @@ class OffAmazonPaymentsService_RegionSpecificProperties
 	
 	private $_regionMappings = array(
 		'de' => 'eu',
+	    'it' => 'eu',
+	    'fr' => 'eu',
+	    'es' => 'eu',
 		'na' => 'na',
 		'uk' => 'eu',
 		'us' => 'na'

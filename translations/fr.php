@@ -47,7 +47,7 @@ $_MODULE['<{amzpayments}prestashop>amzpayments_517fb462c524717a2862e7f5a4f4b582'
 $_MODULE['<{amzpayments}prestashop>amzpayments_3c78b35502b2693fefdfc51cba3a53a5'] = 'manuel';
 $_MODULE['<{amzpayments}prestashop>amzpayments_c92a02ec287f5151bea1493f769b8817'] = 'Etat de la commande pour les paiements autorisés';
 $_MODULE['<{amzpayments}prestashop>amzpayments_80d0c781220d833947e82a4bac83c66b'] = 'Quand et comment les paiements seront-ils saisis ?';
-$_MODULE['<{amzpayments}prestashop>amzpayments_28c6194859e3104cfb02445b83efadc5'] = 'après la livraison';
+$_MODULE['<{amzpayments}prestashop>amzpayments_28c6194859e3104cfb02445b83efadc5'] = 'après l\'expédition';
 $_MODULE['<{amzpayments}prestashop>amzpayments_05033bc4d960e0f74efacd29dbfb91fd'] = 'directement après l\'autorisation';
 $_MODULE['<{amzpayments}prestashop>amzpayments_f38911eda842056931cbcf497a2f8fe5'] = 'Etat de la commande pour saisir un paiement';
 $_MODULE['<{amzpayments}prestashop>amzpayments_9d57203f843f48a4cbc5da56cd9eba9a'] = 'Etat de la commande après une saisie réussie';

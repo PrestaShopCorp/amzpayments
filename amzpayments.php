@@ -50,6 +50,8 @@ class AmzPayments extends PaymentModule
     public $button_visibility = 1;
 
     public $environment;
+    
+    public $order_status_id = 0;
 
     public $authorization_mode = 'after_checkout';
 
@@ -121,6 +123,7 @@ class AmzPayments extends PaymentModule
         'button_visibility' => 'BUTTON_VISIBILITY',
         'environment' => 'ENVIRONMENT',
         'authorization_mode' => 'AUTHORIZATION_MODE',
+        'order_status_id' => 'AMZ_ORDER_STATUS_ID',
         'authorized_status_id' => 'AUTHORIZED_STATUS_ID',
         'capture_mode' => 'CAPTURE_MODE',
         'capture_status_id' => 'CAPTURE_STATUS_ID',
@@ -151,7 +154,7 @@ class AmzPayments extends PaymentModule
     {
         $this->name = 'amzpayments';
         $this->tab = 'payments_gateways';
-        $this->version = '2.0.32';
+        $this->version = '2.0.40';
         $this->author = 'patworx multimedia GmbH';
         $this->need_instance = 1;
         
@@ -479,7 +482,7 @@ class AmzPayments extends PaymentModule
 
     protected function getPossibleRegionEntries()
     {
-        return 'DE, UK, US';
+        return 'DE, UK, US, FR, IT, ES';
     }
 
     protected function getCronURL()
@@ -650,6 +653,18 @@ class AmzPayments extends PaymentModule
                                 )
                             ),
                             'id' => 'id_lpa_auth_mode',
+                            'name' => 'name'
+                        )
+                    ),
+                    array(
+                        'col' => 3,
+                        'type' => 'select',
+                        'prefix' => '<i class="icon icon-tag"></i>',
+                        'name' => 'AMZ_ORDER_STATUS_ID',
+                        'label' => $this->l('Status after order'),
+                        'options' => array(
+                            'query' => array_merge(array(array('id_order_state' => 0, 'id_lang' => (int) Configuration::get('PS_LANG_DEFAULT'), 'name' => '')), OrderState::getOrderStates((int) Configuration::get('PS_LANG_DEFAULT'))),
+                            'id' => 'id_order_state',
                             'name' => 'name'
                         )
                     ),
@@ -1200,7 +1215,7 @@ class AmzPayments extends PaymentModule
 
     public function getRegionalCodeForURL()
     {
-        if (Tools::strtolower($this->region) == 'de')
+        if (in_array(Tools::strtolower($this->region), array('de', 'fr', 'it', 'es')))
             return 'de';
         elseif (Tools::strtolower($this->region) == 'uk')
             return 'uk';
@@ -1225,14 +1240,14 @@ class AmzPayments extends PaymentModule
     {
         $this->registerHook('paymentReturn');
         if ($this->environment == 'SANDBOX') {
-            if (Tools::strtolower($this->region) == 'de')
+            if (in_array(Tools::strtolower($this->region), array('de', 'fr', 'it', 'es')))
                 return 'https://payments-sandbox.amazon.de/gp/widgets/button';
             elseif (Tools::strtolower($this->region) == 'uk')
                 return 'https://payments-sandbox.amazon.co.uk/gp/widgets/button';
             elseif (Tools::strtolower($this->region) == 'us')
                 return 'https://payments-sandbox.amazon.com/gp/widgets/button';
         } else {
-            if (Tools::strtolower($this->region) == 'de')
+            if (in_array(Tools::strtolower($this->region), array('de', 'fr', 'it', 'es')))
                 return 'https://payments.amazon.de/gp/widgets/button';
             elseif (Tools::strtolower($this->region) == 'uk')
                 return 'https://payments.amazon.co.uk/gp/widgets/button';
@@ -1244,14 +1259,14 @@ class AmzPayments extends PaymentModule
     public function getLpaApiUrl()
     {
         if ($this->environment == 'SANDBOX') {
-            if (Tools::strtolower($this->region) == 'de')
+            if (in_array(Tools::strtolower($this->region), array('de', 'fr', 'it', 'es')))
                 return 'https://api.sandbox.amazon.de';
             elseif (Tools::strtolower($this->region) == 'uk')
                 return 'https://api.sandbox.amazon.co.uk';
             elseif (Tools::strtolower($this->region) == 'us')
                 return 'https://api.sandbox.amazon.com';
         } else {
-            if (Tools::strtolower($this->region) == 'de')
+            if (in_array(Tools::strtolower($this->region), array('de', 'fr', 'it', 'es')))
                 return 'https://api.amazon.de';
             elseif (Tools::strtolower($this->region) == 'uk')
                 return 'https://api.amazon.co.uk';
@@ -1371,6 +1386,12 @@ class AmzPayments extends PaymentModule
         $currency = new Currency((int) (Context::getContext()->cart->id_currency));
         
         if (Tools::strtolower($this->region) == 'de' && Tools::strtoupper($currency->iso_code) == 'EUR')
+            return true;
+        elseif (Tools::strtolower($this->region) == 'fr' && Tools::strtoupper($currency->iso_code) == 'EUR')
+            return true;
+        elseif (Tools::strtolower($this->region) == 'it' && Tools::strtoupper($currency->iso_code) == 'EUR')
+            return true;
+        elseif (Tools::strtolower($this->region) == 'es' && Tools::strtoupper($currency->iso_code) == 'EUR')
             return true;
         elseif (Tools::strtolower($this->region) == 'uk' && Tools::strtoupper($currency->iso_code) == 'GBP')
             return true;
@@ -1867,6 +1888,10 @@ class AmzPayments extends PaymentModule
                     $this->cancelOrder($order_ref);
                 }
                 $this->intelligentDeclinedMail($auth_id, $reason);
+                if ($this->decline_status_id > 0) {
+                    $order_ref = AmazonTransactions::getOrderRefFromAmzId($auth_id);
+                    AmazonTransactions::setOrderStatusDeclined($order_ref, true);
+                }
             } elseif ((string) $details->getAuthorizationStatus()->getState() == 'Open') {
                 $order_ref = AmazonTransactions::getOrderRefFromAmzId($auth_id);
                 AmazonTransactions::setOrderStatusAuthorized($order_ref, true);

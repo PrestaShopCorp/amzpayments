@@ -154,7 +154,7 @@ class AmzPayments extends PaymentModule
     {
         $this->name = 'amzpayments';
         $this->tab = 'payments_gateways';
-        $this->version = '2.0.41';
+        $this->version = '2.0.42';
         $this->author = 'patworx multimedia GmbH';
         $this->need_instance = 1;
         
@@ -1142,20 +1142,38 @@ class AmzPayments extends PaymentModule
         $this->context->smarty->assign('allowed_return_url_2', $this->getAllowedReturnUrls(2));
         $this->context->smarty->assign('allowed_js_origins', str_replace('http://', 'https://', _PS_BASE_URL_));
         
-        if ($this->context->language->iso_code == 'de') {            
-            $register_link = 'https://payments.amazon.de/preregistration/lpa?ld=SPEXDEAPA-Prestashop-core_DE';
+        $register_link = 'https://sellercentral-europe.amazon.com/hz/me/sp/redirect?ld=';
+
+        switch ($this->context->language->iso_code) {
+            case 'de':
+                $register_link.= 'SPEXDEAPA-PrestashopPL';
+            break;
+            case 'en':
+                if (Tools::strtolower($this->context->language->local) == 'en-us') {
+                    $register_link.= 'SPEXUSAPA-PrestashopPL';
+                } else {                    
+                    $register_link.= 'SPEXUKAPA-PrestashopPL';
+                }
+            break;
+            case 'fr':
+                $register_link.= 'SPEXFRAPA-PrestashopPL';
+            break;
+            case 'it':
+                $register_link.= 'SPEXITAPA-PrestashopPL';
+            break;
+            case 'es':
+                $register_link.= 'SPEXESAPA-PrestashopPL';
+            break;
+        }
+
+        if ($this->context->language->iso_code == 'de') {
             $let_customer_know_link = 'https://payments.amazon.de/merchant/tools?ld=SPEXDEAPA-prestashop-2016-03-Configuration';
             $integration_guide_link = 'http://www.patworx.de/LoginUndBezahlen/MitAmazon/PrestaShop/Dokumentation';
             $youtube_video_link = 'https://www.youtube.com/watch?v=pbv64mDMqc8';
             $youtube_video_embed_link = 'https://www.youtube.com/embed/pbv64mDMqc8?rel=0&showinfo=0';
         } else {
-            if ($this->context->language->language_code == 'en-us') {
-                $register_link = 'https://payments.amazon.com/signup?ld=SPEXUSAPA-Prestashop-core_US';
-            } else {                
-                $register_link = 'https://payments.amazon.co.uk/preregistration/lpa?ld=SPEXUKAPA-Prestashop-core_UK';
-            }
             $let_customer_know_link = 'https://payments.amazon.co.uk/merchant/tools?ld=SPEXUKAPA-prestashop-2016-03-Configuration';
-            $integration_guide_link = 'http://www.patworx.de/LoginAndPay/WithAmazon/PrestaShopUK/Documentation';            
+            $integration_guide_link = 'http://www.patworx.de/LoginAndPay/WithAmazon/PrestaShopUK/Documentation';
             $youtube_video_link = false;
             $youtube_video_embed_link = false;
         }
@@ -1168,13 +1186,16 @@ class AmzPayments extends PaymentModule
         $this->context->smarty->assign('use_simple_path', true);
         $simple_path_data = array('spId' => $this->getPfId(),
             'uniqueId' => Tools::encryptIV('amzPaymentsSimplePath'),
-            'locale' => $this->getLocalCodeForSimplePath(),
+            'locale' =>  $this->getLocalCodeForSimplePath(),            
             'loginRedirectURLs_1' => $this->getAllowedReturnUrls(1),
             'loginRedirectURLs_2' => $this->getAllowedReturnUrls(2),
             'allowedLoginDomains' => str_replace('http://', 'https://', _PS_BASE_URL_),
             'storeDescription' => Configuration::get('PS_SHOP_NAME'),
-            'language' => $this->getWidgetLanguageCode(),
-            'returnMethod' => 'GET'
+            'language' => $this->getLanguageCodeForSimplePath(),
+            'returnMethod' => 'GET',
+            'Source' => 'SPPL',
+            'sandboxMerchantIPNURL' => $this->getIPNURL(),
+            'productionMerchantIPNURL' => $this->getIPNURL(),
         );
         
         $this->context->smarty->assign('simple_path', $simple_path_data);
@@ -1507,17 +1528,19 @@ class AmzPayments extends PaymentModule
         
         $acc_tk = '';
         $is_logged = 'false';
-        if (isset($this->context->cookie->amz_access_token) && $this->context->cookie->amz_access_token != ''/* && $this->popup == '0'*/) {
+        
+        if (isset($this->context->cookie->amz_access_token) && $this->context->cookie->amz_access_token != '') {
             $is_logged = 'true';
-            if (! isset($this->context->cookie->amazon_id)) {
+            if (!isset($this->context->cookie->amazon_id)) {
                 $acc_tk = self::prepareCookieValueForAmazonPaymentsUse($this->context->cookie->amz_access_token);
-                $amz_login_ready .= '
+                $amz_login_ready = '
 				var accessToken = "' . $acc_tk . '";
 				if (typeof accessToken === \'string\' && accessToken.match(/^Atza/)) {
 				document.cookie = "amazon_Login_accessToken=" + accessToken +";secure";
 			}
 			window.onAmazonLoginReady = function() {
 			amazon.Login.setClientId("' . $this->client_id . '");
+			    amazon.Login.setUseCookie(true);
 			};
 			';
             }
@@ -2246,6 +2269,11 @@ class AmzPayments extends PaymentModule
         if ($unset_cookie)
             unset(Context::getContext()->cookie->amz_connect_order);
         return true;
+    }
+
+    public function getLanguageCodeForSimplePath()
+    {
+        return str_replace('-', '_', $this->getWidgetLanguageCode());
     }
 
     public function getWidgetLanguageCode()

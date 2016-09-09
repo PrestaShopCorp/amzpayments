@@ -109,39 +109,40 @@ jQuery(document).ready(function($) {
 		}
 	}).bind("walletWidgetDiv");
 	
-	function reCreateWalletWidget() {
-		$("#walletWidgetDiv").html('');
-		new OffAmazonPayments.Widgets.Wallet({
-			sellerId: '{/literal}{$sellerID|escape:'htmlall':'UTF-8'}{literal}',
-			{/literal}{if $amz_session != ''}{literal}amazonOrderReferenceId: '{/literal}{$amz_session|escape:'htmlall':'UTF-8'}{literal}', {/literal}{/if}{literal}
-			design: {
-				designMode: 'responsive'
-			},
-			onPaymentSelect: function(orderReference) {
-				$("#cgv").trigger('change');
-			},
-			onError: function(error) {
-				console.log(error.getErrorMessage());
-			}
-		}).bind("walletWidgetDiv");		
-	}
-	function reCreateAddressBookWidget() {
-		$("#addressBookWidgetDiv").html('');
-		new OffAmazonPayments.Widgets.AddressBook({
-			sellerId: '{/literal}{$sellerID|escape:'htmlall':'UTF-8'}{literal}',
-			{/literal}{if $amz_session != ''}{literal}amazonOrderReferenceId: '{/literal}{$amz_session|escape:'htmlall':'UTF-8'}{literal}', {/literal}{/if}{literal}
-			onAddressSelect: function(orderReference) {
-				updateAddressSelection(amazonOrderReferenceId);			
-			},
-			design: {
-				designMode: 'responsive'
-			},
-			onError: function(error) {		
-				console.log(error.getErrorMessage());
-			}
-		}).bind("addressBookWidgetDiv");	
-	}
-	
 });
+
+function reCreateWalletWidget() {
+	$("#walletWidgetDiv").html('');
+	new OffAmazonPayments.Widgets.Wallet({
+		sellerId: '{/literal}{$sellerID|escape:'htmlall':'UTF-8'}{literal}',
+		{/literal}{if $amz_session != ''}{literal}amazonOrderReferenceId: '{/literal}{$amz_session|escape:'htmlall':'UTF-8'}{literal}', {/literal}{/if}{literal}
+		design: {
+			designMode: 'responsive'
+		},
+		onPaymentSelect: function(orderReference) {
+			$("#cgv").trigger('change');
+		},
+		onError: function(error) {
+			console.log(error.getErrorMessage());
+		}
+	}).bind("walletWidgetDiv");		
+}
+function reCreateAddressBookWidget() {
+	$("#addressBookWidgetDiv").html('');
+	new OffAmazonPayments.Widgets.AddressBook({
+		sellerId: '{/literal}{$sellerID|escape:'htmlall':'UTF-8'}{literal}',
+		{/literal}{if $amz_session != ''}{literal}amazonOrderReferenceId: '{/literal}{$amz_session|escape:'htmlall':'UTF-8'}{literal}', {/literal}{/if}{literal}
+		onAddressSelect: function(orderReference) {
+			updateAddressSelection(amazonOrderReferenceId);			
+		},
+		displayMode: "Read",
+		design: {
+			designMode: 'responsive'
+		},
+		onError: function(error) {		
+			console.log(error.getErrorMessage());
+		}
+	}).bind("addressBookWidgetDiv");	
+}
 </script>
 {/literal}

@@ -115,39 +115,40 @@ jQuery(document).ready(function($) {
 		}
 	}).bind("walletWidgetDivBs");
 	
-	function reCreateWalletWidget() {
-		$("#walletWidgetDivBs").html('');
-		new OffAmazonPayments.Widgets.Wallet({
-			sellerId: '{/literal}{$sellerID|escape:'htmlall':'UTF-8'}{literal}',
-			{/literal}{if $amz_session != ''}{literal}amazonOrderReferenceId: '{/literal}{$amz_session|escape:'htmlall':'UTF-8'}{literal}', {/literal}{/if}{literal}
-			design: {
-				designMode: 'responsive'
-			},
-			onPaymentSelect: function(orderReference) {
-				$("#cgv").trigger('change');
-			},
-			onError: function(error) {
-				console.log(error.getErrorMessage());
-			}
-		}).bind("walletWidgetDivBs");		
-	}
-	function reCreateAddressBookWidget() {
-		$("#addressBookWidgetDivBs").html('');
-		new OffAmazonPayments.Widgets.AddressBook({
-			sellerId: '{/literal}{$sellerID|escape:'htmlall':'UTF-8'}{literal}',
-			{/literal}{if $amz_session != ''}{literal}amazonOrderReferenceId: '{/literal}{$amz_session|escape:'htmlall':'UTF-8'}{literal}', {/literal}{/if}{literal}
-			onAddressSelect: function(orderReference) {
-				updateAddressSelection(amazonOrderReferenceId);			
-			},
-			design: {
-				designMode: 'responsive'
-			},
-			onError: function(error) {		
-				console.log(error.getErrorMessage());
-			}
-		}).bind("addressBookWidgetDivBs");	
-	}
-	
 });
+
+function reCreateWalletWidget() {
+	$("#walletWidgetDivBs").html('');
+	new OffAmazonPayments.Widgets.Wallet({
+		sellerId: '{/literal}{$sellerID|escape:'htmlall':'UTF-8'}{literal}',
+		{/literal}{if $amz_session != ''}{literal}amazonOrderReferenceId: '{/literal}{$amz_session|escape:'htmlall':'UTF-8'}{literal}', {/literal}{/if}{literal}
+		design: {
+			designMode: 'responsive'
+		},
+		onPaymentSelect: function(orderReference) {
+			$("#cgv").trigger('change');
+		},
+		onError: function(error) {
+			console.log(error.getErrorMessage());
+		}
+	}).bind("walletWidgetDivBs");		
+}
+function reCreateAddressBookWidget() {
+	$("#addressBookWidgetDivBs").html('');
+	new OffAmazonPayments.Widgets.AddressBook({
+		sellerId: '{/literal}{$sellerID|escape:'htmlall':'UTF-8'}{literal}',
+		{/literal}{if $amz_session != ''}{literal}amazonOrderReferenceId: '{/literal}{$amz_session|escape:'htmlall':'UTF-8'}{literal}', {/literal}{/if}{literal}
+		onAddressSelect: function(orderReference) {
+			updateAddressSelection(amazonOrderReferenceId);			
+		},
+		displayMode: "Read",
+		design: {
+			designMode: 'responsive'
+		},
+		onError: function(error) {		
+			console.log(error.getErrorMessage());
+		}
+	}).bind("addressBookWidgetDivBs");	
+}
 </script>
 {/literal}

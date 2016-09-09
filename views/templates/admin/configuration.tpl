@@ -34,7 +34,7 @@
 					<br />
 					{if $use_simple_path}
 						<form method="POST" action="https://sellercentral-europe.amazon.com/hz/me/sp/redirect" target="_blank" id="amazonRegForm"> 
-							<input type="hidden" value="US" name="locale" />  
+							<input type="hidden" value="{$simple_path.locale|escape:'htmlall':'UTF-8'}" name="locale" />  
 							<input type="hidden" value="{$simple_path.spId|escape:'htmlall':'UTF-8'}" name="spId" />  
 							<input type="hidden" value="{$simple_path.uniqueId|escape:'htmlall':'UTF-8'}" name="uniqueId" />  
 							<input type="hidden" value="{$simple_path.allowedLoginDomains|escape:'htmlall':'UTF-8'}" name="allowedLoginDomains[]" />
@@ -47,8 +47,11 @@
 							<input type="hidden" value="{$simple_path.storeDescription|escape:'htmlall':'UTF-8'}" name="storeDescription" />  
 							<input type="hidden" value="{$simple_path.language|escape:'htmlall':'UTF-8'}" name="language" />  
 							<input type="hidden" value="{$simple_path.returnMethod|escape:'htmlall':'UTF-8'}" name="returnMethod" />
+							<input type="hidden" value="{$simple_path.Source|escape:'htmlall':'UTF-8'}" name="Source" />
+							<input type="hidden" value="{$simple_path.sandboxMerchantIPNURL|escape:'htmlall':'UTF-8'}" name="sandboxMerchantIPNURL" />
+							<input type="hidden" value="{$simple_path.productionMerchantIPNURL|escape:'htmlall':'UTF-8'}" name="productionMerchantIPNURL" />
 							<a href="JavaScript:void(0)" onclick="jQuery('#amazonRegForm').submit();" class="registerButton">{l s='Start Registration Now' mod='amzpayments'}</a>  
-						</form> 						
+						</form>  						
 					{else}
 						<a href="{$register_link|escape:'htmlall':'UTF-8'}" class="registerButton" target="_blank">{l s='Start Registration Now' mod='amzpayments'}</a>
 					{/if}	

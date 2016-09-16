@@ -217,5 +217,7 @@ $_MODULE['<{amzpayments}prestashop>confirmation_fb4ea5a18e5f77bece3219a4171320a9
 $_MODULE['<{amzpayments}prestashop>confirmation_e6dc7945b557a1cd949bea92dd58963e'] = 'Your order will be dispatched shortly.';
 $_MODULE['<{amzpayments}prestashop>confirmation_0db71da7150c27142eef9d22b843b4a9'] = 'For further questions, please contact our';
 $_MODULE['<{amzpayments}prestashop>confirmation_64430ad2835be8ad60c59e7d44e4b0b1'] = 'customer-support.';
+$_MODULE['<{amzpayments}prestashop>displaytopcolumn_2e2117b7c81aa9ea6931641ea2c6499f'] = 'Your order at ';
+$_MODULE['<{amzpayments}prestashop>displaytopcolumn_75fbf512d744977d62599cc3f0ae2bb4'] = 'is complete.';
 $_MODULE['<{amzpayments}prestashop>payment_ed20689b0d8d53ec534166a88b67f259'] = 'Pay with Amazon';
 $_MODULE['<{amzpayments}prestashop>payment_8811becbf523354e20e2017242326f70'] = '(Comfortable and save payment with your amazon-account)';

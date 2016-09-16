@@ -155,5 +155,7 @@ $_MODULE['<{amzpayments}prestashop>connect_accounts_98980b642469e6353fda51e7c25e
 $_MODULE['<{amzpayments}prestashop>process_login_599100c527155892f4359effc359a76b'] = 'Grazie. Il tuo ordine è stato inviato. Ora verrà creato il tuo account.';
 $_MODULE['<{amzpayments}prestashop>process_login_633dfeead551299f8224bc60eb5aaca9'] = 'Grazie per aver effettuato l\'accesso ad Amazon Payments';
 $_MODULE['<{amzpayments}prestashop>process_login_1d90cfb5cc90a32ee0146e7a9aec46b9'] = 'Verrai reindirizzato tra pochi secondi...';
+$_MODULE['<{amzpayments}prestashop>displaytopcolumn_2e2117b7c81aa9ea6931641ea2c6499f'] = 'Your order at ';
+$_MODULE['<{amzpayments}prestashop>displaytopcolumn_75fbf512d744977d62599cc3f0ae2bb4'] = 'is complete.';
 $_MODULE['<{amzpayments}prestashop>payment_ed20689b0d8d53ec534166a88b67f259'] = 'Paga con Amazon';
 $_MODULE['<{amzpayments}prestashop>payment_8811becbf523354e20e2017242326f70'] = '(Pagamento pratico e sicuro con il tuo account Amazon)';

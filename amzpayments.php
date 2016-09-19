@@ -154,7 +154,7 @@ class AmzPayments extends PaymentModule
     {
         $this->name = 'amzpayments';
         $this->tab = 'payments_gateways';
-        $this->version = '2.0.42';
+        $this->version = '2.0.43';
         $this->author = 'patworx multimedia GmbH';
         $this->need_instance = 1;
         
@@ -319,7 +319,7 @@ class AmzPayments extends PaymentModule
         Configuration::updateValue('BUTTON_SIZE_LPA', 'medium');
         Configuration::updateValue('TEMPLATE_VARIANT_BS', true);
         
-        return parent::install() && $this->registerHook('displayBackOfficeHeader') && $this->registerHook('displayShoppingCartFooter') && $this->registerHook('displayNav') && $this->registerHook('adminOrder') && $this->registerHook('updateOrderStatus') && $this->registerHook('displayBackOfficeFooter') && $this->registerHook('displayPayment') && $this->registerHook('paymentReturn') && $this->registerHook('payment') && $this->registerhook('displayPaymentEU') && $this->registerHook('header');
+        return parent::install() && $this->registerHook('displayTopColumn') && $this->registerHook('displayBackOfficeHeader') && $this->registerHook('displayShoppingCartFooter') && $this->registerHook('displayNav') && $this->registerHook('adminOrder') && $this->registerHook('updateOrderStatus') && $this->registerHook('displayBackOfficeFooter') && $this->registerHook('displayPayment') && $this->registerHook('paymentReturn') && $this->registerHook('payment') && $this->registerhook('displayPaymentEU') && $this->registerHook('header');
     }
 
     protected function installOrderStates()
@@ -1443,6 +1443,14 @@ class AmzPayments extends PaymentModule
                 return true;
         }
     }
+    
+    public function hookDisplayTopColumn($params)
+    {
+        if (isset($this->context->cookie->show_success_amz_message) && Tools::getValue('controller') == 'guesttracking') {
+            unset($this->context->cookie->show_success_amz_message);
+            return $this->display(__FILE__, 'views/templates/hooks/displaytopcolumn.tpl');
+        }
+    }
 
     public function hookDisplayPayment($params)
     { 
@@ -1453,15 +1461,7 @@ class AmzPayments extends PaymentModule
     {
         if (Tools::getValue('controller') == 'order') {
             $this->checkForTemporarySessionVarsAndKillThem();
-        }
-        
-        /*
-        if (isset($this->context->cookie->amz_access_token) && ! $this->context->customer->isLogged()) {
-            unset($this->context->cookie->amz_access_token);
-            unset($this->context->cookie->amazon_id);
-            unset($this->context->cookie->amz_js_string);
-        } 
-        */       
+        }    
         
         $show_amazon_button = true;
         if (($this->allow_guests == '0') && (! $this->context->customer->isLogged()))
@@ -1548,8 +1548,9 @@ class AmzPayments extends PaymentModule
         
         $logout_str = '';
         if ($this->context->controller->php_self == 'guest-tracking') {
-            if ($this->lpa_mode != 'pay')
+            if ($this->lpa_mode != 'pay') {
                 $logout_str .= '<script type="text/javascript"> amazonLogout(); </script>';
+            }
         }
         
         if ($this->button_visibility == '0')

@@ -187,5 +187,7 @@ $_MODULE['<{amzpayments}prestashop>confirmation_fb4ea5a18e5f77bece3219a4171320a9
 $_MODULE['<{amzpayments}prestashop>confirmation_e6dc7945b557a1cd949bea92dd58963e'] = 'Ihre Bestellung wird in Kürze versandt.';
 $_MODULE['<{amzpayments}prestashop>confirmation_0db71da7150c27142eef9d22b843b4a9'] = 'Für weitere Fragen wenden Sie sich bitte an unseren';
 $_MODULE['<{amzpayments}prestashop>confirmation_64430ad2835be8ad60c59e7d44e4b0b1'] = 'Kunden-Support.';
+$_MODULE['<{amzpayments}prestashop>displaytopcolumn_2e2117b7c81aa9ea6931641ea2c6499f'] = 'Ihre Bestellung bei';
+$_MODULE['<{amzpayments}prestashop>displaytopcolumn_75fbf512d744977d62599cc3f0ae2bb4'] = 'ist vollständig.';
 $_MODULE['<{amzpayments}prestashop>payment_ed20689b0d8d53ec534166a88b67f259'] = 'Pay with Amazon';
 $_MODULE['<{amzpayments}prestashop>payment_8811becbf523354e20e2017242326f70'] = '(Komfortabel mit Ihrem Amazon-Account bezahlen)';

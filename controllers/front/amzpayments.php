@@ -810,6 +810,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                             $address_invoice->save();
                                         }
                                     }
+                                    $this->context->cookie->show_success_amz_message = true;
                                 }
                                 die(Tools::jsonEncode(array(
                                     'orderSucceed' => true,

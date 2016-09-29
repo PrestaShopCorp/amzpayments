@@ -101,6 +101,16 @@ function checkForAmazonListButton() {
 				}
 			}).bind("payWithAmazonListDiv");
 		}
+	}
+	/* Adaption for onepagecheckout module */
+	if (jQuery("#form_onepagecheckoutps #onepagecheckoutps_step_three").length > 0) {
+		if (jQuery("#payWithAmazonPaymentOPC").length == 0) {
+			jQuery("#onepagecheckoutps_step_three").append('<span id="payWithAmazonPaymentOPC"></span>');
+			bindCartButton('payWithAmazonPaymentOPC');
+		}
+	}
+	if (jQuery("#onepagecheckoutps_step_review #payWithAmazonMainDiv").length > 0) {
+		jQuery("#onepagecheckoutps_step_review #payWithAmazonMainDiv").detach();
 	}	
 }
 

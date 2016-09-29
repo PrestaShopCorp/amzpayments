@@ -34,7 +34,13 @@ jQuery(document).ready(function($){
 	}
 });
 
-function initAmazon(){
+function initAmazon(){	
+
+	if (jQuery("#form_onepagecheckoutps #opc_social_networks").length > 0) {
+		if (jQuery("#payWithAmazonSocialDiv").length == 0) {
+			jQuery("#opc_social_networks").append('<span id="payWithAmazonSocialDiv" class="amazonLoginWr"></span>');
+		}
+	}
 
 	if($('.amazonLoginWr').length > 0){
 	   $('.amazonLoginWr').each(function(){
@@ -119,6 +125,16 @@ function checkForAmazonListButton() {
 			jQuery("#HOOK_ADVANCED_PAYMENT").append('<span id="payWithAmazonListDiv"></span>');
 			bindCartButton('payWithAmazonListDiv');
 		}
+	}
+	/* Adaption for onepagecheckout module */
+	if (jQuery("#form_onepagecheckoutps #onepagecheckoutps_step_three").length > 0) {
+		if (jQuery("#payWithAmazonPaymentOPC").length == 0) {
+			jQuery("#onepagecheckoutps_step_three").append('<span id="payWithAmazonPaymentOPC"></span>');
+			bindCartButton('payWithAmazonPaymentOPC');
+		}
+	}
+	if (jQuery("#onepagecheckoutps_step_review #payWithAmazonMainDiv").length > 0) {
+		jQuery("#onepagecheckoutps_step_review #payWithAmazonMainDiv").detach();
 	}
 }
 

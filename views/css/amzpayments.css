@@ -193,6 +193,12 @@ p.payment_module a.amzPayments::after {
 	display: block;
 }
 
+#payWithAmazonPaymentOPC {
+	margin-left: 8.33333%;
+	margin-bottom: 5px;
+	display: block;
+}
+
 #HOOK_ADVANCED_PAYMENT #payWithAmazonListDiv {
 	width:100%;
 	padding: 47px;

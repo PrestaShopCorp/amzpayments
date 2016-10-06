@@ -1144,39 +1144,56 @@ class AmzPayments extends PaymentModule
         
         $register_link = 'https://sellercentral-europe.amazon.com/hz/me/sp/redirect?ld=';
 
+        $this->context->smarty->assign('lang_iso_code', $this->context->language->iso_code);
         switch ($this->context->language->iso_code) {
             case 'de':
                 $register_link.= 'SPEXDEAPA-PrestashopPL';
+                $let_customer_know_link = 'https://payments.amazon.de/merchant/tools?ld=SPEXDEAPA-prestashop-2016-03-Configuration';
+                $integration_guide_link = 'http://www.patworx.de/LoginUndBezahlen/MitAmazon/PrestaShop/Dokumentation';
+                $youtube_video_link = 'https://www.youtube.com/watch?v=pbv64mDMqc8';
+                $youtube_video_embed_link = 'https://www.youtube.com/embed/pbv64mDMqc8?rel=0&showinfo=0';
             break;
             case 'en':
-                if (Tools::strtolower($this->context->language->local) == 'en-us') {
+                if (isset($this->context->language->local) && Tools::strtolower($this->context->language->local) == 'en-us') {
                     $register_link.= 'SPEXUSAPA-PrestashopPL';
                 } else {                    
                     $register_link.= 'SPEXUKAPA-PrestashopPL';
                 }
+                $let_customer_know_link = 'https://payments.amazon.co.uk/merchant/tools?ld=SPEXUKAPA-prestashop-2016-03-Configuration';
+                $integration_guide_link = 'http://www.patworx.de/LoginAndPay/WithAmazon/PrestaShopUK/Documentation';
+                $youtube_video_link = false;
+                $youtube_video_embed_link = false;
             break;
             case 'fr':
                 $register_link.= 'SPEXFRAPA-PrestashopPL';
+                $let_customer_know_link = 'https://images-na.ssl-images-amazon.com/images/G/03/amazonservices/payments/website/Amazon_Payments_MarketingGuide_UK_July2015_OLD._V283105627_.pdf?ld=SPEXFRAPA-prestashop-CP-DP';
+                $integration_guide_link = 'http://www.patworx.de/LoginAndPay/WithAmazon/PrestaShopUK/Documentation?ld=SPEXFRAPA-prestashop-CP-DP';
+                $youtube_video_link = false;
+                $youtube_video_embed_link = false;
             break;
             case 'it':
                 $register_link.= 'SPEXITAPA-PrestashopPL';
+                $let_customer_know_link = 'https://images-na.ssl-images-amazon.com/images/G/03/amazonservices/payments/website/Amazon_Payments_MarketingGuide_UK_July2015_OLD._V283105627_.pdf?ld=SPEXITAPA-prestashop-CP-DP';
+                $integration_guide_link = 'http://www.patworx.de/LoginAndPay/WithAmazon/PrestaShopUK/Documentation?ld=SPEXITAPA-prestashop-CP-DP';
+                $youtube_video_link = false;
+                $youtube_video_embed_link = false;
             break;
             case 'es':
                 $register_link.= 'SPEXESAPA-PrestashopPL';
+                $let_customer_know_link = 'https://payments.amazon.co.uk/merchant/tools?ld=SPEXUKAPA-prestashop-2016-03-Configuration';
+                $integration_guide_link = 'http://www.patworx.de/LoginAndPay/WithAmazon/PrestaShopUK/Documentation';
+                $youtube_video_link = false;
+                $youtube_video_embed_link = false;
+            break;
+            default:
+                $register_link.= 'SPEXDEAPA-PrestashopPL';
+                $let_customer_know_link = 'https://payments.amazon.co.uk/merchant/tools?ld=SPEXUKAPA-prestashop-2016-03-Configuration';
+                $integration_guide_link = 'http://www.patworx.de/LoginAndPay/WithAmazon/PrestaShopUK/Documentation';
+                $youtube_video_link = false;
+                $youtube_video_embed_link = false;                
             break;
         }
 
-        if ($this->context->language->iso_code == 'de') {
-            $let_customer_know_link = 'https://payments.amazon.de/merchant/tools?ld=SPEXDEAPA-prestashop-2016-03-Configuration';
-            $integration_guide_link = 'http://www.patworx.de/LoginUndBezahlen/MitAmazon/PrestaShop/Dokumentation';
-            $youtube_video_link = 'https://www.youtube.com/watch?v=pbv64mDMqc8';
-            $youtube_video_embed_link = 'https://www.youtube.com/embed/pbv64mDMqc8?rel=0&showinfo=0';
-        } else {
-            $let_customer_know_link = 'https://payments.amazon.co.uk/merchant/tools?ld=SPEXUKAPA-prestashop-2016-03-Configuration';
-            $integration_guide_link = 'http://www.patworx.de/LoginAndPay/WithAmazon/PrestaShopUK/Documentation';
-            $youtube_video_link = false;
-            $youtube_video_embed_link = false;
-        }
         $this->context->smarty->assign('register_link', $register_link);
         $this->context->smarty->assign('let_customer_know_link', $let_customer_know_link);
         $this->context->smarty->assign('youtube_video_link', $youtube_video_link);

@@ -70,7 +70,13 @@
 			{/if}
 			
 			<p>
-				{l s='Download the Amazon Payments Integration Guide' mod='amzpayments'} <a href="{$integration_guide_link|escape:'htmlall':'UTF-8'}" target="_blank">{l s='here' mod='amzpayments'}</a>.
+				{if $lang_iso_code == 'es'}
+					{capture assign=direct_dl_link}<a href="{$integration_guide_link|escape:'htmlall':'UTF-8'}" target="_blank">{l s='here' mod='amzpayments'}</a>{/capture}
+					{capture assign=stringcomplete}{l s='Download the Amazon Payments Integration Guide' mod='amzpayments' sprintf=$direct_dl_link}{/capture}
+					{$stringcomplete|html_entity_decode}
+				{else}
+					{l s='Download the Amazon Payments Integration Guide' mod='amzpayments'} <a href="{$integration_guide_link|escape:'htmlall':'UTF-8'}" target="_blank">{l s='here' mod='amzpayments'}</a>.
+				{/if}
 			</p>
 			
 			<p>
@@ -90,14 +96,16 @@
 				<span class="amzTick"></span> <strong>{l s='Fraud Protection' mod='amzpayments'}</strong><br />
 				{l s='You are covered by Amazon\'s fraud protection, provided at no additional cost.' mod='amzpayments'}
 			</p>
-			<p>
-				<span class="amzTick"></span> <strong>{l s='Higher conversion, higher revenues' mod='amzpayments'}</strong><br />
-				{l s='It can help you capture sales you might otherwise miss. Additionally, you benefit from the Amazon Payments fraud protection.' mod='amzpayments'}
-			</p>
-			<p>
-				<span class="amzTick"></span> <strong>{l s='True payment processing' mod='amzpayments'}</strong><br />
-				{l s='"Pay with Amazon" offers true payment processing. As a merchant, you will only forward the transaction amount.' mod='amzpayments'}
-			</p>
+			{if $lang_iso_code == 'de' || $lang_iso_code == 'en' || $lang_iso_code == 'us'}
+				<p>
+					<span class="amzTick"></span> <strong>{l s='Higher conversion, higher revenues' mod='amzpayments'}</strong><br />
+					{l s='It can help you capture sales you might otherwise miss. Additionally, you benefit from the Amazon Payments fraud protection.' mod='amzpayments'}
+				</p>
+				<p>
+					<span class="amzTick"></span> <strong>{l s='True payment processing' mod='amzpayments'}</strong><br />
+					{l s='"Pay with Amazon" offers true payment processing. As a merchant, you will only forward the transaction amount.' mod='amzpayments'}
+				</p>
+			{/if}
 			
 			{if $youtube_video_embed_link}
 				<iframe class="amz_integration_video_yt" width="80%" height="315" src="{$youtube_video_embed_link|escape:'htmlall':'UTF-8'}" frameborder="0" allowfullscreen></iframe>

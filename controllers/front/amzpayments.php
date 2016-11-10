@@ -679,6 +679,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                         if ($status == 'Declined') {
                                             $reason = $details->getAuthorizationStatus()->getReasonCode();
                                             if ($reason == 'InvalidPaymentMethod') {
+                                                $this->context->cookie->setHadErrorNowWallet = 1;
                                                 die(Tools::jsonEncode(array(
                                                     'hasError' => true,
                                                     'errors' => array(

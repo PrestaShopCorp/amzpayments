@@ -318,7 +318,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                             $address_delivery->city = $city;
                             $address_delivery->postcode = $postcode;
                             if ($state != '') {
-                                $state_id = State::getIdByIso($state);
+                                $state_id = State::getIdByIso($state, Country::getByIso($iso_code));
                                 if (!$state_id) {
                                     $state_id = State::getIdByName($state);
                                 }
@@ -571,7 +571,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                     $address_delivery->phone = $phone;
                                 }
                                 if ($state != '') {
-                                    $state_id = State::getIdByIso($state);
+                                    $state_id = State::getIdByIso($state, Country::getByIso((string) $physical_destination->getCountryCode()));
                                     if (!$state_id) {
                                         $state_id = State::getIdByName($state);
                                     }
@@ -638,7 +638,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                         $address_invoice->phone = $phone;
                                     }
                                     if ($state != '') {
-                                        $state_id = State::getIdByIso($state);
+                                        $state_id = State::getIdByIso($state, Country::getByIso((string) $amz_billing_address->getCountryCode()));
                                         if (!$state_id) {
                                             $state_id = State::getIdByName($state);
                                         }

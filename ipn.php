@@ -59,6 +59,9 @@ $response_xml = simplexml_load_string($message->NotificationData);
 $response_xml = $response_xml;
 
 if ($amz_payments->ipn_status == '1') {
+    
+    echo '[' . date("Y-m-d H:i:s") . '] [' . $message->NotificationType . '] ';
+    
     switch ($message->NotificationType) {
         case 'PaymentAuthorize':
             $q = 'SELECT * FROM ' . _DB_PREFIX_ . 'amz_transactions 
@@ -141,12 +144,17 @@ if ($amz_payments->ipn_status == '1') {
             
             break;
     }
-    if ($amz_payments->capture_mode == 'after_shipping')
+    if ($amz_payments->capture_mode == 'after_shipping') {
         $amz_payments->shippingCapture();
+    }
 }
 
 $str = ob_get_contents();
 ob_end_clean();
+
+if (trim($str) != '') {
+    $str .= "\n";
+}
 
 file_put_contents('amz.log', $str, FILE_APPEND);
 echo 'OK';

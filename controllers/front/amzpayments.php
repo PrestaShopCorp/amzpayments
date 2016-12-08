@@ -700,6 +700,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                         $amazon_authorization_id = $authorization_response_wrapper->getAuthorizeResult()
                                             ->getAuthorizationDetails()
                                             ->getAmazonAuthorizationId();
+                                        /*
                                         if (self::$amz_payments->capture_mode == 'after_auth') {
                                             $amazon_capture_response = AmazonTransactions::capture(self::$amz_payments, $this->service, $amazon_authorization_id, $total, $currency_code);
                                             if (is_object($amazon_capture_response)) {
@@ -711,6 +712,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                                     ->getCaptureReferenceId();
                                             }
                                         }
+                                        */
                                     }
                                 }
                                 
@@ -731,6 +733,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                     $amazon_authorization_id = @$authorization_response_wrapper->getAuthorizeResult()
                                         ->getAuthorizationDetails()
                                         ->getAmazonAuthorizationId();
+                                    /*
                                     if (self::$amz_payments->capture_mode == 'after_auth' && isset($amazon_authorization_id) && $amazon_authorization_id !== false && $amazon_authorization_id != null) {
                                         $amazon_capture_response = AmazonTransactions::capture(self::$amz_payments, $this->service, $amazon_authorization_id, $total, $currency_code);
                                         if (is_object($amazon_capture_response)) {
@@ -742,6 +745,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                                 ->getCaptureReferenceId();
                                         }
                                     }
+                                    */
                                 }
                                 
                                 self::$amz_payments->setAmazonReferenceIdForOrderId(Tools::getValue('amazonOrderReferenceId'), $this->module->currentOrder);
@@ -752,12 +756,14 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                 if (isset($amazon_authorization_id)) {
                                     self::$amz_payments->setAmazonAuthorizationIdForOrderId($amazon_authorization_id, $this->module->currentOrder);
                                 }
+                                /*
                                 if (isset($amazon_capture_reference_id)) {
                                     self::$amz_payments->setAmazonCaptureReferenceIdForOrderId($amazon_capture_reference_id, $this->module->currentOrder);
                                 }
                                 if (isset($amazon_capture_id)) {
                                     self::$amz_payments->setAmazonCaptureIdForOrderId($amazon_capture_id, $this->module->currentOrder);
                                 }
+                                */
                                 
                                 if (isset($this->context->cookie->amzSetStatusAuthorized)) {
                                     $tmpOrderRefs = Tools::unSerialize($this->context->cookie->amzSetStatusAuthorized);

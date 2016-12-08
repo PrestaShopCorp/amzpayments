@@ -154,7 +154,7 @@ class AmzPayments extends PaymentModule
     {
         $this->name = 'amzpayments';
         $this->tab = 'payments_gateways';
-        $this->version = '2.0.48';
+        $this->version = '2.0.49';
         $this->author = 'patworx multimedia GmbH';
         $this->need_instance = 1;
         
@@ -1601,10 +1601,17 @@ class AmzPayments extends PaymentModule
             $r = Db::getInstance()->getRow($q);
             $amz_reference_id = $r['amazon_order_reference_id'];
             
-            $q = 'SELECT * FROM ' . _DB_PREFIX_ . 'amz_transactions WHERE amz_tx_order_reference = \'' . pSQL($amz_reference_id) . '\' AND amz_tx_status != \'Closed\' AND amz_tx_status != \'Declined\'';
+            $q = 'SELECT * FROM ' . _DB_PREFIX_ . 'amz_transactions 
+                   WHERE amz_tx_order_reference = \'' . pSQL($amz_reference_id) . '\' AND 
+                     (amz_tx_status != \'Closed\' AND amz_tx_status != \'Declined\') 
+                     OR
+                     (amz_tx_status = \'Closed\' AND amz_tx_type = \'auth\' AND NOT EXISTS
+                      (SELECT amz_tx_id FROM ' . _DB_PREFIX_ . 'amz_transactions WHERE amz_tx_order_reference = \'' . pSQL($amz_reference_id) . '\' AND amz_tx_type = \'capture\')
+                     )';
             $rs = Db::getInstance()->ExecuteS($q);
-            foreach ($rs as $r)
+            foreach ($rs as $r) {
                 $this->intelligentRefresh($r);
+            }
             
             return $this->getAdminSkeleton($params['id_order'], true);
         }
@@ -1936,6 +1943,45 @@ class AmzPayments extends PaymentModule
             } elseif ((string) $details->getAuthorizationStatus()->getState() == 'Open') {
                 $order_ref = AmazonTransactions::getOrderRefFromAmzId($auth_id);
                 AmazonTransactions::setOrderStatusAuthorized($order_ref, true);
+            } elseif ((string) $details->getAuthorizationStatus()->getState() == 'Closed' && (string) $details->getAuthorizationStatus()->getReasonCode() == 'MaxCapturesProcessed') {
+                $captureIds = $details->getIdList()->getMember();
+                if (isset($captureIds[0])) {
+                    $captureId = (string)$captureIds[0];
+                    $order_ref = AmazonTransactions::getOrderRefFromAmzId($auth_id);
+                    $capture_request = new OffAmazonPaymentsService_Model_GetCaptureDetailsRequest();
+                    $capture_request->setSellerId($this->merchant_id);
+                    $capture_request->setAmazonCaptureId($captureId);
+                    try {
+                        $response = $service->getCaptureDetails($capture_request);                                                
+                        $details = $response->getGetCaptureDetailsResult()->getCaptureDetails();
+
+                        $sql_arr = array(
+                            'amz_tx_order_reference' => pSQL($order_ref),
+                            'amz_tx_type' => 'capture',
+                            'amz_tx_time' => pSQL(time()),
+                            'amz_tx_expiration' => 0,
+                            'amz_tx_amount' => pSQL((string)$details->getCaptureAmount()->getAmount()),
+                            'amz_tx_status' => pSQL($details->getCaptureStatus()->getState()),
+                            'amz_tx_reference' => pSQL($details->getCaptureReferenceId()),
+                            'amz_tx_amz_id' => pSQL($details->getAmazonCaptureId()),
+                            'amz_tx_last_change' => pSQL(time()),
+                            'amz_tx_last_update' => pSQL(time())
+                        );
+                        
+                        $checkQuery = 'SELECT * FROM ' . _DB_PREFIX_ . 'amz_transactions
+                            WHERE `amz_tx_order_reference` = \'' . pSQL($order_ref) . '\'
+                            AND `amz_tx_type` = \'capture\' 
+                            ';
+                        if ($row = Db::getInstance()->getRow($checkQuery)) {
+                            return;
+                        } else {                        
+                            Db::getInstance()->insert('amz_transactions', $sql_arr);
+                            AmazonTransactions::setOrderStatusCapturedSuccesfully($order_ref);
+                        }
+                    } catch (OffAmazonPaymentsService_Exception $e) {
+                        echo 'ERROR: ' . $e->getMessage();
+                    }
+                }
             }
         } catch (OffAmazonPaymentsService_Exception $e) {
             echo 'ERROR: ' . $e->getErrorMessage();

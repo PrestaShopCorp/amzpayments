@@ -60,7 +60,10 @@ class AmazonTransactions
         $authorize_request->setSellerId($amz_payments->merchant_id);
         $authorize_request->setTransactionTimeout($timeout);
         $authorize_request->setSoftDescriptor($comment);
-        
+        if ($amz_payments->capture_mode == 'after_auth') {
+            $authorize_request->setCaptureNow(true);
+        }
+
         if ($amz_payments->provocation == 'hard_decline' && $amz_payments->environment == 'SANDBOX') {
             $authorize_request->setSellerAuthorizationNote('{"SandboxSimulation": {"State":"Declined", "ReasonCode":"AmazonRejected"}}');
         }
@@ -135,7 +138,7 @@ class AmazonTransactions
         return $response;
     }
 
-    public static function capture(AmzPayments $amz_payments, $service, $auth_id, $amount, $currency_code = 'EUR')
+    public static function capture(AmzPayments $amz_payments, $service, $auth_id, $amount, $currency_code = 'EUR', $display_error_message = false)
     {
         if ($auth_id) {
             $order_ref = self::getOrderRefFromAmzId($auth_id);
@@ -152,7 +155,6 @@ class AmazonTransactions
             
             try {
                 $response = $service->capture($capture_request);
-                
                 $details = $response->getCaptureResult()->getCaptureDetails();
                 
                 $sql_arr = array(
@@ -171,7 +173,9 @@ class AmazonTransactions
                 
                 self::setOrderStatusCapturedSuccesfully($order_ref);
             } catch (OffAmazonPaymentsService_Exception $e) {
-                //echo 'ERROR: ' . $e->getMessage();
+                if ($display_error_message) {
+                    echo 'ERROR: ' . $e->getMessage();
+                }
                 return false;
             }
             

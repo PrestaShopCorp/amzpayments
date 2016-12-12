@@ -85,7 +85,7 @@ function initAmazon(){
 	        
 	  });
 	}
-	if (LPA_MODE == 'login_pay') {
+	if (LPA_MODE == 'login_pay' || LPA_MODE == 'pay') {
 		if($('#payWithAmazonDiv').length > 0){
 			bindCartButton('payWithAmazonDiv');		   
 		}

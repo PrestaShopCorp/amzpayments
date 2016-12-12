@@ -134,9 +134,7 @@ class AmzPayments extends PaymentModule
         'shippings_not_allowed' => 'SHIPPINGS_NOT_ALLOWED',
         'products_not_allowed' => 'PRODUCTS_NOT_ALLOWED',
         'allow_guests' => 'ALLOW_GUEST',
-        'button_size' => 'BUTTON_SIZE',
         'button_size_lpa' => 'BUTTON_SIZE_LPA',
-        'button_color' => 'BUTTON_COLOR',
         'button_color_lpa' => 'BUTTON_COLOR_LPA',
         'button_color_lpa_navi' => 'BUTTON_COLOR_LPA_NAVI',
         'type_login' => 'TYPE_LOGIN',
@@ -154,7 +152,7 @@ class AmzPayments extends PaymentModule
     {
         $this->name = 'amzpayments';
         $this->tab = 'payments_gateways';
-        $this->version = '2.0.49';
+        $this->version = '2.0.50';
         $this->author = 'patworx multimedia GmbH';
         $this->need_instance = 1;
         
@@ -492,7 +490,7 @@ class AmzPayments extends PaymentModule
 
     protected function getIPNURL()
     {
-        return str_replace('http://', 'https://', $this->context->link->getModuleLink('amzpayments','ipn.php'));
+        return str_replace('http://', 'https://', $this->context->link->getModuleLink('amzpayments','ipn', array()));
     }
 
     protected function getAllowedReturnUrls($type = 1, $joined = false)
@@ -824,31 +822,6 @@ class AmzPayments extends PaymentModule
                         'col' => 3,
                         'type' => 'select',
                         'prefix' => '<i class="icon icon-tag"></i>',
-                        'name' => 'BUTTON_SIZE',
-                        'label' => $this->l('button_size'),
-                        'options' => array(
-                            'query' => array(
-                                array(
-                                    'id_buttonsize' => 'medium',
-                                    'name' => $this->l('normal')
-                                ),
-                                array(
-                                    'id_buttonsize' => 'large',
-                                    'name' => $this->l('big')
-                                ),
-                                array(
-                                    'id_buttonsize' => 'x-large',
-                                    'name' => $this->l('very big')
-                                )
-                            ),
-                            'id' => 'id_buttonsize',
-                            'name' => 'name'
-                        )
-                    ),
-                    array(
-                        'col' => 3,
-                        'type' => 'select',
-                        'prefix' => '<i class="icon icon-tag"></i>',
                         'name' => 'BUTTON_SIZE_LPA',
                         'label' => $this->l('button_size_lpa'),
                         'options' => array(
@@ -868,27 +841,6 @@ class AmzPayments extends PaymentModule
                                 array(
                                     'id_buttonsize' => 'x-large',
                                     'name' => $this->l('very big')
-                                )
-                            ),
-                            'id' => 'id_buttonsize',
-                            'name' => 'name'
-                        )
-                    ),
-                    array(
-                        'col' => 3,
-                        'type' => 'select',
-                        'prefix' => '<i class="icon icon-tag"></i>',
-                        'name' => 'BUTTON_COLOR',
-                        'label' => $this->l('button_color'),
-                        'options' => array(
-                            'query' => array(
-                                array(
-                                    'id_buttonsize' => 'orange',
-                                    'name' => $this->l('Amazon yellow')
-                                ),
-                                array(
-                                    'id_buttonsize' => 'tan',
-                                    'name' => $this->l('Grey')
                                 )
                             ),
                             'id' => 'id_buttonsize',
@@ -1360,9 +1312,7 @@ class AmzPayments extends PaymentModule
     }
 
     public function hookDisplayShoppingCartFooter($params)
-    {
-        //$this->checkForTemporarySessionVarsAndKillThem();
-        
+    {        
         $show_amazon_button = true;
         if (isset($this->context->controller->module)) {
             if ($this->context->controller->module->name == 'amzpayments')
@@ -1476,7 +1426,7 @@ class AmzPayments extends PaymentModule
 
     public function hookDisplayHeader($params)
     {
-        if (Tools::getValue('controller') == 'order') {
+        if (Tools::getValue('controller') == 'order' || Tools::getValue('controller') == 'orderopc') {
             $this->checkForTemporarySessionVarsAndKillThem();
         }    
         
@@ -1525,23 +1475,15 @@ class AmzPayments extends PaymentModule
                 $ext_js = 'https://static-na.payments-amazon.com/OffAmazonPayments/us/js/Widgets.js ';
         } else {
             if ($this->environment == 'SANDBOX') {
-                if ($this->lpa_mode == 'pay')
-                    $ext_js = 'https://static-eu.payments-amazon.com/OffAmazonPayments/' . $this->getRegionalCodeForURL() . '/sandbox/js/Widgets.js?sellerId=' . $this->merchant_id;
-                else
-                    $ext_js = 'https://static-eu.payments-amazon.com/OffAmazonPayments/' . $this->getRegionalCodeForURL() . '/sandbox/lpa/js/Widgets.js?sellerId=' . $this->merchant_id;
+                $ext_js = 'https://static-eu.payments-amazon.com/OffAmazonPayments/' . $this->getRegionalCodeForURL() . '/sandbox/lpa/js/Widgets.js?sellerId=' . $this->merchant_id;
             } else {
-                if ($this->lpa_mode == 'pay')
-                    $ext_js = 'https://static-eu.payments-amazon.com/OffAmazonPayments/' . $this->getRegionalCodeForURL() . '/js/Widgets.js?sellerId=' . $this->merchant_id;
-                else
-                    $ext_js = 'https://static-eu.payments-amazon.com/OffAmazonPayments/' . $this->getRegionalCodeForURL() . '/lpa/js/Widgets.js?sellerId=' . $this->merchant_id;
+                $ext_js = 'https://static-eu.payments-amazon.com/OffAmazonPayments/' . $this->getRegionalCodeForURL() . '/lpa/js/Widgets.js?sellerId=' . $this->merchant_id;
             }
         }
         
         $ext_js = '<script type="text/javascript" src="' . $ext_js . '"></script>';
         
-        $amz_login_ready = '';
-        if ($this->lpa_mode != 'pay')
-            $amz_login_ready = ' window.onAmazonLoginReady = function() { amazon.Login.setClientId("' . $this->client_id . '"); }; ';
+        $amz_login_ready = ' window.onAmazonLoginReady = function() { amazon.Login.setClientId("' . $this->client_id . '"); }; ';
         
         $acc_tk = '';
         $is_logged = 'false';
@@ -1564,10 +1506,8 @@ class AmzPayments extends PaymentModule
         }
         
         $logout_str = '';
-        if ($this->context->controller->php_self == 'guest-tracking') {
-            if ($this->lpa_mode != 'pay') {
-                $logout_str .= '<script type="text/javascript"> amazonLogout(); </script>';
-            }
+        if ($this->context->controller->php_self == 'guest-tracking') {            
+            $logout_str .= '<script type="text/javascript"> amazonLogout(); </script>';            
         }
         
         if ($this->button_visibility == '0')
@@ -1575,7 +1515,7 @@ class AmzPayments extends PaymentModule
         else
             $css_string = '';
         
-        $js_file = ($this->lpa_mode == 'pay' ? 'views/js/amzpayments.js' : 'views/js/amzpayments_login.js');
+        $js_file = 'views/js/amzpayments_login.js';
         $js_file = Tools::file_get_contents(_PS_MODULE_DIR_ . $this->name . '/' . $js_file);
         $js_file = str_replace(array(
             "\t",

@@ -38,47 +38,35 @@ class AmzpaymentsIpnModuleFrontController extends ModuleFrontController
             Tools::redirect('index');
         }
         
-        file_put_contents(__DIR__ . '/../../amz.log', '[' . date("Y-m-d H:i:s") . '] IPN wurde aufgerufen' . "\n", FILE_APPEND);
+        file_put_contents(dirname(__FILE__) . '/../../amz.log', '[' . date("Y-m-d H:i:s") . '] IPN wurde aufgerufen' . "\n", FILE_APPEND);
         
         $headers_tmp = getallheaders();
 		$headers = array();
 		foreach ($headers_tmp as $k => $v) {
-			$headers[strtolower($k)] = $v;
+			$headers[Tools::strtolower($k)] = $v;
 		}
         $response = Tools::file_get_contents('php://input');
         
-		//file_put_contents(__DIR__ . '/../../amz.log', '[' . date("Y-m-d H:i:s") . '] Headers: ' . print_r($headers,1) . "\n", FILE_APPEND);
-		//file_put_contents(__DIR__ . '/../../amz.log', '[' . date("Y-m-d H:i:s") . '] Response: ' . $response . "\n", FILE_APPEND);
+		//file_put_contents(dirname(__FILE__) . '/../../amz.log', '[' . date("Y-m-d H:i:s") . '] Headers: ' . print_r($headers,1) . "\n", FILE_APPEND);
+		//file_put_contents(dirname(__FILE__) . '/../../amz.log', '[' . date("Y-m-d H:i:s") . '] Response: ' . $response . "\n", FILE_APPEND);
 
         $amz_payments = new AmzPayments();
         
         try {
             $client = $amz_payments->getService(false, 'notification');
-			file_put_contents(__DIR__ . '/../../amz.log', '[' . date("Y-m-d H:i:s") . '] Notification response received' . "\n", FILE_APPEND);
+			file_put_contents(dirname(__FILE__) . '/../../amz.log', '[' . date("Y-m-d H:i:s") . '] Notification response received' . "\n", FILE_APPEND);
             $result = $client->parseRawMessage($headers, $response);
         } catch (OffAmazonPaymentsNotifications_InvalidMessageException $ex) {
             error_log($ex->getMessage());
-			file_put_contents(__DIR__ . '/../../amz.log', '[' . date("Y-m-d H:i:s") . '] Error: ' . $ex->getMessage() . "\n", FILE_APPEND);
+			file_put_contents(dirname(__FILE__) . '/../../amz.log', '[' . date("Y-m-d H:i:s") . '] Error: ' . $ex->getMessage() . "\n", FILE_APPEND);
             header("HTTP/1.1 503 Service Unavailable");
             exit(0);
         }
         
-        function jsonCleanDecode($json, $assoc = false, $depth = 512, $options = 0)
-        {
-            $json = preg_replace("#(/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+/)|([\s\t](//).*)#", '', $json);
-            if (version_compare(phpversion(), '5.4.0', '>='))
-                $json = Tools::jsonDecode($json, $assoc, $depth, $options);
-                elseif (version_compare(phpversion(), '5.3.0', '>='))
-                $json = Tools::jsonDecode($json, $assoc, $depth);
-                else
-                    $json = Tools::jsonDecode($json, $assoc);
-                    return $json;
-        }
-        
         ob_start();
         
-        $response = jsonCleanDecode($response);
-        $message = jsonCleanDecode($response->Message);
+        $response = $this->jsonCleanDecode($response);
+        $message = $this->jsonCleanDecode($response->Message);
         $response_xml = simplexml_load_string($message->NotificationData);
         $response_xml = $response_xml;
         
@@ -180,9 +168,23 @@ class AmzpaymentsIpnModuleFrontController extends ModuleFrontController
             $str .= "\n";
         }
         
-        file_put_contents(__DIR__ . '/../../amz.log', $str, FILE_APPEND);
+        file_put_contents(dirname(__FILE__) . '/../../amz.log', $str, FILE_APPEND);
         echo 'OK';        
         
         exit();
     }
+    
+    protected function jsonCleanDecode($json, $assoc = false, $depth = 512, $options = 0)
+    {
+        $json = preg_replace("#(/\*([^*]|[\r\n]|(\*+([^*/]|[\r\n])))*\*+/)|([\s\t](//).*)#", '', $json);
+        if (version_compare(phpversion(), '5.4.0', '>=')) {
+            $json = Tools::jsonDecode($json, $assoc, $depth, $options);
+        } elseif (version_compare(phpversion(), '5.3.0', '>=')) {
+            $json = Tools::jsonDecode($json, $assoc, $depth);
+        } else {
+            $json = Tools::jsonDecode($json, $assoc);
+        }
+        return $json;
+    }
+    
 }

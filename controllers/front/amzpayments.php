@@ -523,7 +523,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                 
                                 $names_array = explode(' ', (string) $physical_destination->getName(), 2);
                                 
-                                $regex = '/[^a-zA-ZäöüÄÖÜßÂâÀÁáàÇçÈÉËëéèÎîÏïÙÛùúòóûêôŸÿ\s]/';
+                                $regex = '/[^a-zA-ZäöüÄÖÜßÂâÀÁáàÇçÈÉËëéèÎîÏïÙÛùúòóûêôíÍŸÿªñÑ\s]/u';
                                 $names_array[0] = preg_replace($regex, '', $names_array[0]);
                                 $names_array[1] = preg_replace($regex, '', $names_array[1]);
                                 
@@ -599,7 +599,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                     
                                     $invoice_names_array = explode(' ', (string) $amz_billing_address->getName(), 2);
                                     
-                                    $regex = '/[^a-zA-ZäöüÄÖÜßÂâÀÁáàÇçÈÉËëéèÎîÏïÙÛùúòóûêôŸÿ\s]/';
+                                    $regex = '/[^a-zA-ZäöüÄÖÜßÂâÀÁáàÇçÈÉËëéèÎîÏïÙÛùúòóûêôíÍŸÿªñÑ\s]/u';
                                     $invoice_names_array[0] = preg_replace($regex, '', $invoice_names_array[0]);
                                     $invoice_names_array[1] = preg_replace($regex, '', $invoice_names_array[1]);
                                     

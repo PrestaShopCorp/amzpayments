@@ -22,13 +22,13 @@ function amazonLogout(){
 var authRequest;    
 
 jQuery(document).ready(function($){
-	if ($("#authentication #SubmitCreate").length > 0) {
+	if ($("#authentication #SubmitCreate").length > 0 && LPA_MODE != 'pay') {
 		$("#authentication #SubmitCreate").parent().append('<div class="amazonLoginWr" id="jsLoginAuthPage"></div>');
 	}
 	
 	if (AMZACTIVE == '1') {
 		initAmazon();
-    	$('.logout').click(function() {
+		$('.logout').click(function() {
 			amazonLogout();
 		});
 	}
@@ -85,7 +85,7 @@ function initAmazon(){
 	        
 	  });
 	}
-	if (LPA_MODE == 'login_pay') {
+	if (LPA_MODE == 'login_pay' || LPA_MODE == 'pay') {
 		if($('#payWithAmazonDiv').length > 0){
 			bindCartButton('payWithAmazonDiv');		   
 		}

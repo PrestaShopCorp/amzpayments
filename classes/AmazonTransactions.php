@@ -301,7 +301,7 @@ class AmazonTransactions
                 ->getState() != 'Open') {
                 return $response;
             }
-            self::setOrderStatusAuthorized($order_ref);
+            self::setOrderStatusAuthorized($order_ref, true);
         }
         return $response;
     }

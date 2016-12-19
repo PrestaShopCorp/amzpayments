@@ -9,9 +9,6 @@
 *}
 <div id="payWithAmazonMainDiv"{if $hide_button} style="display:none;"{/if}>
 	<div id="payWithAmazonDiv">
-		{if $preBuildButton}
-			<img src="{$btn_url|escape:'htmlall':'UTF-8'}?sellerId={$sellerID|escape:'htmlall':'UTF-8'}&size={$size|escape:'htmlall':'UTF-8'}&color={$color|escape:'htmlall':'UTF-8'}" style="cursor: pointer;"/>
-		{/if}
 	</div>
 </div>
 {literal}<script> bindCartButton('payWithAmazonDiv'); </script>{/literal}

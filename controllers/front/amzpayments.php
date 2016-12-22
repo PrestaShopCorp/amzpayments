@@ -561,10 +561,22 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                 $address_delivery = AmazonPaymentsAddressHelper::findByAmazonOrderReferenceIdOrNew(Tools::getValue('amazonOrderReferenceId'));
                                 $address_delivery->lastname = $names_array[1];
                                 $address_delivery->firstname = $names_array[0];
-                                if ($s_company_name != '') {
-                                    $address_delivery->company = $s_company_name;
+                                
+                                if (in_array(Tools::strtolower((string)$physical_destination->getCountryCode()), array('de', 'at', 'uk'))) {
+                                    if ($s_company_name != '') {
+                                        $address_delivery->company = $s_company_name;
+                                    }
+                                    $address_delivery->address1 = (string) $s_street . ' ' . (string) $s_street_nr;
+                                } else {
+                                    $address_delivery->address1 = (string) $physical_destination->getAddressLine1();
+                                    if (trim((string)$physical_destination->getAddressLine2()) != '') {
+                                        $address_delivery->address2 = (string) $physical_destination->getAddressLine2();
+                                    }
+                                    if (trim((string)$physical_destination->getAddressLine3()) != '') {
+                                        $address_delivery->address2.= ' ' . (string) $physical_destination->getAddressLine3();
+                                    }
                                 }
-                                $address_delivery->address1 = (string) $s_street . ' ' . (string) $s_street_nr;
+                                
                                 $address_delivery->postcode = (string) $physical_destination->getPostalCode();
                                 $address_delivery->id_country = Country::getByIso((string) $physical_destination->getCountryCode());
                                 if ($phone != '') {
@@ -627,10 +639,22 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                     $address_invoice->alias = 'Amazon Payments Invoice';
                                     $address_invoice->lastname = $invoice_names_array[1];
                                     $address_invoice->firstname = $invoice_names_array[0];
-                                    if ($s_company_name != '') {
-                                        $address_invoice->company = $s_company_name;
+                                    
+                                    if (in_array(Tools::strtolower((string)$amz_billing_address->getCountryCode()), array('de', 'at', 'uk'))) {
+                                        if ($s_company_name != '') {
+                                            $address_invoice->company = $s_company_name;
+                                        }
+                                        $address_invoice->address1 = (string) $s_street . ' ' . (string) $s_street_nr;
+                                    } else {
+                                        $address_invoice->address1 = (string) $amz_billing_address->getAddressLine1();
+                                        if (trim((string)$amz_billing_address->getAddressLine2()) != '') {
+                                            $address_invoice->address2 = (string) $amz_billing_address->getAddressLine2();
+                                        }
+                                        if (trim((string)$amz_billing_address->getAddressLine3()) != '') {
+                                            $address_invoice->address2.= ' ' . (string) $amz_billing_address->getAddressLine3();
+                                        }
                                     }
-                                    $address_invoice->address1 = (string) $s_street . ' ' . (string) $s_street_nr;
+
                                     $address_invoice->postcode = (string) $amz_billing_address->getPostalCode();
                                     $address_invoice->city = $city;
                                     $address_invoice->id_country = Country::getByIso((string) $amz_billing_address->getCountryCode());

@@ -569,8 +569,12 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                     $address_delivery->address1 = (string) $s_street . ' ' . (string) $s_street_nr;
                                 } else {
                                     $address_delivery->address1 = (string) $physical_destination->getAddressLine1();
-                                    if (trim((string)$physical_destination->getAddressLine2()) != '') {
-                                        $address_delivery->address2 = (string) $physical_destination->getAddressLine2();
+                                    if (trim($address_delivery->address1) == '') {
+                                        $address_delivery->address1 = (string) $physical_destination->getAddressLine2();
+                                    } else {
+                                        if (trim((string)$physical_destination->getAddressLine2()) != '') {
+                                            $address_delivery->address2 = (string) $physical_destination->getAddressLine2();
+                                        }
                                     }
                                     if (trim((string)$physical_destination->getAddressLine3()) != '') {
                                         $address_delivery->address2.= ' ' . (string) $physical_destination->getAddressLine3();
@@ -647,8 +651,12 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                         $address_invoice->address1 = (string) $s_street . ' ' . (string) $s_street_nr;
                                     } else {
                                         $address_invoice->address1 = (string) $amz_billing_address->getAddressLine1();
-                                        if (trim((string)$amz_billing_address->getAddressLine2()) != '') {
-                                            $address_invoice->address2 = (string) $amz_billing_address->getAddressLine2();
+                                        if (trim($address_invoice->address1) == '') {
+                                            $address_invoice->address1 = (string) $amz_billing_address->getAddressLine2();
+                                        } else {
+                                            if (trim((string)$amz_billing_address->getAddressLine2()) != '') {
+                                                $address_invoice->address2 = (string) $amz_billing_address->getAddressLine2();
+                                            }
                                         }
                                         if (trim((string)$amz_billing_address->getAddressLine3()) != '') {
                                             $address_invoice->address2.= ' ' . (string) $amz_billing_address->getAddressLine3();

@@ -527,6 +527,22 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                 $names_array[0] = preg_replace($regex, '', $names_array[0]);
                                 $names_array[1] = preg_replace($regex, '', $names_array[1]);
                                 
+                                $names_array[0] = preg_replace('/(\d+)/', ' ', $names_array[0]);
+                                $names_array[0] = trim(preg_replace('/ {2,}/', ' ', $names_array[0]));
+
+                                $names_array[1] = preg_replace('/(\d+)/', ' ', $names_array[1]);
+                                $names_array[1] = trim(preg_replace('/ {2,}/', ' ', $names_array[1])); 
+                                
+                                if (trim($names_array[1]) == '') {
+                                    $splitted_names_array = explode(' ', $names_array[0], 2);
+                                    $names_array[0] = $splitted_names_array[0];
+                                    if (!isset($splitted_names_array[1]) || trim($splitted_names_array[1]) == '') {                                        
+                                        $names_array[1] = $names_array[0];
+                                    } else {
+                                        $names_array[1] = $splitted_names_array[1];
+                                    }
+                                }
+                                
                                 if ($customer->is_guest) {
                                     $customer->lastname = $names_array[1];
                                     $customer->firstname = $names_array[0];
@@ -557,7 +573,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                 if ((string) $physical_destination->getPhone() != '' && ValidateCore::isPhoneNumber((string) $physical_destination->getPhone())) {
                                     $phone = (string) $physical_destination->getPhone();
                                 }
-                                
+
                                 $address_delivery = AmazonPaymentsAddressHelper::findByAmazonOrderReferenceIdOrNew(Tools::getValue('amazonOrderReferenceId'));
                                 $address_delivery->lastname = $names_array[1];
                                 $address_delivery->firstname = $names_array[0];
@@ -618,6 +634,22 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                     $regex = '/[^a-zA-ZäöüÄÖÜßÂâÀÁáàÇçÈÉËëéèÎîÏïÙÛùúòóûêôíÍŸÿªñÑ\s]/u';
                                     $invoice_names_array[0] = preg_replace($regex, '', $invoice_names_array[0]);
                                     $invoice_names_array[1] = preg_replace($regex, '', $invoice_names_array[1]);
+                                    
+                                    $invoice_names_array[0] = preg_replace('/(\d+)/', ' ', $invoice_names_array[0]);
+                                    $invoice_names_array[0] = trim(preg_replace('/ {2,}/', ' ', $invoice_names_array[0]));
+                                    
+                                    $invoice_names_array[1] = preg_replace('/(\d+)/', ' ', $invoice_names_array[1]);
+                                    $invoice_names_array[1] = trim(preg_replace('/ {2,}/', ' ', $invoice_names_array[1]));
+                                    
+                                    if (trim($invoice_names_array[1]) == '') {
+                                        $splitted_invoices_names_array = explode(' ', $invoice_names_array[0], 2);
+                                        $invoice_names_array[0] = $splitted_invoices_names_array[0];
+                                        if (!isset($splitted_invoices_names_array[1]) || trim($splitted_invoices_names_array[1]) == '') {
+                                            $invoice_names_array[1] = $invoice_names_array[0];
+                                        } else {
+                                            $invoice_names_array[1] = $splitted_invoices_names_array[1];
+                                        }
+                                    }                                    
                                     
                                     $s_company_name = '';
                                     if ((string) $amz_billing_address->getAddressLine3() != '') {

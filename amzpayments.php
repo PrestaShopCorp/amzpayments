@@ -152,7 +152,7 @@ class AmzPayments extends PaymentModule
     {
         $this->name = 'amzpayments';
         $this->tab = 'payments_gateways';
-        $this->version = '2.0.54';
+        $this->version = '2.0.55';
         $this->author = 'patworx multimedia GmbH';
         $this->need_instance = 1;
         
@@ -1542,11 +1542,13 @@ class AmzPayments extends PaymentModule
             $amz_reference_id = $r['amazon_order_reference_id'];
             
             $q = 'SELECT * FROM ' . _DB_PREFIX_ . 'amz_transactions 
-                   WHERE amz_tx_order_reference = \'' . pSQL($amz_reference_id) . '\' AND 
-                     (amz_tx_status != \'Closed\' AND amz_tx_status != \'Declined\') 
-                     OR
-                     (amz_tx_status = \'Closed\' AND amz_tx_type = \'auth\' AND NOT EXISTS
-                      (SELECT amz_tx_id FROM ' . _DB_PREFIX_ . 'amz_transactions WHERE amz_tx_order_reference = \'' . pSQL($amz_reference_id) . '\' AND amz_tx_type = \'capture\')
+                   WHERE amz_tx_order_reference = \'' . pSQL($amz_reference_id) . '\' AND
+                     (
+                       (amz_tx_status != \'Closed\' AND amz_tx_status != \'Declined\') 
+                       OR
+                       (amz_tx_status = \'Closed\' AND amz_tx_type = \'auth\' AND NOT EXISTS
+                         (SELECT amz_tx_id FROM ' . _DB_PREFIX_ . 'amz_transactions WHERE amz_tx_order_reference = \'' . pSQL($amz_reference_id) . '\' AND amz_tx_type = \'capture\')
+                       )
                      )';
             $rs = Db::getInstance()->ExecuteS($q);
             foreach ($rs as $r) {

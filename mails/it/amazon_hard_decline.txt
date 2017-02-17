@@ -1,0 +1,5 @@
+
+Gentile Cliente,
+
+Purtroppo Amazon Pay ha rifiutato il pagamento del suo ordine nel nostro negozio on-line {$ORDER_NR} de {$ORDER_DATE}. Non esiti a contattarci per ulteriori informazioni a riguardo.
+

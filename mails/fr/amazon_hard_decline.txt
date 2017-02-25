@@ -1,5 +1,5 @@
 
-Sehr geehrter Kunde,
+Cher client,
 
-Leider wurde die Zahlung zu Ihrer Bestellung {$ORDER_NR} vom {$ORDER_DATE} in unserem Onlineshop von Amazon Payments zurückgewiesen. Bitte kontaktieren Sie uns.
+Malheureusement Amazon Pay n’a pas pu traier le paiement pour votre commande auprès {$ORDER_NR} de {$ORDER_DATE}. Veuillez nous contacter concernant cette commande.
 

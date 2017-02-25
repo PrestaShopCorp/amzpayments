@@ -55,6 +55,13 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
 
     public function init()
     {
+		if (is_dir(_PS_ROOT_DIR_._MODULE_DIR_.'chronopost')) {
+			$chronorelais_module_uri = _MODULE_DIR_.'chronopost';
+			$this->context->controller->addCSS($chronorelais_module_uri.'/views/css/chronorelais.css', 'all');
+			$this->context->controller->addJS('https://maps.google.com/maps/api/js?sensor=false');
+			$this->context->controller->addJS($chronorelais_module_uri.'/views/js/chronorelais.js');
+		}
+		
         self::$amz_payments = new AmzPayments();
         $this->isLogged = (bool) $this->context->customer->id && Customer::customerIdExistsStatic((int) $this->context->cookie->id_customer);
         
@@ -311,7 +318,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                             
                             $address_delivery = AmazonPaymentsAddressHelper::findByAmazonOrderReferenceIdOrNew(Tools::getValue('amazonOrderReferenceId'));
                             $address_delivery->id_country = Country::getByIso($iso_code);
-                            $address_delivery->alias = 'Amazon Payments Delivery';
+                            $address_delivery->alias = 'Amazon Pay Delivery';
                             $address_delivery->lastname = 'amzLastname';
                             $address_delivery->firstname = 'amzFirstname';
                             $address_delivery->address1 = 'amzAddress1';
@@ -476,7 +483,17 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                     $confirm_order_reference_request = new OffAmazonPaymentsService_Model_ConfirmOrderReferenceRequest();
                                     $confirm_order_reference_request->setAmazonOrderReferenceId(Tools::getValue('amazonOrderReferenceId'));
                                     $confirm_order_reference_request->setSellerId(self::$amz_payments->merchant_id);
-                                    $this->service->confirmOrderReference($confirm_order_reference_request);
+                                    
+                                    try {
+                                        $this->service->confirmOrderReference($confirm_order_reference_request);
+                                    } catch (OffAmazonPaymentsService_Exception $e) {
+                                        die(Tools::jsonEncode(array(
+                                            'hasError' => true,
+                                            'errors' => array(
+                                                Tools::displayError(self::$amz_payments->l('Your selected payment method is currently not available. Please select another one.'))
+                                            )
+                                        )));                                        
+                                    }
                                     
                                     $get_order_reference_details_request = new OffAmazonPaymentsService_Model_GetOrderReferenceDetailsRequest();
                                     $get_order_reference_details_request->setSellerId(self::$amz_payments->merchant_id);
@@ -672,7 +689,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                     }
                                     
                                     $address_invoice = AmazonPaymentsAddressHelper::findByAmazonOrderReferenceIdOrNew(Tools::getValue('amazonOrderReferenceId') . '-inv');
-                                    $address_invoice->alias = 'Amazon Payments Invoice';
+                                    $address_invoice->alias = 'Amazon Pay Invoice';
                                     $address_invoice->lastname = $invoice_names_array[1];
                                     $address_invoice->firstname = $invoice_names_array[0];
                                     

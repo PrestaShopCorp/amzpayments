@@ -38,6 +38,7 @@ $_MODULE['<{amzpayments}prestashop>amzpayments_ecd640fa2d15770cb1adee4075ad7afb'
 $_MODULE['<{amzpayments}prestashop>amzpayments_9b8926c200109a9e2a829e4d5ce14ade'] = 'Mostra pulsanti in front-end';
 $_MODULE['<{amzpayments}prestashop>amzpayments_00d23a76e43b46dae9ec7aa9dcbebb32'] = 'Si';
 $_MODULE['<{amzpayments}prestashop>amzpayments_b9f5c797ebbf55adccdd8539a65a0241'] = 'No';
+$_MODULE['<{amzpayments}prestashop>amzpayments_8667cecb1de0a963f560deab1b02523d'] = 'Nascondere Componenti Accedi con Amazon in Frontend';
 $_MODULE['<{amzpayments}prestashop>amzpayments_e900e40bc91d3f9f7f0a99fed68a2e96'] = 'Modalità operativa';
 $_MODULE['<{amzpayments}prestashop>amzpayments_4245499695408b974322be6f01b0d17a'] = 'Modalità Test';
 $_MODULE['<{amzpayments}prestashop>amzpayments_cebd5bbe0ffdecc270a8a324e5a277dd'] = 'Modalità Live';

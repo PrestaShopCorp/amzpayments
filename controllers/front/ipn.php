@@ -104,7 +104,7 @@ class AmzpaymentsIpnModuleFrontController extends ModuleFrontController
                         $reason = (string) $response_xml->AuthorizationDetails->AuthorizationStatus->ReasonCode;
                         $amz_payments->intelligentDeclinedMail($response_xml->AuthorizationDetails->AmazonAuthorizationId, $reason);
                         if ($amz_payments->decline_status_id > 0) {
-                            AmazonTransactions::setOrderStatusDeclined(r['amz_tx_order_reference']);
+                            AmazonTransactions::setOrderStatusDeclined($r['amz_tx_order_reference']);
                         }
                     }
         
@@ -121,6 +121,8 @@ class AmzpaymentsIpnModuleFrontController extends ModuleFrontController
                         'amz_tx_last_update' => time()
                     );
                     Db::getInstance()->update('amz_transactions', $sqlArr, ' amz_tx_id = ' . (int) $r['amz_tx_id']);
+                    
+                    AmazonTransactions::setOrderStatusCapturedSuccesfully($r['amz_tx_order_reference']);                 
         
                     $orderTotal = AmazonTransactions::getOrderRefTotal($r['amz_tx_order_reference']);
                     if ($r['amz_tx_amount'] == $orderTotal) {

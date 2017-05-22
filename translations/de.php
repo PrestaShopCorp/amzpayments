@@ -38,6 +38,7 @@ $_MODULE['<{amzpayments}prestashop>amzpayments_ecd640fa2d15770cb1adee4075ad7afb'
 $_MODULE['<{amzpayments}prestashop>amzpayments_9b8926c200109a9e2a829e4d5ce14ade'] = 'Buttons in Frontend zeigen';
 $_MODULE['<{amzpayments}prestashop>amzpayments_00d23a76e43b46dae9ec7aa9dcbebb32'] = 'Aktiv';
 $_MODULE['<{amzpayments}prestashop>amzpayments_b9f5c797ebbf55adccdd8539a65a0241'] = 'Inaktiv';
+$_MODULE['<{amzpayments}prestashop>amzpayments_8667cecb1de0a963f560deab1b02523d'] = 'Login mit Amazon Komponenten im Frontend verbergen';
 $_MODULE['<{amzpayments}prestashop>amzpayments_e900e40bc91d3f9f7f0a99fed68a2e96'] = 'Betriebsmodus';
 $_MODULE['<{amzpayments}prestashop>amzpayments_4245499695408b974322be6f01b0d17a'] = 'Testbetrieb';
 $_MODULE['<{amzpayments}prestashop>amzpayments_cebd5bbe0ffdecc270a8a324e5a277dd'] = 'Livebetrieb';
@@ -189,5 +190,5 @@ $_MODULE['<{amzpayments}prestashop>confirmation_0db71da7150c27142eef9d22b843b4a9
 $_MODULE['<{amzpayments}prestashop>confirmation_64430ad2835be8ad60c59e7d44e4b0b1'] = 'Kunden-Support.';
 $_MODULE['<{amzpayments}prestashop>displaytopcolumn_2e2117b7c81aa9ea6931641ea2c6499f'] = 'Ihre Bestellung bei';
 $_MODULE['<{amzpayments}prestashop>displaytopcolumn_75fbf512d744977d62599cc3f0ae2bb4'] = 'ist vollständig.';
-$_MODULE['<{amzpayments}prestashop>payment_ed20689b0d8d53ec534166a88b67f259'] = 'Pay with Amazon';
+$_MODULE['<{amzpayments}prestashop>payment_ed20689b0d8d53ec534166a88b67f259'] = 'Amazon Pay';
 $_MODULE['<{amzpayments}prestashop>payment_8811becbf523354e20e2017242326f70'] = '(Komfortabel mit Ihrem Amazon-Account bezahlen)';

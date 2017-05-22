@@ -55,6 +55,8 @@ class AmzpaymentsUser_To_ShopModuleFrontController extends ModuleFrontController
 
     public function init()
     {
+		$_REQUEST['customer_privacy'] = 1;
+		$_POST['customer_privacy'] = 1;
         self::$amz_payments = new AmzPayments();
         $this->isLogged = (bool) $this->context->customer->id && Customer::customerIdExistsStatic((int) $this->context->cookie->id_customer);
         
@@ -302,7 +304,7 @@ class AmzpaymentsUser_To_ShopModuleFrontController extends ModuleFrontController
     public function initContent()
     {
         parent::initContent();
-        $this->setTemplate('user_to_shop.tpl');
+        die('');
     }
 
     /**

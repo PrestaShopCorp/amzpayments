@@ -215,4 +215,10 @@ p.payment_module a.amzPayments::after {
 		width: 48.8%;
 		padding-left: 190px;
 	} 
+	#HOOK_ADVANCED_PAYMENT #amzRowElement #payWithAmazonListDiv {
+		width: 100%;
+		padding: 37px;
+		padding-left: 190px;
+	}
+	
 }

@@ -38,6 +38,7 @@ $_MODULE['<{amzpayments}prestashop>amzpayments_ecd640fa2d15770cb1adee4075ad7afb'
 $_MODULE['<{amzpayments}prestashop>amzpayments_9b8926c200109a9e2a829e4d5ce14ade'] = 'Afficher les boutons à l\'avant';
 $_MODULE['<{amzpayments}prestashop>amzpayments_00d23a76e43b46dae9ec7aa9dcbebb32'] = 'Oui';
 $_MODULE['<{amzpayments}prestashop>amzpayments_b9f5c797ebbf55adccdd8539a65a0241'] = 'Non';
+$_MODULE['<{amzpayments}prestashop>amzpayments_8667cecb1de0a963f560deab1b02523d'] = 'Cacher les éléments de connexion avec Amazon sur la partie client';
 $_MODULE['<{amzpayments}prestashop>amzpayments_e900e40bc91d3f9f7f0a99fed68a2e96'] = 'Mode de fonctionnement';
 $_MODULE['<{amzpayments}prestashop>amzpayments_4245499695408b974322be6f01b0d17a'] = 'Mode test';
 $_MODULE['<{amzpayments}prestashop>amzpayments_cebd5bbe0ffdecc270a8a324e5a277dd'] = 'Mode en ligne';

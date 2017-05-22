@@ -122,7 +122,7 @@ function checkForAmazonListButton() {
 	}	
 	if (jQuery("#HOOK_ADVANCED_PAYMENT").length > 0) {
 		if (jQuery("#payWithAmazonListDiv").length == 0) {
-			jQuery("#HOOK_ADVANCED_PAYMENT").append('<span id="payWithAmazonListDiv"></span>');
+			jQuery('<div class="col-xs-6 col-md-6" id="amzRowElement"><span id="payWithAmazonListDiv"></span></div>').appendTo("#HOOK_ADVANCED_PAYMENT .row");
 			bindCartButton('payWithAmazonListDiv');
 		}
 	}

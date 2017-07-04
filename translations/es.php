@@ -59,7 +59,7 @@ $_MODULE['<{amzpayments}prestashop>amzpayments_63d098bd60c469852c135349eb50c6ad'
 $_MODULE['<{amzpayments}prestashop>amzpayments_679b25385157e8e2f4053d5225baee9d'] = 'Rechazo temporal (2 min)';
 $_MODULE['<{amzpayments}prestashop>amzpayments_25f159eff77797ead5fbaf19eea4a7ae'] = 'Rechazo de captación';
 $_MODULE['<{amzpayments}prestashop>amzpayments_8eff3617002e9a854b9704717f35f7aa'] = 'Iniciar sesión en una ventana emergente';
-$_MODULE['<{amzpayments}prestashop>amzpayments_d64946b0089fa5361240915d80d1cea6'] = 'Excluir métodos de pago (identificadores, separados por comas)';
+$_MODULE['<{amzpayments}prestashop>amzpayments_d64946b0089fa5361240915d80d1cea6'] = 'Excluir métodos de pago';
 $_MODULE['<{amzpayments}prestashop>amzpayments_199ef1b03dbd9cff69ccdfe33f467a8c'] = 'Excluir productos de Pagar con Amazon';
 $_MODULE['<{amzpayments}prestashop>amzpayments_12c3d641b9e8ed280e818675cf288d6b'] = '¿Permitir pedidos de invitados?';
 $_MODULE['<{amzpayments}prestashop>amzpayments_9a6393c36c052c03efe4a8c0f0fcc487'] = 'Tamaño del botón de pago de Amazon';

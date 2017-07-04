@@ -59,7 +59,7 @@ $_MODULE['<{amzpayments}prestashop>amzpayments_63d098bd60c469852c135349eb50c6ad'
 $_MODULE['<{amzpayments}prestashop>amzpayments_679b25385157e8e2f4053d5225baee9d'] = 'Rifiuto flessibile (2 min.)';
 $_MODULE['<{amzpayments}prestashop>amzpayments_25f159eff77797ead5fbaf19eea4a7ae'] = 'Rifiuto di acquisizione';
 $_MODULE['<{amzpayments}prestashop>amzpayments_8eff3617002e9a854b9704717f35f7aa'] = 'Accesso in finestra popup';
-$_MODULE['<{amzpayments}prestashop>amzpayments_d64946b0089fa5361240915d80d1cea6'] = 'Escludi metodi di spedizione (ID, separati da virgole)';
+$_MODULE['<{amzpayments}prestashop>amzpayments_d64946b0089fa5361240915d80d1cea6'] = 'Escludi metodi di spedizione';
 $_MODULE['<{amzpayments}prestashop>amzpayments_199ef1b03dbd9cff69ccdfe33f467a8c'] = 'Escludi prodotti da Paga con Amazon';
 $_MODULE['<{amzpayments}prestashop>amzpayments_12c3d641b9e8ed280e818675cf288d6b'] = 'Consentire ordini da parte di ospiti?';
 $_MODULE['<{amzpayments}prestashop>amzpayments_9a6393c36c052c03efe4a8c0f0fcc487'] = 'Dimensione del pulsante checkout Amazon';

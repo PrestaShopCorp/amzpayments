@@ -20,6 +20,14 @@ $(document).ready(function() {
 	
 });
 
+setInterval(checkVoucherForm, 1000);
+function checkVoucherForm()
+{
+	if ($("form#voucher").length > 0) {
+		if ($("form#voucher").attr("action") != REDIRECTAMZ) { $("form#voucher").attr("action", REDIRECTAMZ); }
+	}
+}
+
 function updateCarrierSelectionAndGift()
 {
 	if (!requestIsRunning) {
@@ -179,6 +187,29 @@ function updateAddressSelection(amazonOrderReferenceId)
 							$(this).attr('id', $(this).attr('id').replace(/_\d+$/, '_' + idAddress_delivery));
 					});
 				}
+				
+				if (typeof updateAddressId === "function") {
+					first_item = $("#cart_summary .cart_item ");
+					if (first_item.length > 0) {
+						if (first_item.hasClass('address_' + jsonData.summary.delivery.id)) {
+						} else {
+							$(".cart_item").each(
+									function() {
+										if ($(this).attr("id").indexOf('product_') > -1) {
+											var ids = $(this).attr('id').split('_');
+											var id_product = ids[1];
+											var id_product_attribute = ids[2];
+											var old_id_address_delivery = ids[4];
+											var new_id_address_delivery = jsonData.summary.delivery.id;											
+											var line = $(this);
+											updateAddressId(id_product, id_product_attribute, old_id_address_delivery, new_id_address_delivery);
+										}
+									}
+								);
+						}
+					}
+				}
+				
 				updateCarrierList(jsonData.carrier_data);
 				updateCartSummary(jsonData.summary);
 				updateHookShoppingCart(jsonData.HOOK_SHOPPING_CART);

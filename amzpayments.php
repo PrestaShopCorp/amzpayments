@@ -321,7 +321,7 @@ class AmzPayments extends PaymentModule
         Configuration::updateValue('TEMPLATE_VARIANT_BS', true);
         Configuration::updateValue('AMZ_HIDE_LOGIN_BTNS', false);
         
-        return parent::install() && $this->registerHook('displayTopColumn') && $this->registerHook('displayBackOfficeHeader') && $this->registerHook('displayShoppingCartFooter') && $this->registerHook('displayNav') && $this->registerHook('adminOrder') && $this->registerHook('updateOrderStatus') && $this->registerHook('displayBackOfficeFooter') && $this->registerHook('displayPayment') && $this->registerHook('paymentReturn') && $this->registerHook('payment') && $this->registerhook('displayPaymentEU') && $this->registerHook('header');
+        return parent::install() && $this->registerHook('displayTopColumn') && $this->registerHook('actionCarrierUpdate') && $this->registerHook('displayBackOfficeHeader') && $this->registerHook('displayShoppingCartFooter') && $this->registerHook('displayNav') && $this->registerHook('adminOrder') && $this->registerHook('updateOrderStatus') && $this->registerHook('displayBackOfficeFooter') && $this->registerHook('displayPayment') && $this->registerHook('paymentReturn') && $this->registerHook('payment') && $this->registerhook('displayPaymentEU') && $this->registerHook('header');
     }
 
     protected function installOrderStates()
@@ -404,7 +404,7 @@ class AmzPayments extends PaymentModule
     {
         if (Tools::isSubmit('submitAmzpaymentsModule')) {
             foreach (self::$config_array as $name => $f) {
-                if (Tools::getValue($f) === false) {
+                if (Tools::getValue($f) === false && $f != 'SHIPPINGS_NOT_ALLOWED') {
                     $this->_postErrors[] = $this->l($name) . ' ' . $this->l(': details are required.');
                 }
             }
@@ -450,7 +450,23 @@ class AmzPayments extends PaymentModule
     {
         if (Tools::isSubmit('submitAmzpaymentsModule')) {
             foreach (self::$config_array as $f => $conf_key) {
-                Configuration::updateValue($conf_key, trim(Tools::getValue($conf_key)));                
+                if ($conf_key == 'SHIPPINGS_NOT_ALLOWED') {
+                    $carriers_set = array();
+                    foreach ($this->getCarrierOptionsPostNames() as $pname) {
+                        if (Tools::getValue($pname)) {
+                            $carrier_set = Tools::str_replace_once('SHIPPINGS_NOT_ALLOWED_carrier_', '', $pname);
+                            $carrier_set = Tools::str_replace_once('_on', '', $carrier_set);
+                            $carriers_set[] = (int)$carrier_set;
+                        }
+                    }
+                    if (sizeof($carriers_set) > 0) {
+                        Configuration::updateValue($conf_key, join(",", $carriers_set));
+                    } else {
+                        Configuration::updateValue($conf_key, '');
+                    }
+                } else {
+                    Configuration::updateValue($conf_key, trim(Tools::getValue($conf_key)));
+                }
             }                
         }
         $this->_postSuccess[] = $this->l('Settings updated');
@@ -521,6 +537,7 @@ class AmzPayments extends PaymentModule
         foreach (self::$config_array as $name => $key) {
             $return[$key] = Configuration::get($key);
         }
+        $return = $this->addDisabledCarrierOptions($return);        
         return $return;
     }
 
@@ -810,10 +827,14 @@ class AmzPayments extends PaymentModule
                     ),
                     array(
                         'col' => 3,
-                        'type' => 'text',
+                        'type' => 'checkbox',
                         'prefix' => '<i class="icon icon-tag"></i>',
                         'name' => 'SHIPPINGS_NOT_ALLOWED',
-                        'label' => $this->l('shippings_not_allowed')
+                        'label' => $this->l('shippings_not_allowed'),
+                        'values' => array('query' => $this->getCarrierOptions(),
+                            'id' => 'id',
+                            'name' => 'label',
+                        ),
                     ),
                     array(
                         'col' => 3,
@@ -1286,6 +1307,40 @@ class AmzPayments extends PaymentModule
                 return 'https://api.amazon.com';
         }    
     }
+    
+    public function getCarrierOptionsPostNames()
+    {
+        $ret = array();
+        foreach ($this->getCarrierOptions() as $c) {
+            $ret[] = 'SHIPPINGS_NOT_ALLOWED_carrier_' . $c['value'] . '_on';
+        }
+        return $ret;
+    }
+    
+    public function addDisabledCarrierOptions($fields_values)
+    {
+        if ($this->shippings_not_allowed != '') {
+            $blocked_shipping_ids = explode(',', $this->shippings_not_allowed);
+            foreach ($blocked_shipping_ids as $k => $v) {
+                $fields_values['SHIPPINGS_NOT_ALLOWED_carrier_' . $v . '_on'] = $v;
+            }
+        }
+        return $fields_values;
+    }
+    
+    public function getCarrierOptions()
+    {
+        $ret = array();
+        $carriers = Carrier::getCarriers(Configuration::get('PS_LANG_DEFAULT'));
+        foreach ($carriers as $carrier) {
+            $ret[] = array('id' => 'carrier_' . $carrier['id_carrier'] . '_on', 
+                           'value' => $carrier['id_carrier'],
+                           'val' => $carrier['id_carrier'],
+                           'label' => $carrier['name']
+            );
+        }
+        return $ret;
+    }
 
     protected function checkForTemporarySessionVarsAndKillThem()
     {
@@ -1334,7 +1389,7 @@ class AmzPayments extends PaymentModule
     }
 
     public function hookDisplayShoppingCartFooter($params)
-    {        
+    {
         $show_amazon_button = true;
         if (isset($this->context->controller->module)) {
             if ($this->context->controller->module->name == 'amzpayments')
@@ -1584,6 +1639,20 @@ class AmzPayments extends PaymentModule
             
             return $this->getAdminSkeleton($params['id_order'], true);
         }
+    }
+    
+    public function hookActionCarrierUpdate($params)
+    {
+        $old_carrier = $params['id_carrier'];
+        $new_carrier = $params['carrier']->id;
+        if ($this->shippings_not_allowed != '') {
+            $blocked_shipping_ids = explode(',', $this->shippings_not_allowed);
+            foreach ($blocked_shipping_ids as $k => $v) {
+                $blocked_shipping_ids[$k] = (int)$v == (int)$old_carrier ? (int)$new_carrier : (int)$v;
+            }
+            Configuration::updateValue('SHIPPINGS_NOT_ALLOWED', join(",", $blocked_shipping_ids));
+        }
+        return true;
     }
 
     public function hookUpdateOrderStatus($params)
@@ -2328,7 +2397,8 @@ class AmzPayments extends PaymentModule
         }
     }
     
-    public function requestTokenInfo($accessTokenValue) {
+    public function requestTokenInfo($accessTokenValue)
+    {
         $c = curl_init($this->getLpaApiUrl() . '/auth/o2/tokeninfo?access_token=' . urlencode($accessTokenValue));
         
     	curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
@@ -2340,7 +2410,8 @@ class AmzPayments extends PaymentModule
     	return $d;
     }
     
-    public function requestProfile($accessTokenValue) {
+    public function requestProfile($accessTokenValue)
+    {
     	$c = curl_init($this->getLpaApiUrl() . '/user/profile');
     	
     	curl_setopt($c, CURLOPT_HTTPHEADER, array(
@@ -2352,6 +2423,30 @@ class AmzPayments extends PaymentModule
     	curl_close($c);
     	$d = Tools::jsonDecode($r);
     	return $d;
+    }
+    
+    public static function prepareNamesArray($names_array)
+    {
+        $regex = '/[^a-zA-ZäöüÄÖÜßÂâÀÁáàÇçÈÉËëéèÎîÏïÙÛùúòóûêôíÍŸÿªñÑ\s]/u';
+        $names_array[0] = preg_replace($regex, '', $names_array[0]);
+        $names_array[1] = preg_replace($regex, '', $names_array[1]);
+        
+        $names_array[0] = preg_replace('/(\d+)/', ' ', $names_array[0]);
+        $names_array[0] = trim(preg_replace('/ {2,}/', ' ', $names_array[0]));
+        
+        $names_array[1] = preg_replace('/(\d+)/', ' ', $names_array[1]);
+        $names_array[1] = trim(preg_replace('/ {2,}/', ' ', $names_array[1]));
+        
+        if (trim($names_array[1]) == '') {
+            $splitted_names_array = explode(' ', $names_array[0], 2);
+            $names_array[0] = $splitted_names_array[0];
+            if (!isset($splitted_names_array[1]) || trim($splitted_names_array[1]) == '') {
+                $names_array[1] = $names_array[0];
+            } else {
+                $names_array[1] = $splitted_names_array[1];
+            }
+        }
+        return $names_array;
     }
     
 }

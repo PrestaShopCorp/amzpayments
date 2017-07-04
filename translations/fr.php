@@ -60,7 +60,7 @@ $_MODULE['<{amzpayments}prestashop>amzpayments_63d098bd60c469852c135349eb50c6ad'
 $_MODULE['<{amzpayments}prestashop>amzpayments_679b25385157e8e2f4053d5225baee9d'] = 'Refus court (2 min)';
 $_MODULE['<{amzpayments}prestashop>amzpayments_25f159eff77797ead5fbaf19eea4a7ae'] = 'Capture déclinée';
 $_MODULE['<{amzpayments}prestashop>amzpayments_8eff3617002e9a854b9704717f35f7aa'] = 'Connectez-vous dans une fenêtre contextuelle';
-$_MODULE['<{amzpayments}prestashop>amzpayments_d64946b0089fa5361240915d80d1cea6'] = 'Exclure des modes d\'expédition (ID, séparés par une virgule)';
+$_MODULE['<{amzpayments}prestashop>amzpayments_d64946b0089fa5361240915d80d1cea6'] = 'Exclure des modes d\'expédition';
 $_MODULE['<{amzpayments}prestashop>amzpayments_199ef1b03dbd9cff69ccdfe33f467a8c'] = 'Exclure des produits du service Payez avec Amazon';
 $_MODULE['<{amzpayments}prestashop>amzpayments_12c3d641b9e8ed280e818675cf288d6b'] = 'Autoriser les commandes en tant qu\'invité ?';
 $_MODULE['<{amzpayments}prestashop>amzpayments_9a6393c36c052c03efe4a8c0f0fcc487'] = 'Taille du bouton de paiement Amazon';

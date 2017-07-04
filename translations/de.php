@@ -60,7 +60,7 @@ $_MODULE['<{amzpayments}prestashop>amzpayments_63d098bd60c469852c135349eb50c6ad'
 $_MODULE['<{amzpayments}prestashop>amzpayments_679b25385157e8e2f4053d5225baee9d'] = 'Soft Decline (2min)';
 $_MODULE['<{amzpayments}prestashop>amzpayments_25f159eff77797ead5fbaf19eea4a7ae'] = 'Capture Decline';
 $_MODULE['<{amzpayments}prestashop>amzpayments_8eff3617002e9a854b9704717f35f7aa'] = 'Wenn möglich Amazon-Login in Popup';
-$_MODULE['<{amzpayments}prestashop>amzpayments_d64946b0089fa5361240915d80d1cea6'] = 'Versandarten ausschließen (IDs, Kommagetrent)';
+$_MODULE['<{amzpayments}prestashop>amzpayments_d64946b0089fa5361240915d80d1cea6'] = 'Versandarten ausschließen';
 $_MODULE['<{amzpayments}prestashop>amzpayments_199ef1b03dbd9cff69ccdfe33f467a8c'] = 'Produkte von Zahlung mit Amazon ausschließen';
 $_MODULE['<{amzpayments}prestashop>amzpayments_12c3d641b9e8ed280e818675cf288d6b'] = 'Gastbestellungen erlauben?';
 $_MODULE['<{amzpayments}prestashop>amzpayments_9a6393c36c052c03efe4a8c0f0fcc487'] = 'Größe des Amazon-Checkout-Buttons (pay-Modus)';

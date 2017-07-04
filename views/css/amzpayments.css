@@ -80,9 +80,10 @@ body#module-amzpayments-amzpayments .delivery_option label {
 	top: 50%;
 }
 
-#module-amzpayments-amzpayments td.cart_delete.text-center div,
+/* #module-amzpayments-amzpayments td.cart_delete.text-center div,
 #module-amzpayments-amzpayments td.cart_quantity.text-center,
-#module-amzpayments-amzpayments th.cart_quantity.item.text-center,
+#module-amzpayments-amzpayments th.cart_quantity.item.text-center, */
+#module-amzpayments-amzpayments #HOOK_SHOPPING_CART,
 #module-amzpayments-amzpayments #order_step {
 	display: none;
 }

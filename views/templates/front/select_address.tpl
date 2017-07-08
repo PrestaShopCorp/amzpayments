@@ -7,7 +7,7 @@
 *  @copyright  2013-2015 patworx multimedia GmbH
 *  @license    Released under the GNU General Public License
 *}
-{capture name=path}{l s='Select your address'}{/capture}
+{capture name=path}{l s='Select your address' mod='amzpayments'}{/capture}
 {nocache}
 <script>
 {literal}

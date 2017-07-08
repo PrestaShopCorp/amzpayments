@@ -189,6 +189,10 @@ p.payment_module a.amzPayments::after {
 	}
 }
 
+#submitAddress {
+	margin-top: 20px;
+}
+
 #jsLoginAuthPage {
 	margin-top: 20px;
 	display: block;

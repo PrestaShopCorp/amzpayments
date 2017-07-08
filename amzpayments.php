@@ -187,7 +187,7 @@ class AmzPayments extends PaymentModule
             $this->warning = $this->l('Your Amazon Payments details must be configured before using this module.');
         if (! count(Currency::checkPaymentCurrencies($this->id)))
             $this->warning = $this->l('No currency has been set for this payment module');
-        
+
         if (isset($this->context->cookie->amz_access_token_set_time)) {
             if ($this->context->cookie->amz_access_token_set_time < time() - 3000)
                 unset($this->context->cookie->amz_access_token);

@@ -78,8 +78,10 @@ class AmzpaymentsUser_To_ShopModuleFrontController extends ModuleFrontController
                     case 'redirectAuthentication':
                     case 'setusertoshop':
                         if (Tools::getValue('access_token')) {
-                            $this->context->cookie->amz_access_token = AmzPayments::prepareCookieValueForPrestaShopUse(Tools::getValue('access_token'));
-                            $this->context->cookie->amz_access_token_set_time = time();
+                            if (Tools::getValue('access_token') != 'undefined') {
+                                $this->context->cookie->amz_access_token = AmzPayments::prepareCookieValueForPrestaShopUse(Tools::getValue('access_token'));
+                                $this->context->cookie->amz_access_token_set_time = time();
+                            }
                         } else {
                             if (Tools::getValue('method') == 'redirectAuthentication') {
                                 Tools::redirect('index');
@@ -215,7 +217,7 @@ class AmzpaymentsUser_To_ShopModuleFrontController extends ModuleFrontController
                                 $_POST['passwd'] = md5(time() . _COOKIE_KEY_);
                                 
                                 $firstname = '';
-                                $lastname = '';
+                                $lastname = '';                                
                                 $customer_name = preg_replace("/[0-9]/", "", $customer_name);
                                 if (strpos(trim($customer_name), ' ') !== false) {
                                     list ($firstname, $lastname) = explode(' ', trim($customer_name));
@@ -270,14 +272,8 @@ class AmzpaymentsUser_To_ShopModuleFrontController extends ModuleFrontController
                                                 $goto = $this->context->link->getModuleLink('amzpayments', 'amzpayments');
                                             } elseif (Tools::getValue('action') == 'fromCheckout') {
                                                 $goto = 'index.php?controller=history';
-                                            } elseif ($this->context->cart->nbProducts()) {
-                                                $goto = 'index.php?controller=order';
                                             } else {
-                                                if (Configuration::get('PS_SSL_ENABLED')) {
-                                                    $goto = _PS_BASE_URL_SSL_ . __PS_BASE_URI__;
-                                                } else {
-                                                    $goto = _PS_BASE_URL_ . __PS_BASE_URI__;
-                                                }
+                                                $goto = $this->context->link->getModuleLink('amzpayments', 'select_address');                                                
                                             }
                                             
                                             if (Tools::getValue('method') == 'redirectAuthentication') {

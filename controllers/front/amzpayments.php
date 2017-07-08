@@ -130,8 +130,10 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                         switch (Tools::getValue('method')) {
                             case 'setsession':
                                 $this->context->cookie->amazon_id = Tools::getValue('amazon_id');
-                                $this->context->cookie->amz_access_token = AmzPayments::prepareCookieValueForPrestaShopUse(Tools::getValue('access_token'));
-                                $this->context->cookie->amz_access_token_set_time = time();
+                                if (Tools::getValue('access_token') != 'undefined' && Tools::getValue('access_token') != '') {
+                                    $this->context->cookie->amz_access_token = AmzPayments::prepareCookieValueForPrestaShopUse(Tools::getValue('access_token'));
+                                    $this->context->cookie->amz_access_token_set_time = time();
+                                }
 
                                 if (! $this->context->customer->isLogged() && self::$amz_payments->lpa_mode != 'pay') {
                                     $d = self::$amz_payments->requestTokenInfo(AmzPayments::prepareCookieValueForAmazonPaymentsUse($this->context->cookie->amz_access_token));
@@ -312,12 +314,13 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                 $city = (string) $physical_destination->GetCity();
                                 $postcode = (string) $physical_destination->GetPostalCode();
                                 $state = (string) $physical_destination->GetStateOrRegion();
-                                
+
+                                $names_array = array('amzFirstname', 'amzLastname');
                                 if (method_exists($physical_destination, 'getName')) {
-                                    $names_array = explode(' ', (string) $physical_destination->getName(), 2);
-                                    $names_array = AmzPayments::prepareNamesArray($names_array);
-                                } else {
-                                    $names_array = array('amzFirstname', 'amzLastname');
+                                    if ((string) $physical_destination->getName() != '') {
+                                        $names_array = explode(' ', (string) $physical_destination->getName(), 2);
+                                        $names_array = AmzPayments::prepareNamesArray($names_array);
+                                    } 
                                 }
                                 
                                 $phone = '0000000000';
@@ -331,6 +334,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                 $address_delivery->lastname = $names_array[1];
                                 $address_delivery->firstname = $names_array[0];
                                 
+                                $address_delivery->address1 = 'amzAddress1';
                                 if (method_exists($physical_destination, 'getAddressLine3') && method_exists($physical_destination, 'getAddressLine2') && method_exists($physical_destination, 'getAddressLine1')) {
                                     $s_company_name = '';
                                     if ((string) $physical_destination->getAddressLine3() != '') {
@@ -356,6 +360,9 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                         $address_delivery->address1 = (string) $physical_destination->getAddressLine1();
                                         if (trim($address_delivery->address1) == '') {
                                             $address_delivery->address1 = (string) $physical_destination->getAddressLine2();
+                                            if ($address_delivery->address1 == '') {
+                                                $address_delivery->address1 = 'amzAddress1';
+                                            }
                                         } else {
                                             if (trim((string)$physical_destination->getAddressLine2()) != '') {
                                                 $address_delivery->address2 = (string) $physical_destination->getAddressLine2();
@@ -365,8 +372,6 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                             $address_delivery->address2.= ' ' . (string) $physical_destination->getAddressLine3();
                                         }
                                     }
-                                } else {
-                                    $address_delivery->address1 = 'amzAddress1';
                                 }
                                 
                                 $address_delivery->city = $city;
@@ -1415,6 +1420,11 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                         unset($delivery_option_list[$key1][$key]);
                     }
                 }
+            }
+        }
+        foreach ($delivery_option_list as $key1 => $del_opts) {
+            if (sizeof($delivery_option_list[$key1]) == 0) {
+                unset($delivery_option_list[$key1]);
             }
         }
 

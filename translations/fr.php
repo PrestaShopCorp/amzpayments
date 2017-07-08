@@ -183,3 +183,6 @@ $_MODULE['<{amzpayments}prestashop>displaytopcolumn_2e2117b7c81aa9ea6931641ea2c6
 $_MODULE['<{amzpayments}prestashop>displaytopcolumn_75fbf512d744977d62599cc3f0ae2bb4'] = 'est effective.';
 $_MODULE['<{amzpayments}prestashop>payment_ed20689b0d8d53ec534166a88b67f259'] = 'Payez avec Amazon';
 $_MODULE['<{amzpayments}prestashop>payment_8811becbf523354e20e2017242326f70'] = '(Paiement sécurisé et pratique avec votre compte Amazon)';
+$_MODULE['<{amzpayments}prestashop>select_address_3e9e333adde6e70086bd29441c8c45eb'] = 'Adresse';
+$_MODULE['<{amzpayments}prestashop>select_address_a5058d1398eb35e54f561de54459aece'] = 'Sélectionnez l\'adresse';
+$_MODULE['<{amzpayments}prestashop>select_address_a0bfb8e59e6c13fc8d990781f77694fe'] = 'Continuer';

@@ -139,7 +139,7 @@ class AmzpaymentsSelect_AddressModuleFrontController extends ModuleFrontControll
                         } else {
                             $address_delivery->address1 = 'amzAddress1';
                         }
-                    
+                        $address_delivery = AmzPayments::prepareAddressLines($address_delivery);
                         $address_delivery->city = $city;
                         $address_delivery->postcode = $postcode;
                         $address_delivery->id_state = 0;

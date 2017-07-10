@@ -1399,9 +1399,6 @@ class AmzPayments extends PaymentModule
         if (! $this->checkIfCurrencyMatchesModuleRegion())
             $show_amazon_button = false;
         
-        if (($this->allow_guests == '0') && (! $this->context->customer->isLogged()))
-            $show_amazon_button = false;
-        
         if (! $this->checkCurrency($params['cart']))
             $show_amazon_button = false;
         
@@ -1416,6 +1413,7 @@ class AmzPayments extends PaymentModule
         }
         if ($show_amazon_button) {
             $this->context->smarty->assign('sellerID', $this->merchant_id);
+            $this->context->smarty->assign('create_account', ($this->allow_guests == '0' || Configuration::get('PS_GUEST_CHECKOUT_ENABLED') == '0') && (!$this->context->customer->isLogged()));
             $this->context->smarty->assign('size', $this->button_size);
             $this->context->smarty->assign('color', $this->button_color);
             $this->context->smarty->assign('btn_url', $this->getButtonURL());
@@ -1508,8 +1506,8 @@ class AmzPayments extends PaymentModule
         }    
         
         $show_amazon_button = true;
-        if (($this->allow_guests == '0') && (! $this->context->customer->isLogged()))
-            $show_amazon_button = false;
+        /*if (($this->allow_guests == '0') && (! $this->context->customer->isLogged()))
+            $show_amazon_button = false;*/
         
         if (! $this->checkCurrency($params['cart']))
             $show_amazon_button = false;
@@ -1610,7 +1608,7 @@ class AmzPayments extends PaymentModule
         ), $js_file);
         $this->context->cookie->amz_js_string = self::prepareCookieValueForPrestaShopUse($amz_login_ready);
         $amz_login_ready = '<script type="text/javascript" src="' . Tools::str_replace_once((Configuration::get('PS_SSL_ENABLED') ? 'http://' : ''), (Configuration::get('PS_SSL_ENABLED') ? 'https://' : ''), $this->context->link->getModuleLink('amzpayments', 'jsmode', array('c' => 'amz_js_string', 't' => time()))) . '"></script>';
-        return $css_string . $amz_login_ready . $ext_js . '<script type="text/javascript"> var AMZACTIVE = \'' . ($show_amazon_button ? '1' : '0') . '\'; var AMZSELLERID = "' . $this->merchant_id . '"; var AMZ_BUTTON_TYPE_LOGIN = "' . $this->type_login . '"; var AMZ_BUTTON_TYPE_PAY = "' . $this->type_pay . '"; var AMZ_BUTTON_SIZE_PAY = "' . $this->button_size . '"; var AMZ_BUTTON_SIZE_LPA = "' . $this->button_size_lpa . '"; var AMZ_BUTTON_COLOR_LPA = "' . $this->button_color_lpa . '"; var AMZ_BUTTON_COLOR_PAY = "' . $this->button_color . '"; var AMZ_BUTTON_COLOR_LPA_NAVI = "' . $this->button_color_lpa_navi . '"; var AMZ_WIDGET_LANGUAGE = "' . $this->getWidgetLanguageCode() . '"; var CLIENT_ID = "' . $this->client_id . '"; var useRedirect = ' . (! self::currentSiteIsSSL() || $this->popup == '0' ? 'true' : 'false') . '; var LPA_MODE = "' . $this->lpa_mode . '"; var REDIRECTAMZ = "' . $redirect . '"; var LOGINREDIRECTAMZ_CHECKOUT = "' . $login_checkout_redirect . '"; var LOGINREDIRECTAMZ = "' . $login_redirect . '"; var is_logged = ' . $is_logged . '; var AMZACCTK = "' . $acc_tk . '"; var SETUSERAJAX = "' . $set_user_ajax . '";' . $js_file . ' </script>' . $logout_str;
+        return $css_string . $amz_login_ready . $ext_js . '<script type="text/javascript"> var AMZACTIVE = \'' . ($show_amazon_button ? '1' : '0') . '\'; var AMZSELLERID = "' . $this->merchant_id . '"; var AMZ_CREATE_ACCOUNT_EXP = "' . (($this->allow_guests == '0' || Configuration::get('PS_GUEST_CHECKOUT_ENABLED') == '0') && (!$this->context->customer->isLogged()) ? '1' : '0') . '"; var AMZ_BUTTON_TYPE_LOGIN = "' . $this->type_login . '"; var AMZ_BUTTON_TYPE_PAY = "' . $this->type_pay . '"; var AMZ_BUTTON_SIZE_PAY = "' . $this->button_size . '"; var AMZ_BUTTON_SIZE_LPA = "' . $this->button_size_lpa . '"; var AMZ_BUTTON_COLOR_LPA = "' . $this->button_color_lpa . '"; var AMZ_BUTTON_COLOR_PAY = "' . $this->button_color . '"; var AMZ_BUTTON_COLOR_LPA_NAVI = "' . $this->button_color_lpa_navi . '"; var AMZ_WIDGET_LANGUAGE = "' . $this->getWidgetLanguageCode() . '"; var CLIENT_ID = "' . $this->client_id . '"; var useRedirect = ' . (! self::currentSiteIsSSL() || $this->popup == '0' ? 'true' : 'false') . '; var LPA_MODE = "' . $this->lpa_mode . '"; var REDIRECTAMZ = "' . $redirect . '"; var LOGINREDIRECTAMZ_CHECKOUT = "' . $login_checkout_redirect . '"; var LOGINREDIRECTAMZ = "' . $login_redirect . '"; var is_logged = ' . $is_logged . '; var AMZACCTK = "' . $acc_tk . '"; var SETUSERAJAX = "' . $set_user_ajax . '";' . $js_file . ' </script>' . $logout_str;
     }
 
     public function hookDisplayAdminOrder($params)
@@ -2447,6 +2445,13 @@ class AmzPayments extends PaymentModule
             }
         }
         return $names_array;
+    }
+    
+    public static function prepareAddressLines(Address $address)
+    {
+        $address->address1 = Tools::str_replace_once('_', '-', $address->address1);
+        $address->address2 = Tools::str_replace_once('_', '-', $address->address2);
+        return $address;
     }
     
 }

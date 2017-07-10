@@ -174,7 +174,7 @@ class AmzpaymentsUser_To_ShopModuleFrontController extends ModuleFrontController
                                 }
                                 
                                 if (Tools::getValue('action') == 'checkout') {
-                                    $goto = $this->context->link->getModuleLink('amzpayments', 'amzpayments');
+                                    $goto = $this->context->link->getModuleLink('amzpayments', 'amzpayments', array('session' => Tools::getValue('amazon_id')));
                                 } elseif (Tools::getValue('action') == 'fromCheckout') {
                                     $goto = 'index.php?controller=history';
                                 } elseif ($this->context->cart->nbProducts()) {
@@ -269,7 +269,7 @@ class AmzpaymentsUser_To_ShopModuleFrontController extends ModuleFrontController
                                             }
                                             
                                             if (Tools::getValue('action') == 'checkout') {
-                                                $goto = $this->context->link->getModuleLink('amzpayments', 'amzpayments');
+                                                $goto = $this->context->link->getModuleLink('amzpayments', 'amzpayments', array('session' => Tools::getValue('amazon_id')));
                                             } elseif (Tools::getValue('action') == 'fromCheckout') {
                                                 $goto = 'index.php?controller=history';
                                             } else {

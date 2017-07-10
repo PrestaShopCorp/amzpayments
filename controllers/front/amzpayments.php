@@ -373,7 +373,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                         }
                                     }
                                 }
-                                
+                                $address_delivery = AmzPayments::prepareAddressLines($address_delivery);
                                 $address_delivery->city = $city;
                                 $address_delivery->postcode = $postcode;
                                 $address_delivery->id_state = 0;
@@ -654,7 +654,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                             $address_delivery->address2.= ' ' . (string) $physical_destination->getAddressLine3();
                                         }
                                     }
-
+                                    $address_delivery = AmzPayments::prepareAddressLines($address_delivery);
                                     $address_delivery->postcode = (string) $physical_destination->getPostalCode();
                                     $address_delivery->id_country = Country::getByIso((string) $physical_destination->getCountryCode());
                                     if ($phone != '') {
@@ -734,7 +734,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                                     $address_invoice->address2.= ' ' . (string) $amz_billing_address->getAddressLine3();
                                                 }
                                             }
-
+                                            $address_invoice = AmzPayments::prepareAddressLines($address_invoice);
                                             $address_invoice->postcode = (string) $amz_billing_address->getPostalCode();
                                             $address_invoice->city = $city;
                                             $address_invoice->id_country = Country::getByIso((string) $amz_billing_address->getCountryCode());

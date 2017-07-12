@@ -25,5 +25,6 @@ if (!defined('_PS_VERSION_'))
 function upgrade_module_2_0_58($module)
 {
     Configuration::updateValue('AMZ_HIDE_LOGIN_BTNS', '0');
+    $module->registerHook('actionCarrierUpdate');
     return true;
 }

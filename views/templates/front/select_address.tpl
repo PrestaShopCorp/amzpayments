@@ -11,10 +11,6 @@
 {nocache}
 <script>
 {literal}
-
-$(document).ready(function() {	
-   
-});
 {/literal}
 </script>
 
@@ -23,13 +19,14 @@ $(document).ready(function() {
 <div class="row">
 	<div class="col-xs-12 col-sm-6" id="addressBookWidgetDivBs">
 	</div>
+	<div class="col-xs-12 col-sm-6" id="addressMissings">		
+	</div>
 </div>
 
 <div class="row">
 	<div class="col-xs-12">
-		<button type="button" id="submitAddress" name="submitAddress" class="button btn btn-default button-medium" style="display:none;">
+		<button type="button" id="submitAddress" name="submitAddress" class="button btn btn-default button-medium" style="display:none;" data-continue="{l s='Continue' mod='amzpayments'}" data-change="{l s='Save changes' mod='amzpayments'}">
 			<span>
-				<i class="icon-lock left"></i>
 				{l s='Continue' mod='amzpayments'}
 			</span>
 		</button>
@@ -64,6 +61,12 @@ function updateAddressSelection(amazonOrderReferenceId)
 	var idAddress_delivery = 0;
 	var idAddress_invoice = idAddress_delivery;
 	
+	var additional_fields = '';
+	$("#addressMissings .additional_field").each(function() {
+		additional_fields += '&add[' + $(this).attr("name") + ']=' + $(this).val();		
+	});
+	
+	
 	$.ajax({
 		type: 'POST',
 		headers: { "cache-control": "no-cache" },
@@ -71,7 +74,7 @@ function updateAddressSelection(amazonOrderReferenceId)
 		async: true,
 		cache: false,
 		dataType : "json",
-		data: 'amazonOrderReferenceId=' + amazonOrderReferenceId + '&allow_refresh=1&ajax=true&method=updateAddressesSelected&id_address_delivery=' + idAddress_delivery + '&id_address_invoice=' + idAddress_invoice + '&token=' + static_token,
+		data: 'amazonOrderReferenceId=' + amazonOrderReferenceId + '&allow_refresh=1&ajax=true&method=updateAddressesSelected&id_address_delivery=' + idAddress_delivery + '&id_address_invoice=' + idAddress_invoice + '&token=' + static_token + additional_fields,
 		success: function(jsonData)
 		{
 			if (jsonData.hasError)
@@ -81,11 +84,21 @@ function updateAddressSelection(amazonOrderReferenceId)
 					if(error !== 'indexOf')
 						errors += $('<div />').html(jsonData.errors[error]).text() + "\n";
 				alert(errors);
+				
+				if (jsonData.fields_html) {
+					$("#addressMissings").empty();
+					$("#addressMissings").html(jsonData.fields_html);
+					$("#submitAddress span").text($("#submitAddress").attr("data-change"));
+					$("#submitAddress").fadeIn();
+					$("#submitAddress").unbind('click').on('click', function() { updateAddressSelection(amazonOrderReferenceId); });
+				}
+				
 			}
 			else
 			{
+				$("#submitAddress span").text($("#submitAddress").attr("data-continue"));
 				$("#submitAddress").fadeIn();
-				$("#submitAddress").on('click', function() { window.location.href = jsonData.redirect; });
+				$("#submitAddress").unbind('click').on('click', function() { window.location.href = jsonData.redirect; });
 			}
 		},
 		error: function(XMLHttpRequest, textStatus, errorThrown) {

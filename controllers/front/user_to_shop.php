@@ -1,6 +1,6 @@
 <?php
 /**
- * 2013-2015 Amazon Advanced Payment APIs Modul
+ * 2013-2017 Amazon Advanced Payment APIs Modul
  *
  * for Support please visit www.patworx.de
  *
@@ -15,7 +15,7 @@
  * to license@prestashop.com so we can send you a copy immediately.
  *
  *  @author    patworx multimedia GmbH <service@patworx.de>
- *  @copyright 2013-2015 patworx multimedia GmbH
+ *  @copyright 2013-2017 patworx multimedia GmbH
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
@@ -55,8 +55,8 @@ class AmzpaymentsUser_To_ShopModuleFrontController extends ModuleFrontController
 
     public function init()
     {
-		$_REQUEST['customer_privacy'] = 1;
-		$_POST['customer_privacy'] = 1;
+        $_REQUEST['customer_privacy'] = 1;
+        $_POST['customer_privacy'] = 1;
         self::$amz_payments = new AmzPayments();
         $this->isLogged = (bool) $this->context->customer->id && Customer::customerIdExistsStatic((int) $this->context->cookie->id_customer);
         
@@ -115,7 +115,6 @@ class AmzpaymentsUser_To_ShopModuleFrontController extends ModuleFrontController
                         // $postcode = $d->postal_code;
                         
                         if ($customers_local_id = AmazonPaymentsCustomerHelper::findByAmazonCustomerId($customer_userid)) {
-                            
                             // Customer already exists - login
                             Hook::exec('actionBeforeAuthentication');
                             $customer = new Customer();
@@ -217,7 +216,7 @@ class AmzpaymentsUser_To_ShopModuleFrontController extends ModuleFrontController
                                 $_POST['passwd'] = md5(time() . _COOKIE_KEY_);
                                 
                                 $firstname = '';
-                                $lastname = '';                                
+                                $lastname = '';
                                 $customer_name = preg_replace("/[0-9]/", "", $customer_name);
                                 if (strpos(trim($customer_name), ' ') !== false) {
                                     list ($firstname, $lastname) = explode(' ', trim($customer_name));
@@ -273,7 +272,7 @@ class AmzpaymentsUser_To_ShopModuleFrontController extends ModuleFrontController
                                             } elseif (Tools::getValue('action') == 'fromCheckout') {
                                                 $goto = 'index.php?controller=history';
                                             } else {
-                                                $goto = $this->context->link->getModuleLink('amzpayments', 'select_address');                                                
+                                                $goto = $this->context->link->getModuleLink('amzpayments', 'select_address');
                                             }
                                             
                                             if (Tools::getValue('method') == 'redirectAuthentication') {
@@ -332,7 +331,7 @@ class AmzpaymentsUser_To_ShopModuleFrontController extends ModuleFrontController
     /**
      * sendConfirmationMail
      *
-     * @param Customer $customer            
+     * @param Customer $customer
      * @return bool
      */
     protected function sendConfirmationMail(Customer $customer)

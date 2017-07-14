@@ -14,7 +14,11 @@
 	</div>
 	
 	<div class="col-xs-12 col-sm-6" id="walletWidgetDivBs">
-	</div>	
+	</div>
+	
+	<div class="col-xs-12 col-sm-6" id="addressMissings">		
+	</div>
+	<input type="button" id="submitAddress" class="exclusive" value="{l s='Save' mod='amzpayments'}" name="submitAddress" style="display: none;">
 </div>
 
 <div class="row">
@@ -84,10 +88,12 @@ jQuery(document).ready(function($) {
 					$("#carrier_area").hide();
 					updateAddressSelection(amazonOrderReferenceId); 
 					isFirstRun = false; 
+					/*
 					setTimeout(function() {
 						updateAddressSelection(amazonOrderReferenceId);
 						$("#carrier_area").fadeIn();
 					}, 1000); 
+					*/
 				}, 1000);
 			} else {
 				updateAddressSelection(amazonOrderReferenceId);		

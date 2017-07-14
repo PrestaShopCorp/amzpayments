@@ -110,6 +110,11 @@ function updateAddressSelection(amazonOrderReferenceId)
 	var idAddress_delivery = 0;
 	var idAddress_invoice = idAddress_delivery;
 
+	var additional_fields = '';
+	$("#addressMissings .additional_field").each(function() {
+		additional_fields += '&add[' + $(this).attr("name") + ']=' + $(this).val();		
+	});	
+	
 	$('#opc_account-overlay').fadeIn('slow');
 	$('#opc_delivery_methods-overlay').fadeIn('slow');
 	$('#opc_payment_methods-overlay').fadeIn('slow');
@@ -121,7 +126,7 @@ function updateAddressSelection(amazonOrderReferenceId)
 		async: true,
 		cache: false,
 		dataType : "json",
-		data: 'amazonOrderReferenceId=' + amazonOrderReferenceId + '&allow_refresh=1&ajax=true&method=updateAddressesSelected&id_address_delivery=' + idAddress_delivery + '&id_address_invoice=' + idAddress_invoice + '&token=' + static_token,
+		data: 'amazonOrderReferenceId=' + amazonOrderReferenceId + '&allow_refresh=1&ajax=true&method=updateAddressesSelected&id_address_delivery=' + idAddress_delivery + '&id_address_invoice=' + idAddress_invoice + '&token=' + static_token + additional_fields,
 		success: function(jsonData)
 		{
 			if (jsonData.hasError)
@@ -131,10 +136,19 @@ function updateAddressSelection(amazonOrderReferenceId)
 					if(error !== 'indexOf')
 						errors += $('<div />').html(jsonData.errors[error]).text() + "\n";
 				alert(errors);
+				
+				if (jsonData.fields_html) {
+					$("#addressMissings").empty();
+					$("#addressMissings").html(jsonData.fields_html);
+					$("#submitAddress").fadeIn();
+					$("#submitAddress").unbind('click').on('click', function() { updateAddressSelection(amazonOrderReferenceId); });
+				}				
+				$("#amz_execute_order").attr("disabled","disabled").addClass("disabled"); 
 				$('#amzOverlay, #opc_delivery_methods-overlay, #opc_payment_methods-overlay').fadeOut('slow');
 			}
 			else
 			{
+				$("#submitAddress").fadeOut('fast', function() { $("#addressMissings").empty() });;
 				if (jsonData.refresh)
 					location.reload();
 				$('#cart_summary .address_'+deliveryAddress).each(function() {
@@ -260,6 +274,7 @@ $("#amz_execute_order").live('click', function() {
 				if (typeof jsonData.redirection !== 'undefined') {
 					if (jsonData.redirection.length > 0) {
 						window.location.href = jsonData.redirection;
+						return;
 					}
 				}
 				$('#amzOverlay, #opc_delivery_methods-overlay, #opc_payment_methods-overlay').fadeOut('slow');

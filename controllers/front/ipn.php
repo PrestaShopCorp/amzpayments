@@ -1,6 +1,6 @@
 <?php
 /**
- * 2013-2015 Amazon Advanced Payment APIs Modul
+ * 2013-2017 Amazon Advanced Payment APIs Modul
  *
  * for Support please visit www.patworx.de
  *
@@ -15,7 +15,7 @@
  * to license@prestashop.com so we can send you a copy immediately.
  *
  *  @author    patworx multimedia GmbH <service@patworx.de>
- *  @copyright 2013-2015 patworx multimedia GmbH
+ *  @copyright 2013-2017 patworx multimedia GmbH
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
@@ -41,24 +41,21 @@ class AmzpaymentsIpnModuleFrontController extends ModuleFrontController
         file_put_contents(dirname(__FILE__) . '/../../amz.log', '[' . date("Y-m-d H:i:s") . '] IPN wurde aufgerufen' . "\n", FILE_APPEND);
         
         $headers_tmp = getallheaders();
-		$headers = array();
-		foreach ($headers_tmp as $k => $v) {
-			$headers[Tools::strtolower($k)] = $v;
-		}
+        $headers = array();
+        foreach ($headers_tmp as $k => $v) {
+            $headers[Tools::strtolower($k)] = $v;
+        }
         $response = Tools::file_get_contents('php://input');
-        
-		//file_put_contents(dirname(__FILE__) . '/../../amz.log', '[' . date("Y-m-d H:i:s") . '] Headers: ' . print_r($headers,1) . "\n", FILE_APPEND);
-		//file_put_contents(dirname(__FILE__) . '/../../amz.log', '[' . date("Y-m-d H:i:s") . '] Response: ' . $response . "\n", FILE_APPEND);
 
         $amz_payments = new AmzPayments();
         
         try {
             $client = $amz_payments->getService(false, 'notification');
-			file_put_contents(dirname(__FILE__) . '/../../amz.log', '[' . date("Y-m-d H:i:s") . '] Notification response received' . "\n", FILE_APPEND);
+            file_put_contents(dirname(__FILE__) . '/../../amz.log', '[' . date("Y-m-d H:i:s") . '] Notification response received' . "\n", FILE_APPEND);
             $result = $client->parseRawMessage($headers, $response);
         } catch (OffAmazonPaymentsNotifications_InvalidMessageException $ex) {
             error_log($ex->getMessage());
-			file_put_contents(dirname(__FILE__) . '/../../amz.log', '[' . date("Y-m-d H:i:s") . '] Error: ' . $ex->getMessage() . "\n", FILE_APPEND);
+            file_put_contents(dirname(__FILE__) . '/../../amz.log', '[' . date("Y-m-d H:i:s") . '] Error: ' . $ex->getMessage() . "\n", FILE_APPEND);
             header("HTTP/1.1 503 Service Unavailable");
             exit(0);
         }
@@ -71,13 +68,12 @@ class AmzpaymentsIpnModuleFrontController extends ModuleFrontController
         $response_xml = $response_xml;
         
         if ($amz_payments->ipn_status == '1') {
-        
             echo '[' . date("Y-m-d H:i:s") . '] [' . $message->NotificationType . '] ';
         
             switch ($message->NotificationType) {
                 case 'PaymentAuthorize':
                     $q = 'SELECT * FROM ' . _DB_PREFIX_ . 'amz_transactions
-					WHERE amz_tx_type = \'auth\' AND amz_tx_amz_id = \'' . pSQL($response_xml->AuthorizationDetails->AmazonAuthorizationId) . '\'';
+                    WHERE amz_tx_type = \'auth\' AND amz_tx_amz_id = \'' . pSQL($response_xml->AuthorizationDetails->AmazonAuthorizationId) . '\'';
                     $r = Db::getInstance()->getRow($q);
         
                     $sqlArr = array(
@@ -111,7 +107,7 @@ class AmzpaymentsIpnModuleFrontController extends ModuleFrontController
                     break;
                 case 'PaymentCapture':
                     $q = 'SELECT * FROM ' . _DB_PREFIX_ . 'amz_transactions
-					WHERE amz_tx_type = \'capture\' AND amz_tx_amz_id = \'' . pSQL($response_xml->CaptureDetails->AmazonCaptureId) . '\'';
+                    WHERE amz_tx_type = \'capture\' AND amz_tx_amz_id = \'' . pSQL($response_xml->CaptureDetails->AmazonCaptureId) . '\'';
                     $r = Db::getInstance()->getRow($q);
         
                     $sqlArr = array(
@@ -122,7 +118,7 @@ class AmzpaymentsIpnModuleFrontController extends ModuleFrontController
                     );
                     Db::getInstance()->update('amz_transactions', $sqlArr, ' amz_tx_id = ' . (int) $r['amz_tx_id']);
                     
-                    AmazonTransactions::setOrderStatusCapturedSuccesfully($r['amz_tx_order_reference']);                 
+                    AmazonTransactions::setOrderStatusCapturedSuccesfully($r['amz_tx_order_reference']);
         
                     $orderTotal = AmazonTransactions::getOrderRefTotal($r['amz_tx_order_reference']);
                     if ($r['amz_tx_amount'] == $orderTotal) {
@@ -133,7 +129,7 @@ class AmzpaymentsIpnModuleFrontController extends ModuleFrontController
         
                 case 'PaymentRefund':
                     $q = 'SELECT * FROM ' . _DB_PREFIX_ . 'amz_transactions
-					WHERE amz_tx_type = \'refund\' AND amz_tx_amz_id = \'' . pSQL($response_xml->RefundDetails->AmazonRefundId) . '\'';
+                    WHERE amz_tx_type = \'refund\' AND amz_tx_amz_id = \'' . pSQL($response_xml->RefundDetails->AmazonRefundId) . '\'';
                     $r = Db::getInstance()->getRow($q);
         
                     $sqlArr = array(
@@ -146,7 +142,7 @@ class AmzpaymentsIpnModuleFrontController extends ModuleFrontController
                     break;
                 case 'OrderReferenceNotification':
                     $q = 'SELECT * FROM ' . _DB_PREFIX_ . 'amz_transactions
-					WHERE amz_tx_type = \'order_ref\' AND amz_tx_amz_id = \'' . pSQL($response_xml->OrderReference->AmazonOrderReferenceId) . '\'';
+                    WHERE amz_tx_type = \'order_ref\' AND amz_tx_amz_id = \'' . pSQL($response_xml->OrderReference->AmazonOrderReferenceId) . '\'';
                     $r = Db::getInstance()->getRow($q);
         
                     $sqlArr = array(
@@ -171,8 +167,7 @@ class AmzpaymentsIpnModuleFrontController extends ModuleFrontController
         }
         
         file_put_contents(dirname(__FILE__) . '/../../amz.log', $str, FILE_APPEND);
-        echo 'OK';        
-        
+        echo 'OK';
         exit();
     }
     
@@ -188,5 +183,4 @@ class AmzpaymentsIpnModuleFrontController extends ModuleFrontController
         }
         return $json;
     }
-    
 }

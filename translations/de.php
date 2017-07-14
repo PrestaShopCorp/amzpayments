@@ -96,8 +96,10 @@ $_MODULE['<{amzpayments}prestashop>amzpayments_ab85d9edc966536822a98a25f7d8640a'
 $_MODULE['<{amzpayments}prestashop>amzpayments_76f0ed934de85cc7131910b32ede7714'] = 'Erstattung';
 $_MODULE['<{amzpayments}prestashop>amzpayments_12e5e0597b2980f55f11e5d775aabf8c'] = 'Ihre Zahlung wurde von Amazon abgelehnt';
 $_MODULE['<{amzpayments}prestashop>amzpayments_dd9c5a48aa769b5db4e5fba108c39691'] = 'Ihre Zahlung wurde von Amazon abgelehnt - bitte kontaktieren Sie uns';
+$_MODULE['<{amzpayments}prestashop>amzpayments_7de64f538bdd7057ea1bbf5b46572d67'] = 'Bitte geben Sie die fehlenden Adressdaten ein';
 $_MODULE['<{amzpayments}prestashop>amzpayments_5aa818b1473c50ce1b40bf66663182c6'] = 'Die von Ihnen gewählte Zahlungsart ist leider momentan nicht verfügbar. Bitte wählen Sie eine andere.';
 $_MODULE['<{amzpayments}prestashop>amzpayments_a2af94a3e3857e4903cf97df11fd9440'] = 'Ihre gewählte Zahlungsmethode wurde abgelehnt. Bitte wählen Sie eine alternative Methode.';
+$_MODULE['<{amzpayments}prestashop>select_address_7de64f538bdd7057ea1bbf5b46572d67'] = 'Bitte geben Sie die fehlenden Adressdaten ein';
 $_MODULE['<{amzpayments}prestashop>configuration_56b55033f747893cf02a5797707ee383'] = 'Machen Sie Amazon-Kunden zu Ihren Kunden';
 $_MODULE['<{amzpayments}prestashop>configuration_a7b8feea65558548dff1c84f2f8801ab'] = 'So funktioniert\'s';
 $_MODULE['<{amzpayments}prestashop>configuration_5b1a8c5b0fd7e134325ee37f10abed53'] = 'Registrieren Sie sich für Amazon Pay*. Loggen Sie sich nach der Registrierung in Seller Central ein, um die Accounteinrichtung abzuschließen.*';
@@ -169,6 +171,7 @@ $_MODULE['<{amzpayments}prestashop>order_summary_9f8c310d4b0402a61723b22c34fbd31
 $_MODULE['<{amzpayments}prestashop>amzpayments_fa31ce6046882558f0637d428a96abeb'] = 'Ich möchte ein Kundenkonto erstellen.';
 $_MODULE['<{amzpayments}prestashop>amzpayments_9a1ff3881b92951d9663aaef38e8b637'] = 'Sie müssen nichts weiter hierfür tun, es werden die Daten auf Ihrer aktuellen Bestellung verwendet, um das Konto zu erstellen.';
 $_MODULE['<{amzpayments}prestashop>amzpayments_eeceac1af4e7620894d6d2083921bb73'] = 'Jetzt kaufen!';
+$_MODULE['<{amzpayments}prestashop>amzpayments_bs_c9cc8cce247e49bae79f15173ce97354'] = 'Save';
 $_MODULE['<{amzpayments}prestashop>amzpayments_bs_fa31ce6046882558f0637d428a96abeb'] = 'Ich möchte ein Kundenkonto erstellen.';
 $_MODULE['<{amzpayments}prestashop>amzpayments_bs_9a1ff3881b92951d9663aaef38e8b637'] = 'Sie müssen nichts weiter hierfür tun, es werden die Daten auf Ihrer aktuellen Bestellung verwendet, um das Konto zu erstellen.';
 $_MODULE['<{amzpayments}prestashop>amzpayments_bs_eeceac1af4e7620894d6d2083921bb73'] = 'Jetzt kaufen!';
@@ -182,6 +185,7 @@ $_MODULE['<{amzpayments}prestashop>process_login_1d90cfb5cc90a32ee0146e7a9aec46b
 $_MODULE['<{amzpayments}prestashop>select_address_3e9e333adde6e70086bd29441c8c45eb'] = 'Adresse wählen';
 $_MODULE['<{amzpayments}prestashop>select_address_a5058d1398eb35e54f561de54459aece'] = 'Bitte wählen Sie Ihre Adresse';
 $_MODULE['<{amzpayments}prestashop>select_address_a0bfb8e59e6c13fc8d990781f77694fe'] = 'Weiter';
+$_MODULE['<{amzpayments}prestashop>select_address_daa6b483e9f6ca081ec7e0b4a352f9e9'] = 'Adresse Speichern';
 $_MODULE['<{amzpayments}prestashop>confirmation_2e2117b7c81aa9ea6931641ea2c6499f'] = 'Ihre Bestellung bei';
 $_MODULE['<{amzpayments}prestashop>confirmation_75fbf512d744977d62599cc3f0ae2bb4'] = 'ist vollständig.';
 $_MODULE['<{amzpayments}prestashop>confirmation_fb4ea5a18e5f77bece3219a4171320a9'] = 'Sie haben Amazon Pay als Bezahlmethode gewählt.';

@@ -168,6 +168,11 @@ $_MODULE['<{amzpayments}prestashop>order_summary_64b7812939d36ea6ed92a5e3780d581
 $_MODULE['<{amzpayments}prestashop>order_summary_3da897917815714364886cd0764aa227'] = 'Autorisierter Betrag';
 $_MODULE['<{amzpayments}prestashop>order_summary_f53c1ebef1d12dafe0e228236c393be7'] = 'Eingezogener Betrag';
 $_MODULE['<{amzpayments}prestashop>order_summary_9f8c310d4b0402a61723b22c34fbd31c'] = 'Erstatteter Betrag';
+$_MODULE['<{amzpayments}prestashop>address_field_7cb32e708d6b961d476baced73d362bb'] = 'USt-Identnummer';
+$_MODULE['<{amzpayments}prestashop>address_field_b60bb13a87fe3ae5463aeb0980a5a8a1'] = 'DNI';
+$_MODULE['<{amzpayments}prestashop>address_field_fe66abce284ec8589e7d791185b5c442'] = 'Telefon';
+$_MODULE['<{amzpayments}prestashop>address_field_41c2fff4867cc204120f001e7af20f7a'] = 'Mobil';
+$_MODULE['<{amzpayments}prestashop>address_field_46a2a41cc6e552044816a2d04634545d'] = 'Bundesland';
 $_MODULE['<{amzpayments}prestashop>amzpayments_fa31ce6046882558f0637d428a96abeb'] = 'Ich möchte ein Kundenkonto erstellen.';
 $_MODULE['<{amzpayments}prestashop>amzpayments_9a1ff3881b92951d9663aaef38e8b637'] = 'Sie müssen nichts weiter hierfür tun, es werden die Daten auf Ihrer aktuellen Bestellung verwendet, um das Konto zu erstellen.';
 $_MODULE['<{amzpayments}prestashop>amzpayments_eeceac1af4e7620894d6d2083921bb73'] = 'Jetzt kaufen!';

@@ -21,7 +21,7 @@
 			<div class="form-group dni">
 				<label for="dni">{l s='Identification number' mod='amzpayments'}</label>
 				<input class="form-control additional_field" type="text" name="dni" id="dni" value="{$field_value|escape:'html':'UTF-8'}" />
-				<span class="form_info">{l s='DNI / NIF / NIE'}</span>
+				<span class="form_info">{l s='DNI / NIF / NIE' mod='amzpayments'}</span>
 			</div>
 			{elseif $field_name eq 'phone'}
 				<div class="form-group phone-number">

@@ -1,23 +1,23 @@
 <?php
 /**
  * 2013-2017 Amazon Advanced Payment APIs Modul
- *
- * for Support please visit www.patworx.de
- *
- * NOTICE OF LICENSE
- *
- * This source file is subject to the Academic Free License (AFL 3.0)
- * that is bundled with this package in the file LICENSE.txt.
- * It is also available through the world-wide-web at this URL:
- * http://opensource.org/licenses/afl-3.0.php
- * If you did not receive a copy of the license and are unable to
- * obtain it through the world-wide-web, please send an email
- * to license@prestashop.com so we can send you a copy immediately.
- *
- *  @author    patworx multimedia GmbH <service@patworx.de>
- *  @copyright 2013-2017 patworx multimedia GmbH
- *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
- */
+*
+* for Support please visit www.patworx.de
+*
+* NOTICE OF LICENSE
+*
+* This source file is subject to the Academic Free License (AFL 3.0)
+* that is bundled with this package in the file LICENSE.txt.
+* It is also available through the world-wide-web at this URL:
+* http://opensource.org/licenses/afl-3.0.php
+* If you did not receive a copy of the license and are unable to
+* obtain it through the world-wide-web, please send an email
+* to license@prestashop.com so we can send you a copy immediately.
+*
+*  @author    patworx multimedia GmbH <service@patworx.de>
+*  @copyright 2013-2017 patworx multimedia GmbH
+*  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+*/
 
 class AmzpaymentsSelect_AddressModuleFrontController extends ModuleFrontController
 {
@@ -43,13 +43,13 @@ class AmzpaymentsSelect_AddressModuleFrontController extends ModuleFrontControll
     public function __construct()
     {
         $this->controller_type = 'modulefront';
-        
+
         $this->module = Module::getInstanceByName(Tools::getValue('module'));
         if (! $this->module->active) {
             Tools::redirect('index');
         }
         $this->page_name = 'module-' . $this->module->name . '-' . Dispatcher::getInstance()->getController();
-        
+
         parent::__construct();
     }
 
@@ -63,7 +63,7 @@ class AmzpaymentsSelect_AddressModuleFrontController extends ModuleFrontControll
         if (Tools::isSubmit('ajax')) {
             if (Tools::isSubmit('method')) {
                 $this->service = self::$amz_payments->getService();
-                
+
                 switch (Tools::getValue('method')) {
                     case 'updateAddressesSelected':
                         $get_order_reference_details_request = new OffAmazonPaymentsService_Model_GetOrderReferenceDetailsRequest();
@@ -76,31 +76,31 @@ class AmzpaymentsSelect_AddressModuleFrontController extends ModuleFrontControll
                         $physical_destination = $reference_details_result_wrapper->GetOrderReferenceDetailsResult->getOrderReferenceDetails()
                         ->getDestination()
                         ->getPhysicalDestination();
-                    
+
                         $iso_code = (string) $physical_destination->GetCountryCode();
                         $city = (string) $physical_destination->GetCity();
                         $postcode = (string) $physical_destination->GetPostalCode();
                         $state = (string) $physical_destination->GetStateOrRegion();
-                    
+
                         if (method_exists($physical_destination, 'getName')) {
                             $names_array = explode(' ', (string) $physical_destination->getName(), 2);
                             $names_array = AmzPayments::prepareNamesArray($names_array);
                         } else {
                             $names_array = array('amzFirstname', 'amzLastname');
                         }
-                    
+
                         $phone = '0000000000';
                         if (method_exists($physical_destination, 'getPhone') && (string) $physical_destination->getPhone() != '' && Validate::isPhoneNumber((string) $physical_destination->getPhone())) {
                             $phone = (string) $physical_destination->getPhone();
                         }
-                    
+
                         $address_delivery = AmazonPaymentsAddressHelper::findByAmazonOrderReferenceIdOrNew(Tools::getValue('amazonOrderReferenceId'), false, $physical_destination);
                         $address_delivery->id_customer = (int) $this->context->cookie->id_customer;
                         $address_delivery->id_country = Country::getByIso($iso_code);
                         $address_delivery->alias = 'Amazon Pay';
                         $address_delivery->lastname = $names_array[1];
                         $address_delivery->firstname = $names_array[0];
-                    
+
                         if (method_exists($physical_destination, 'getAddressLine3') && method_exists($physical_destination, 'getAddressLine2') && method_exists($physical_destination, 'getAddressLine1')) {
                             $s_company_name = '';
                             if ((string) $physical_destination->getAddressLine3() != '') {
@@ -152,11 +152,11 @@ class AmzpaymentsSelect_AddressModuleFrontController extends ModuleFrontControll
                             }
                         }
                         $address_delivery->phone = $phone;
-                        
+
                         if (Tools::getValue('add') && is_array(Tools::getValue('add'))) {
                             $address_delivery = AmazonPaymentsAddressHelper::addAdditionalValues($address_delivery, Tools::getValue('add'));
                         }
-                        
+
                         $fields_to_set = array();
                         if ($address_delivery->id_state > 0 && !AmazonPaymentsAddressHelper::stateBelongsToCountry($address_delivery->id_state, (int)Country::getByIso($iso_code))) {
                             $address_delivery->id_state = 0;
@@ -164,7 +164,7 @@ class AmzpaymentsSelect_AddressModuleFrontController extends ModuleFrontControll
                         if ($address_delivery->id_state == 0) {
                             $country = new Country((int)Country::getByIso($iso_code));
                             if ($country->contains_states) {
-                                if (sizeof(State::getStatesByIdCountry((int)Country::getByIso($iso_code))) > 0) {                                    
+                                if (sizeof(State::getStatesByIdCountry((int)Country::getByIso($iso_code))) > 0) {
                                     $address_delivery->id_state = -1;
                                 }
                             }
@@ -183,9 +183,9 @@ class AmzpaymentsSelect_AddressModuleFrontController extends ModuleFrontControll
                             }
                             $this->errors[] = $this->module->l('Please fill in the missing fields to save your address.');
                         }
-                        
+
                         AmazonPaymentsAddressHelper::saveAddressAmazonReference($address_delivery, Tools::getValue('amazonOrderReferenceId'), $physical_destination);
-                     
+                         
                         if (! count($this->errors)) {
                             if ($this->context->cart->nbProducts()) {
                                 $goto = 'index.php?controller=order';
@@ -196,14 +196,14 @@ class AmzpaymentsSelect_AddressModuleFrontController extends ModuleFrontControll
                                     $goto = _PS_BASE_URL_ . __PS_BASE_URI__;
                                 }
                             }
-                            
+
                             $result = array('state' => 'success',
                                 'hasError' => false,
                                 'redirect' => $goto
                             );
                             die(Tools::jsonEncode($result));
                         }
-                    
+
                         if (count($this->errors)) {
                             die(Tools::jsonEncode(array(
                                 'hasError' => true,

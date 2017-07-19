@@ -121,9 +121,9 @@ $_MODULE['<{amzpayments}prestashop>configuration_f8e8d7166eb15b369812dcf7e257d38
 $_MODULE['<{amzpayments}prestashop>configuration_a730eca6c28e24224e888bbb17b87ba3'] = 'Amazon Pay kann Ihnen helfen, Umsätze mit Kunden zu erzielen, die aufgrund komplizierterer Anmelde- und Bezahloptionen sonst nicht bei Ihnen eingekauft hätten.';
 $_MODULE['<{amzpayments}prestashop>configuration_8459542c8c59ecb26529d4c5c6cd3a12'] = 'Reine Zahlungsabwicklung';
 $_MODULE['<{amzpayments}prestashop>configuration_6376d38e4317cb552dd389c556d187b6'] = '„Login und Bezahlen mit Amazon“ bietet reine Zahlungsabwicklung. Als Händler übermitteln Sie nur den abzuwickelnden Betrag.';
-$_MODULE['<{amzpayments}prestashop>configuration_83c84d4538db0c96ca8a3963855013fa'] = 'Schnelle Konfiguration';
-$_MODULE['<{amzpayments}prestashop>configuration_03e8d0ad408c42265ba4be4b1a6a25f2'] = 'Kopieren Sie einfach die Zugangsdaten aus dem Seller-Central in das folgende Textfeld.';
-$_MODULE['<{amzpayments}prestashop>configuration_8cd70bf7f9cf76fd769889b7d4ab6220'] = 'Daten verarbeiten';
+$_MODULE['<{amzpayments}prestashop>configuration_83c84d4538db0c96ca8a3963855013fa'] = 'Quick configuration';
+$_MODULE['<{amzpayments}prestashop>configuration_03e8d0ad408c42265ba4be4b1a6a25f2'] = 'Just use copy and paste to configure the module with your Amazon Pay credentials, directly out of the Seller Central.';
+$_MODULE['<{amzpayments}prestashop>configuration_8cd70bf7f9cf76fd769889b7d4ab6220'] = 'Parse data';
 $_MODULE['<{amzpayments}prestashop>configuration_a3d2f55e975a1c99e3b92242d16abe29'] = 'Info';
 $_MODULE['<{amzpayments}prestashop>configuration_ef446b2503b4c7fe2ee047d53809fdef'] = 'URL di restituzione consentiti - Inserisci questi URL nel tuo pannello di configurazione di Seller Central!';
 $_MODULE['<{amzpayments}prestashop>configuration_a86d4a390d4364577e9a45a5b3ee2a1a'] = 'Sorgenti JavaScript consentite - Inserisci questi URL nel tuo pannello di configurazione di Seller Central!';

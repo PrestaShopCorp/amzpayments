@@ -1,6 +1,6 @@
 <?php
 /**
- * 2013-2015 Amazon Advanced Payment APIs Modul
+ * 2013-2017 Amazon Advanced Payment APIs Modul
  *
  * for Support please visit www.patworx.de
  *
@@ -15,12 +15,13 @@
  * to license@prestashop.com so we can send you a copy immediately.
  *
  *  @author    patworx multimedia GmbH <service@patworx.de>
- *  @copyright 2013-2015 patworx multimedia GmbH
+ *  @copyright 2013-2017 patworx multimedia GmbH
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
-if (! defined('_PS_VERSION_'))
+if (! defined('_PS_VERSION_')) {
     exit();
+}
 
 /**
  * ensure the __DIR__ constant is defined for PHP 4.0.6 and newer
@@ -28,9 +29,9 @@ if (! defined('_PS_VERSION_'))
  */
 define('CURRENT_MODULE_DIR', realpath(dirname(__FILE__)));
 
-require_once (CURRENT_MODULE_DIR . '/classes/AmazonTransactions.php');
-require_once (CURRENT_MODULE_DIR . '/classes/AmazonPaymentsCustomerHelper.php');
-require_once (CURRENT_MODULE_DIR . '/classes/AmazonPaymentsAddressHelper.php');
+require_once(CURRENT_MODULE_DIR . '/classes/AmazonTransactions.php');
+require_once(CURRENT_MODULE_DIR . '/classes/AmazonPaymentsCustomerHelper.php');
+require_once(CURRENT_MODULE_DIR . '/classes/AmazonPaymentsAddressHelper.php');
 
 class AmzPayments extends PaymentModule
 {
@@ -102,12 +103,14 @@ class AmzPayments extends PaymentModule
     public $force_account_creation = 0;
     
     public $template_variant_bs = 1;
+    
+    public $hide_login_btns = 0;
 
     public $ca_bundle_file;
 
     private $_postErrors = array();
     
-    private $_postSuccess = array(); 
+    private $_postSuccess = array();
 
     private $pfid = 'A1AOZCKI9MBRZA';
 
@@ -145,14 +148,15 @@ class AmzPayments extends PaymentModule
         'send_mails_on_decline' => 'SEND_MAILS_ON_DECLINE',
         'preselect_create_account' => 'PRESELECT_CREATE_ACCOUNT',
         'force_account_creation' => 'FORCE_ACCOUNT_CREATION',
-        'template_variant_bs' => 'TEMPLATE_VARIANT_BS'
+        'template_variant_bs' => 'TEMPLATE_VARIANT_BS',
+        'hide_login_btns' => 'AMZ_HIDE_LOGIN_BTNS'
     );
 
     public function __construct()
     {
         $this->name = 'amzpayments';
         $this->tab = 'payments_gateways';
-        $this->version = '2.0.57';
+        $this->version = '2.0.58';
         $this->author = 'patworx multimedia GmbH';
         $this->need_instance = 1;
         
@@ -180,14 +184,17 @@ class AmzPayments extends PaymentModule
         
         $this->confirmUninstall = $this->l('Are you sure you want to uninstall?');
         
-        if (! isset($this->merchant_id) || ! isset($this->access_key) || ! isset($this->secret_key) || ! isset($this->region) || ! isset($this->environment))
+        if (! isset($this->merchant_id) || ! isset($this->access_key) || ! isset($this->secret_key) || ! isset($this->region) || ! isset($this->environment)) {
             $this->warning = $this->l('Your Amazon Payments details must be configured before using this module.');
-        if (! count(Currency::checkPaymentCurrencies($this->id)))
+        }
+        if (! count(Currency::checkPaymentCurrencies($this->id))) {
             $this->warning = $this->l('No currency has been set for this payment module');
-        
+        }
+
         if (isset($this->context->cookie->amz_access_token_set_time)) {
-            if ($this->context->cookie->amz_access_token_set_time < time() - 3000)
+            if ($this->context->cookie->amz_access_token_set_time < time() - 3000) {
                 unset($this->context->cookie->amz_access_token);
+            }
         }
     }
 
@@ -195,15 +202,16 @@ class AmzPayments extends PaymentModule
     {
         $config = Configuration::getMultiple(self::$config_array);
         foreach (self::$config_array as $class_var => $config_var) {
-            if (isset($config[$config_var]))
+            if (isset($config[$config_var])) {
                 $this->$class_var = $config[$config_var];
+            }
         }
     }
 
     public function getService($override = false, $serviceType = 'service')
     {
-        include_once (CURRENT_MODULE_DIR . '/vendor/config.php');
-        include_once (CURRENT_MODULE_DIR . '/vendor/functions.php');
+        include_once(CURRENT_MODULE_DIR . '/vendor/config.php');
+        include_once(CURRENT_MODULE_DIR . '/vendor/functions.php');
         
         $config = array();
         $config['environment'] = Tools::strtolower($this->environment);
@@ -223,14 +231,15 @@ class AmzPayments extends PaymentModule
         $this->ca_bundle_file = $config['caBundleFile'];
         
         if ($override && is_array($override)) {
-            foreach ($override as $k => $v)
+            foreach ($override as $k => $v) {
                 $config[$k] = $v;
+            }
         }
         
         if ($serviceType == 'service') {
-            return new OffAmazonPaymentsService_Client($config);           
+            return new OffAmazonPaymentsService_Client($config);
         } elseif ($serviceType == 'notification') {
-            return new OffAmazonPaymentsNotifications_Client($config); 
+            return new OffAmazonPaymentsNotifications_Client($config);
         }
     }
 
@@ -245,8 +254,9 @@ class AmzPayments extends PaymentModule
             return false;
         }
         
-        if (Shop::isFeatureActive())
+        if (Shop::isFeatureActive()) {
             Shop::setContext(Shop::CONTEXT_ALL);
+        }
         
         Db::getInstance()->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'amz_transactions`;');
         Db::getInstance()->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'amz_orders`;');
@@ -254,58 +264,58 @@ class AmzPayments extends PaymentModule
         Db::getInstance()->execute('DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'amz_customer`;');
         
         Db::getInstance()->execute('
-				CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'amz_transactions` (
-				`amz_tx_id` int(11) NOT NULL AUTO_INCREMENT,
-				`amz_tx_order_reference` varchar(255) NOT NULL,
-				`amz_tx_type` varchar(16) NOT NULL,
-				`amz_tx_time` int(11) NOT NULL,
-				`amz_tx_expiration` varchar(255) NOT NULL,
-				`amz_tx_amount` float NOT NULL,
-				`amz_tx_amount_refunded` float NOT NULL,
-				`amz_tx_status` varchar(32) NOT NULL,
-				`amz_tx_reference` varchar(255) NOT NULL,
-				`amz_tx_code` varchar(64) NOT NULL,
-				`amz_tx_amz_id` varchar(255) NOT NULL,
-				`amz_tx_customer_informed` int(11) NOT NULL,
-				`amz_tx_last_change` int(11) NOT NULL,
-				`amz_tx_last_update` int(11) NOT NULL,
-				`amz_tx_order` int(11) NOT NULL,
-				PRIMARY KEY (`amz_tx_id`),
-				KEY `amz_tx_order_reference` (`amz_tx_order_reference`),
-				KEY `amz_tx_type` (`amz_tx_type`)
-		) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
-				');
+                CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'amz_transactions` (
+                `amz_tx_id` int(11) NOT NULL AUTO_INCREMENT,
+                `amz_tx_order_reference` varchar(255) NOT NULL,
+                `amz_tx_type` varchar(16) NOT NULL,
+                `amz_tx_time` int(11) NOT NULL,
+                `amz_tx_expiration` varchar(255) NOT NULL,
+                `amz_tx_amount` float NOT NULL,
+                `amz_tx_amount_refunded` float NOT NULL,
+                `amz_tx_status` varchar(32) NOT NULL,
+                `amz_tx_reference` varchar(255) NOT NULL,
+                `amz_tx_code` varchar(64) NOT NULL,
+                `amz_tx_amz_id` varchar(255) NOT NULL,
+                `amz_tx_customer_informed` int(11) NOT NULL,
+                `amz_tx_last_change` int(11) NOT NULL,
+                `amz_tx_last_update` int(11) NOT NULL,
+                `amz_tx_order` int(11) NOT NULL,
+                PRIMARY KEY (`amz_tx_id`),
+                KEY `amz_tx_order_reference` (`amz_tx_order_reference`),
+                KEY `amz_tx_type` (`amz_tx_type`)
+        ) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
+                ');
         
         Db::getInstance()->execute('
-				CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'amz_orders` (
-				`id` int(11) NOT NULL AUTO_INCREMENT,
+                CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'amz_orders` (
+                `id` int(11) NOT NULL AUTO_INCREMENT,
                 `id_order` int(11) NOT NULL,
-				`amazon_auth_reference_id` varchar(255) NOT NULL,
-				`amazon_authorization_id` varchar(255) NOT NULL,
-				`amazon_order_reference_id` varchar(255) NOT NULL,
-				`amazon_capture_id` varchar(255) NOT NULL,
-				`amazon_capture_reference_id` varchar(255) NOT NULL,
-				PRIMARY KEY (`id`)
-		) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
-				');
+                `amazon_auth_reference_id` varchar(255) NOT NULL,
+                `amazon_authorization_id` varchar(255) NOT NULL,
+                `amazon_order_reference_id` varchar(255) NOT NULL,
+                `amazon_capture_id` varchar(255) NOT NULL,
+                `amazon_capture_reference_id` varchar(255) NOT NULL,
+                PRIMARY KEY (`id`)
+        ) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
+                ');
         
         Db::getInstance()->execute('
-				CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'amz_address` (
-				`id` int(11) NOT NULL AUTO_INCREMENT,
+                CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'amz_address` (
+                `id` int(11) NOT NULL AUTO_INCREMENT,
                 `id_address` int(11) NOT NULL,
-				`amazon_order_reference_id` varchar(255) NOT NULL,
-				PRIMARY KEY (`id`)
-		) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
-				');
+                `amazon_order_reference_id` varchar(255) NOT NULL,
+                PRIMARY KEY (`id`)
+        ) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
+                ');
         
         Db::getInstance()->execute('
-				CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'amz_customer` (
-				`id` int(11) NOT NULL AUTO_INCREMENT,
+                CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'amz_customer` (
+                `id` int(11) NOT NULL AUTO_INCREMENT,
                 `id_customer` int(11) NOT NULL,
-				`amazon_customer_id` varchar(255) NOT NULL,
-				PRIMARY KEY (`id`)
-		) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
-				');
+                `amazon_customer_id` varchar(255) NOT NULL,
+                PRIMARY KEY (`id`)
+        ) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
+                ');
 
         $this->installOrderStates();
 
@@ -316,8 +326,9 @@ class AmzPayments extends PaymentModule
         Configuration::updateValue('BUTTON_SIZE', 'medium');
         Configuration::updateValue('BUTTON_SIZE_LPA', 'medium');
         Configuration::updateValue('TEMPLATE_VARIANT_BS', true);
+        Configuration::updateValue('AMZ_HIDE_LOGIN_BTNS', false);
         
-        return parent::install() && $this->registerHook('displayTopColumn') && $this->registerHook('displayBackOfficeHeader') && $this->registerHook('displayShoppingCartFooter') && $this->registerHook('displayNav') && $this->registerHook('adminOrder') && $this->registerHook('updateOrderStatus') && $this->registerHook('displayBackOfficeFooter') && $this->registerHook('displayPayment') && $this->registerHook('paymentReturn') && $this->registerHook('payment') && $this->registerhook('displayPaymentEU') && $this->registerHook('header');
+        return parent::install() && $this->registerHook('displayTopColumn') && $this->registerHook('actionCarrierUpdate') && $this->registerHook('displayBackOfficeHeader') && $this->registerHook('displayShoppingCartFooter') && $this->registerHook('displayNav') && $this->registerHook('adminOrder') && $this->registerHook('updateOrderStatus') && $this->registerHook('displayBackOfficeFooter') && $this->registerHook('displayPayment') && $this->registerHook('paymentReturn') && $this->registerHook('payment') && $this->registerhook('displayPaymentEU') && $this->registerHook('header');
     }
 
     protected function installOrderStates()
@@ -335,17 +346,19 @@ class AmzPayments extends PaymentModule
             'paid' => 0,
             'deleted' => 0
         );
-        if (! Db::getInstance()->autoExecute(_DB_PREFIX_ . 'order_state', $values_to_insert, 'INSERT'))
+        if (! Db::getInstance()->autoExecute(_DB_PREFIX_ . 'order_state', $values_to_insert, 'INSERT')) {
             return false;
+        }
         $id_order_state = (int) Db::getInstance()->Insert_ID();
         $languages = Language::getLanguages(false);
-        foreach ($languages as $language)
+        foreach ($languages as $language) {
             Db::getInstance()->autoExecute(_DB_PREFIX_ . 'order_state_lang', array(
                 'id_order_state' => $id_order_state,
                 'id_lang' => $language['id_lang'],
                 'name' => $this->l('Amazon Payments - Authorized'),
                 'template' => ''
             ), 'INSERT');
+        }
         Configuration::updateValue('AUTHORIZED_STATUS_ID', $id_order_state);
         unset($id_order_state);
         
@@ -362,17 +375,19 @@ class AmzPayments extends PaymentModule
             'paid' => 1,
             'deleted' => 0
         );
-        if (! Db::getInstance()->autoExecute(_DB_PREFIX_ . 'order_state', $values_to_insert, 'INSERT'))
+        if (! Db::getInstance()->autoExecute(_DB_PREFIX_ . 'order_state', $values_to_insert, 'INSERT')) {
             return false;
+        }
         $id_order_state = (int) Db::getInstance()->Insert_ID();
         $languages = Language::getLanguages(false);
-        foreach ($languages as $language)
+        foreach ($languages as $language) {
             Db::getInstance()->autoExecute(_DB_PREFIX_ . 'order_state_lang', array(
                 'id_order_state' => $id_order_state,
                 'id_lang' => $language['id_lang'],
                 'name' => $this->l('Amazon Payments - Payment received'),
                 'template' => ''
             ), 'INSERT');
+        }
         Configuration::updateValue('CAPTURE_STATUS_ID', $id_order_state);
         unset($id_order_state);
     }
@@ -381,18 +396,20 @@ class AmzPayments extends PaymentModule
     {
         if (! isset(self::$table_columns[$table][$column])) {
             $res = Db::getInstance()->executeS('SHOW COLUMNS FROM `' . pSQL($table) . '` LIKE \'' . pSQL($column) . '\'');
-            if ($res)
+            if ($res) {
                 self::$table_columns[$table][$column] = true;
-            else
+            } else {
                 self::$table_columns[$table][$column] = false;
+            }
         }
         return self::$table_columns[$table][$column];
     }
 
     public function uninstall()
     {
-        if (! Configuration::deleteByName('AMZ_MERCHANT_ID') || ! Configuration::deleteByName('ACCESS_KEY') || ! Configuration::deleteByName('SECRET_KEY') || ! Configuration::deleteByName('REGION') || ! Configuration::deleteByName('BUTTON_VISIBILITY') || ! Configuration::deleteByName('ENVIRONMENT') || ! Configuration::deleteByName('AMZ_DECLINE_STATUS_ID') || ! Configuration::deleteByName('AUTHORIZATION_MODE') || ! Configuration::deleteByName('CAPTURE_MODE') || ! Configuration::deleteByName('CAPTURE_STATUS_ID') || ! parent::uninstall())
+        if (! Configuration::deleteByName('AMZ_MERCHANT_ID') || ! Configuration::deleteByName('ACCESS_KEY') || ! Configuration::deleteByName('SECRET_KEY') || ! Configuration::deleteByName('REGION') || ! Configuration::deleteByName('BUTTON_VISIBILITY') || ! Configuration::deleteByName('ENVIRONMENT') || ! Configuration::deleteByName('AMZ_DECLINE_STATUS_ID') || ! Configuration::deleteByName('AUTHORIZATION_MODE') || ! Configuration::deleteByName('CAPTURE_MODE') || ! Configuration::deleteByName('CAPTURE_STATUS_ID') || ! parent::uninstall()) {
             return false;
+        }
         return true;
     }
 
@@ -400,7 +417,7 @@ class AmzPayments extends PaymentModule
     {
         if (Tools::isSubmit('submitAmzpaymentsModule')) {
             foreach (self::$config_array as $name => $f) {
-                if (Tools::getValue($f) === false) {
+                if (Tools::getValue($f) === false && $f != 'SHIPPINGS_NOT_ALLOWED') {
                     $this->_postErrors[] = $this->l($name) . ' ' . $this->l(': details are required.');
                 }
             }
@@ -433,8 +450,9 @@ class AmzPayments extends PaymentModule
                             break;
                         
                         case 'InvalidParameterValue':
-                            if (strpos($e->getErrorMessage(), 'Invalid seller id') !== false)
+                            if (strpos($e->getErrorMessage(), 'Invalid seller id') !== false) {
                                 $this->_postErrors[] = $this->l('Merchant ID is wrong.');
+                            }
                             break;
                     }
                 }
@@ -446,8 +464,24 @@ class AmzPayments extends PaymentModule
     {
         if (Tools::isSubmit('submitAmzpaymentsModule')) {
             foreach (self::$config_array as $f => $conf_key) {
-                Configuration::updateValue($conf_key, trim(Tools::getValue($conf_key)));                
-            }                
+                if ($conf_key == 'SHIPPINGS_NOT_ALLOWED') {
+                    $carriers_set = array();
+                    foreach ($this->getCarrierOptionsPostNames() as $pname) {
+                        if (Tools::getValue($pname)) {
+                            $carrier_set = Tools::str_replace_once('SHIPPINGS_NOT_ALLOWED_carrier_', '', $pname);
+                            $carrier_set = Tools::str_replace_once('_on', '', $carrier_set);
+                            $carriers_set[] = (int)$carrier_set;
+                        }
+                    }
+                    if (sizeof($carriers_set) > 0) {
+                        Configuration::updateValue($conf_key, join(",", $carriers_set));
+                    } else {
+                        Configuration::updateValue($conf_key, '');
+                    }
+                } else {
+                    Configuration::updateValue($conf_key, trim(Tools::getValue($conf_key)));
+                }
+            }
         }
         $this->_postSuccess[] = $this->l('Settings updated');
     }
@@ -485,12 +519,12 @@ class AmzPayments extends PaymentModule
 
     protected function getCronURL()
     {
-        return $this->context->link->getModuleLink('amzpayments','cron.php', array('pw' => $this->cron_password));
+        return $this->context->link->getModuleLink('amzpayments', 'cron.php', array('pw' => $this->cron_password));
     }
 
     protected function getIPNURL()
     {
-        return str_replace('http://', 'https://', $this->context->link->getModuleLink('amzpayments','ipn', array()));
+        return str_replace('http://', 'https://', $this->context->link->getModuleLink('amzpayments', 'ipn', array()));
     }
 
     protected function getAllowedReturnUrls($type = 1, $joined = false)
@@ -498,7 +532,7 @@ class AmzPayments extends PaymentModule
         $urls = array();
         $language_ids = Language::getLanguages(true, false, true);
         foreach ($language_ids as $id_lang) {
-            $url = str_replace('http://', 'https://', $this->context->link->getModuleLink('amzpayments','process_login', array(), null, (int)$id_lang));
+            $url = str_replace('http://', 'https://', $this->context->link->getModuleLink('amzpayments', 'process_login', array(), null, (int)$id_lang));
             if ($type == 2) {
                 $url .= '?toCheckout=1';
             }
@@ -517,11 +551,12 @@ class AmzPayments extends PaymentModule
         foreach (self::$config_array as $name => $key) {
             $return[$key] = Configuration::get($key);
         }
+        $return = $this->addDisabledCarrierOptions($return);
         return $return;
     }
 
     public function getConfigForm()
-    {        
+    {
         return array(
             'form' => array(
                 'legend' => array(
@@ -603,6 +638,24 @@ class AmzPayments extends PaymentModule
                             ),
                             array(
                                 'id' => 'active_off_bv',
+                                'value' => '0',
+                                'label' => $this->l('Disabled')
+                            )
+                        )
+                    ),
+                    array(
+                        'type' => 'switch',
+                        'label' => $this->l('Hide Login with Amazon Elements in Frontend'),
+                        'name' => 'AMZ_HIDE_LOGIN_BTNS',
+                        'is_bool' => true,
+                        'values' => array(
+                            array(
+                                'id' => 'active_on_hide_lgn_btns',
+                                'value' => true,
+                                'label' => $this->l('Enabled')
+                            ),
+                            array(
+                                'id' => 'active_off_hide_lgn_btns',
                                 'value' => '0',
                                 'label' => $this->l('Disabled')
                             )
@@ -788,10 +841,14 @@ class AmzPayments extends PaymentModule
                     ),
                     array(
                         'col' => 3,
-                        'type' => 'text',
+                        'type' => 'checkbox',
                         'prefix' => '<i class="icon icon-tag"></i>',
                         'name' => 'SHIPPINGS_NOT_ALLOWED',
-                        'label' => $this->l('shippings_not_allowed')
+                        'label' => $this->l('shippings_not_allowed'),
+                        'values' => array('query' => $this->getCarrierOptions(),
+                            'id' => 'id',
+                            'name' => 'label',
+                        ),
                     ),
                     array(
                         'col' => 3,
@@ -1104,46 +1161,46 @@ class AmzPayments extends PaymentModule
                 $integration_guide_link = 'http://www.patworx.de/LoginUndBezahlen/MitAmazon/PrestaShop/Dokumentation';
                 $youtube_video_link = 'https://www.youtube.com/watch?v=pbv64mDMqc8';
                 $youtube_video_embed_link = 'https://www.youtube.com/embed/pbv64mDMqc8?rel=0&showinfo=0';
-            break;
+                break;
             case 'en':
                 if (isset($this->context->language->local) && Tools::strtolower($this->context->language->local) == 'en-us') {
                     $register_link.= 'SPEXUSAPA-PrestashopPL';
-                } else {                    
+                } else {
                     $register_link.= 'SPEXUKAPA-PrestashopPL';
                 }
                 $let_customer_know_link = 'https://payments.amazon.co.uk/merchant/tools?ld=SPEXUKAPA-prestashop-2016-03-Configuration';
                 $integration_guide_link = 'http://www.patworx.de/LoginAndPay/WithAmazon/PrestaShopUK/Documentation';
                 $youtube_video_link = false;
                 $youtube_video_embed_link = false;
-            break;
+                break;
             case 'fr':
                 $register_link.= 'SPEXFRAPA-PrestashopPL';
                 $let_customer_know_link = 'https://images-na.ssl-images-amazon.com/images/G/03/amazonservices/payments/website/Amazon_Payments_MarketingGuide_UK_July2015_OLD._V283105627_.pdf?ld=SPEXFRAPA-prestashop-CP-DP';
                 $integration_guide_link = 'http://www.patworx.de/LoginAndPay/WithAmazon/PrestaShopUK/Documentation?ld=SPEXFRAPA-prestashop-CP-DP';
                 $youtube_video_link = false;
                 $youtube_video_embed_link = false;
-            break;
+                break;
             case 'it':
                 $register_link.= 'SPEXITAPA-PrestashopPL';
                 $let_customer_know_link = 'https://images-na.ssl-images-amazon.com/images/G/03/amazonservices/payments/website/Amazon_Payments_MarketingGuide_UK_July2015_OLD._V283105627_.pdf?ld=SPEXITAPA-prestashop-CP-DP';
                 $integration_guide_link = 'http://www.patworx.de/LoginAndPay/WithAmazon/PrestaShopUK/Documentation?ld=SPEXITAPA-prestashop-CP-DP';
                 $youtube_video_link = false;
                 $youtube_video_embed_link = false;
-            break;
+                break;
             case 'es':
                 $register_link.= 'SPEXESAPA-PrestashopPL';
                 $let_customer_know_link = 'https://payments.amazon.co.uk/merchant/tools?ld=SPEXUKAPA-prestashop-2016-03-Configuration';
                 $integration_guide_link = 'http://www.patworx.de/LoginAndPay/WithAmazon/PrestaShopUK/Documentation';
                 $youtube_video_link = false;
                 $youtube_video_embed_link = false;
-            break;
+                break;
             default:
                 $register_link.= 'SPEXDEAPA-PrestashopPL';
                 $let_customer_know_link = 'https://payments.amazon.co.uk/merchant/tools?ld=SPEXUKAPA-prestashop-2016-03-Configuration';
                 $integration_guide_link = 'http://www.patworx.de/LoginAndPay/WithAmazon/PrestaShopUK/Documentation';
                 $youtube_video_link = false;
-                $youtube_video_embed_link = false;                
-            break;
+                $youtube_video_embed_link = false;
+                break;
         }
 
         $this->context->smarty->assign('register_link', $register_link);
@@ -1155,7 +1212,7 @@ class AmzPayments extends PaymentModule
         $this->context->smarty->assign('use_simple_path', true);
         $simple_path_data = array('spId' => $this->getPfId(),
             'uniqueId' => Tools::encryptIV('amzPaymentsSimplePath'),
-            'locale' =>  $this->getLocalCodeForSimplePath(),            
+            'locale' =>  $this->getLocalCodeForSimplePath(),
             'loginRedirectURLs_1' => $this->getAllowedReturnUrls(1),
             'loginRedirectURLs_2' => $this->getAllowedReturnUrls(2),
             'allowedLoginDomains' => str_replace('http://', 'https://', _PS_BASE_URL_),
@@ -1177,10 +1234,15 @@ class AmzPayments extends PaymentModule
         
         return $output;
     }
+    
+    public function getLocalPath()
+    {
+        return $this->local_path;
+    }
 
     public function hookDisplayNav()
     {
-        if ($this->lpa_mode != 'pay' && ! $this->context->customer->isLogged() && ((isset($this->context->controller->module->name) && $this->context->controller->module->name != 'amzpayments') || ! (isset($this->context->controller->module->name)))) {
+        if ($this->hide_login_btns != 1 && $this->lpa_mode != 'pay' && ! $this->context->customer->isLogged() && ((isset($this->context->controller->module->name) && $this->context->controller->module->name != 'amzpayments') || ! (isset($this->context->controller->module->name)))) {
             $this->smarty->assign(array(
                 'button_hidden' => $this->button_visibility == '0'
             ));
@@ -1189,7 +1251,8 @@ class AmzPayments extends PaymentModule
         return '';
     }
 
-    public function hookDisplayBackOfficeHeader() {
+    public function hookDisplayBackOfficeHeader()
+    {
         $this->context->controller->addJquery();
         $this->context->controller->addJS(($this->_path) . 'views/js/admin.js');
         $this->context->controller->addCSS(($this->_path) . 'views/css/admin.css');
@@ -1205,24 +1268,26 @@ class AmzPayments extends PaymentModule
 
     public function getRegionalCodeForURL()
     {
-        if (in_array(Tools::strtolower($this->region), array('de', 'fr', 'it', 'es')))
+        if (in_array(Tools::strtolower($this->region), array('de', 'fr', 'it', 'es'))) {
             return 'de';
-        elseif (Tools::strtolower($this->region) == 'uk')
+        } elseif (Tools::strtolower($this->region) == 'uk') {
             return 'uk';
-        elseif (Tools::strtolower($this->region) == 'us')
+        } elseif (Tools::strtolower($this->region) == 'us') {
             return 'us';
+        }
         return 'de';
     }
 
     private function getLocalCodeForSimplePath()
     {
         $currency = Currency::getCurrent();
-        if ($currency->iso_code == 'EUR')
+        if ($currency->iso_code == 'EUR') {
             return 'EUR';
-        elseif ($currency->iso_code == 'GBP')
+        } elseif ($currency->iso_code == 'GBP') {
             return 'GBP';
-        elseif ($currency->iso_code == 'USD')
+        } elseif ($currency->iso_code == 'USD') {
             return 'USD';
+        }
         return 'USD';
     }
 
@@ -1230,39 +1295,77 @@ class AmzPayments extends PaymentModule
     {
         $this->registerHook('paymentReturn');
         if ($this->environment == 'SANDBOX') {
-            if (in_array(Tools::strtolower($this->region), array('de', 'fr', 'it', 'es')))
+            if (in_array(Tools::strtolower($this->region), array('de', 'fr', 'it', 'es'))) {
                 return 'https://payments-sandbox.amazon.de/gp/widgets/button';
-            elseif (Tools::strtolower($this->region) == 'uk')
+            } elseif (Tools::strtolower($this->region) == 'uk') {
                 return 'https://payments-sandbox.amazon.co.uk/gp/widgets/button';
-            elseif (Tools::strtolower($this->region) == 'us')
+            } elseif (Tools::strtolower($this->region) == 'us') {
                 return 'https://payments-sandbox.amazon.com/gp/widgets/button';
+            }
         } else {
-            if (in_array(Tools::strtolower($this->region), array('de', 'fr', 'it', 'es')))
+            if (in_array(Tools::strtolower($this->region), array('de', 'fr', 'it', 'es'))) {
                 return 'https://payments.amazon.de/gp/widgets/button';
-            elseif (Tools::strtolower($this->region) == 'uk')
+            } elseif (Tools::strtolower($this->region) == 'uk') {
                 return 'https://payments.amazon.co.uk/gp/widgets/button';
-            elseif (Tools::strtolower($this->region) == 'us')
+            } elseif (Tools::strtolower($this->region) == 'us') {
                 return 'https://payments.amazon.com/gp/widgets/button';
+            }
         }
     }
 
     public function getLpaApiUrl()
     {
         if ($this->environment == 'SANDBOX') {
-            if (in_array(Tools::strtolower($this->region), array('de', 'fr', 'it', 'es')))
+            if (in_array(Tools::strtolower($this->region), array('de', 'fr', 'it', 'es'))) {
                 return 'https://api.sandbox.amazon.de';
-            elseif (Tools::strtolower($this->region) == 'uk')
+            } elseif (Tools::strtolower($this->region) == 'uk') {
                 return 'https://api.sandbox.amazon.co.uk';
-            elseif (Tools::strtolower($this->region) == 'us')
+            } elseif (Tools::strtolower($this->region) == 'us') {
                 return 'https://api.sandbox.amazon.com';
+            }
         } else {
-            if (in_array(Tools::strtolower($this->region), array('de', 'fr', 'it', 'es')))
+            if (in_array(Tools::strtolower($this->region), array('de', 'fr', 'it', 'es'))) {
                 return 'https://api.amazon.de';
-            elseif (Tools::strtolower($this->region) == 'uk')
+            } elseif (Tools::strtolower($this->region) == 'uk') {
                 return 'https://api.amazon.co.uk';
-            elseif (Tools::strtolower($this->region) == 'us')
+            } elseif (Tools::strtolower($this->region) == 'us') {
                 return 'https://api.amazon.com';
-        }    
+            }
+        }
+    }
+    
+    public function getCarrierOptionsPostNames()
+    {
+        $ret = array();
+        foreach ($this->getCarrierOptions() as $c) {
+            $ret[] = 'SHIPPINGS_NOT_ALLOWED_carrier_' . $c['value'] . '_on';
+        }
+        return $ret;
+    }
+    
+    public function addDisabledCarrierOptions($fields_values)
+    {
+        if ($this->shippings_not_allowed != '') {
+            $blocked_shipping_ids = explode(',', $this->shippings_not_allowed);
+            foreach ($blocked_shipping_ids as $k => $v) {
+                $fields_values['SHIPPINGS_NOT_ALLOWED_carrier_' . $v . '_on'] = $v;
+            }
+        }
+        return $fields_values;
+    }
+    
+    public function getCarrierOptions()
+    {
+        $ret = array();
+        $carriers = Carrier::getCarriers(Configuration::get('PS_LANG_DEFAULT'));
+        foreach ($carriers as $carrier) {
+            $ret[] = array('id' => 'carrier_' . $carrier['id_carrier'] . '_on',
+                           'value' => $carrier['id_carrier'],
+                           'val' => $carrier['id_carrier'],
+                           'label' => $carrier['name']
+            );
+        }
+        return $ret;
     }
 
     protected function checkForTemporarySessionVarsAndKillThem()
@@ -1273,17 +1376,17 @@ class AmzPayments extends PaymentModule
             if ($check_address->lastname == 'amzLastname' || $check_address->firstname == 'amzFirstname' || $check_address->address1 == 'amzAddress1') {
                 $check_address->delete();
                 $this->context->cart->id_address_delivery = 0;
-				
+                
                 $sql = 'UPDATE `'._DB_PREFIX_.'cart_product`
                 SET `id_address_delivery` = NULL
                 WHERE  `id_cart` = '.(int)$this->context->cart->id;
                 Db::getInstance()->execute($sql);
-		
+        
                 $sql = 'UPDATE `'._DB_PREFIX_.'customization`
                 SET `id_address_delivery` = NULL
                 WHERE  `id_cart` = '.(int)$this->context->cart->id;
-                Db::getInstance()->execute($sql);			
-				
+                Db::getInstance()->execute($sql);
+                
                 $need_update = true;
             }
         }
@@ -1291,54 +1394,57 @@ class AmzPayments extends PaymentModule
             $check_address = new Address((int) $this->context->cart->id_address_invoice);
             if ($check_address->lastname == 'amzLastname' || $check_address->firstname == 'amzFirstname' || $check_address->address1 == 'amzAddress1') {
                 $check_address->delete();
-                $this->context->cart->id_address_invoice = 0;		
-				
+                $this->context->cart->id_address_invoice = 0;
+                
                 $sql = 'UPDATE `'._DB_PREFIX_.'cart_product`
                 SET `id_address_delivery` = NULL
                 WHERE  `id_cart` = '.(int)$this->context->cart->id;
                 Db::getInstance()->execute($sql);
-		
+        
                 $sql = 'UPDATE `'._DB_PREFIX_.'customization`
                 SET `id_address_delivery` = NULL
                 WHERE  `id_cart` = '.(int)$this->context->cart->id;
-                Db::getInstance()->execute($sql);	
-				
+                Db::getInstance()->execute($sql);
+                
                 $need_update = true;
             }
         }
-        if ($need_update) {						
-            $this->context->cart->update();	
+        if ($need_update) {
+            $this->context->cart->update();
         }
     }
 
     public function hookDisplayShoppingCartFooter($params)
-    {        
+    {
         $show_amazon_button = true;
         if (isset($this->context->controller->module)) {
-            if ($this->context->controller->module->name == 'amzpayments')
+            if ($this->context->controller->module->name == 'amzpayments') {
                 $show_amazon_button = false;
+            }
         }
         
-        if (! $this->checkIfCurrencyMatchesModuleRegion())
+        if (! $this->checkIfCurrencyMatchesModuleRegion()) {
             $show_amazon_button = false;
+        }
         
-        if (($this->allow_guests == '0') && (! $this->context->customer->isLogged()))
+        if (! $this->checkCurrency($params['cart'])) {
             $show_amazon_button = false;
+        }
         
-        if (! $this->checkCurrency($params['cart']))
+        if ($this->lpa_mode == 'login') {
             $show_amazon_button = false;
-        
-        if ($this->lpa_mode == 'login')
-            $show_amazon_button = false;
+        }
         
         $summary = $this->context->cart->getSummaryDetails();
         foreach ($summary['products'] as &$product_update) {
             $product_id = (int) (isset($product_update['id_product']) ? $product_update['id_product'] : $product_update['product_id']);
-            if ($this->productNotAllowed($product_id))
+            if ($this->productNotAllowed($product_id)) {
                 $show_amazon_button = false;
+            }
         }
         if ($show_amazon_button) {
             $this->context->smarty->assign('sellerID', $this->merchant_id);
+            $this->context->smarty->assign('create_account', ($this->allow_guests == '0' || Configuration::get('PS_GUEST_CHECKOUT_ENABLED') == '0') && (!$this->context->customer->isLogged()));
             $this->context->smarty->assign('size', $this->button_size);
             $this->context->smarty->assign('color', $this->button_color);
             $this->context->smarty->assign('btn_url', $this->getButtonURL());
@@ -1350,10 +1456,12 @@ class AmzPayments extends PaymentModule
 
     public function hookPayment($params)
     {
-        if (! $this->active)
+        if (! $this->active) {
             return;
-        if (! $this->checkCurrency($params['cart']))
+        }
+        if (! $this->checkCurrency($params['cart'])) {
             return;
+        }
         
         $this->smarty->assign(array(
             'this_path' => $this->_path,
@@ -1373,18 +1481,19 @@ class AmzPayments extends PaymentModule
     {
         $currency = new Currency((int) (Context::getContext()->cart->id_currency));
         
-        if (Tools::strtolower($this->region) == 'de' && Tools::strtoupper($currency->iso_code) == 'EUR')
+        if (Tools::strtolower($this->region) == 'de' && Tools::strtoupper($currency->iso_code) == 'EUR') {
             return true;
-        elseif (Tools::strtolower($this->region) == 'fr' && Tools::strtoupper($currency->iso_code) == 'EUR')
+        } elseif (Tools::strtolower($this->region) == 'fr' && Tools::strtoupper($currency->iso_code) == 'EUR') {
             return true;
-        elseif (Tools::strtolower($this->region) == 'it' && Tools::strtoupper($currency->iso_code) == 'EUR')
+        } elseif (Tools::strtolower($this->region) == 'it' && Tools::strtoupper($currency->iso_code) == 'EUR') {
             return true;
-        elseif (Tools::strtolower($this->region) == 'es' && Tools::strtoupper($currency->iso_code) == 'EUR')
+        } elseif (Tools::strtolower($this->region) == 'es' && Tools::strtoupper($currency->iso_code) == 'EUR') {
             return true;
-        elseif (Tools::strtolower($this->region) == 'uk' && Tools::strtoupper($currency->iso_code) == 'GBP')
+        } elseif (Tools::strtolower($this->region) == 'uk' && Tools::strtoupper($currency->iso_code) == 'GBP') {
             return true;
-        elseif (Tools::strtolower($this->region) == 'us' && Tools::strtoupper($currency->iso_code) == 'USD')
+        } elseif (Tools::strtolower($this->region) == 'us' && Tools::strtoupper($currency->iso_code) == 'USD') {
             return true;
+        }
         return false;
     }
 
@@ -1393,10 +1502,13 @@ class AmzPayments extends PaymentModule
         $currency_order = new Currency((int) ($cart->id_currency));
         $currencies_module = $this->getCurrency((int) $cart->id_currency);
         
-        if (is_array($currencies_module))
-            foreach ($currencies_module as $currency_module)
-                if ($currency_order->id == $currency_module['id_currency'])
+        if (is_array($currencies_module)) {
+            foreach ($currencies_module as $currency_module) {
+                if ($currency_order->id == $currency_module['id_currency']) {
                     return true;
+                }
+            }
+        }
         return false;
     }
 
@@ -1404,10 +1516,12 @@ class AmzPayments extends PaymentModule
     {
         if ($this->products_not_allowed != '') {
             $products_not_allowed_ids = explode(',', $this->products_not_allowed);
-            foreach ($products_not_allowed_ids as $k => $v)
+            foreach ($products_not_allowed_ids as $k => $v) {
                 $products_not_allowed_ids[$k] = (int) $v;
-            if (in_array($product_id, $products_not_allowed_ids))
+            }
+            if (in_array($product_id, $products_not_allowed_ids)) {
                 return true;
+            }
         }
     }
     
@@ -1420,7 +1534,7 @@ class AmzPayments extends PaymentModule
     }
 
     public function hookDisplayPayment($params)
-    { 
+    {
         return $this->hookPayment($params);
     }
 
@@ -1428,38 +1542,41 @@ class AmzPayments extends PaymentModule
     {
         if (Tools::getValue('controller') == 'order' || Tools::getValue('controller') == 'orderopc') {
             $this->checkForTemporarySessionVarsAndKillThem();
-        }    
+        }
         
         $show_amazon_button = true;
-        if (($this->allow_guests == '0') && (! $this->context->customer->isLogged()))
-            $show_amazon_button = false;
         
-        if (! $this->checkCurrency($params['cart']))
+        if (! $this->checkCurrency($params['cart'])) {
             $show_amazon_button = false;
+        }
         
-        if (! $this->checkIfCurrencyMatchesModuleRegion())
+        if (! $this->checkIfCurrencyMatchesModuleRegion()) {
             $show_amazon_button = false;
+        }
         
         $this->context->controller->addCSS($this->_path . 'views/css/amzpayments.css', 'all');
         $redirect = $this->context->link->getModuleLink('amzpayments', 'amzpayments');
         
-        if (Configuration::get('PS_SSL_ENABLED'))
+        if (Configuration::get('PS_SSL_ENABLED')) {
             $redirect = str_replace('http://', 'https://', $redirect);
+        }
         
-        if (strpos($redirect, '?') > 0)
+        if (strpos($redirect, '?') > 0) {
             $redirect .= '&session=';
-        else
+        } else {
             $redirect .= '?session=';
+        }
         
         $login_redirect = $this->context->link->getModuleLink('amzpayments', 'process_login');
         
         // always SSL, as amazon has nothing else allowed!
         $login_redirect = str_replace('http://', 'https://', $login_redirect);
         
-        if (strpos($login_redirect, '?') > 0)
+        if (strpos($login_redirect, '?') > 0) {
             $login_checkout_redirect = $login_redirect . '&toCheckout=1';
-        else
+        } else {
             $login_checkout_redirect = $login_redirect . '?toCheckout=1';
+        }
         
         $set_user_ajax = $this->context->link->getModuleLink('amzpayments', 'user_to_shop');
         
@@ -1469,10 +1586,11 @@ class AmzPayments extends PaymentModule
         $ext_js = '';
         
         if ($this->getRegionalCodeForURL() == 'us') {
-            if ($this->environment == 'SANDBOX')
+            if ($this->environment == 'SANDBOX') {
                 $ext_js = 'https://static-na.payments-amazon.com/OffAmazonPayments/us/sandbox/js/Widgets.js ';
-            else
+            } else {
                 $ext_js = 'https://static-na.payments-amazon.com/OffAmazonPayments/us/js/Widgets.js ';
+            }
         } else {
             if ($this->environment == 'SANDBOX') {
                 $ext_js = 'https://static-eu.payments-amazon.com/OffAmazonPayments/' . $this->getRegionalCodeForURL() . '/sandbox/lpa/js/Widgets.js?sellerId=' . $this->merchant_id;
@@ -1493,27 +1611,32 @@ class AmzPayments extends PaymentModule
             if (!isset($this->context->cookie->amazon_id)) {
                 $acc_tk = self::prepareCookieValueForAmazonPaymentsUse($this->context->cookie->amz_access_token);
                 $amz_login_ready = '
-				var accessToken = "' . $acc_tk . '";
-				if (typeof accessToken === \'string\' && accessToken.match(/^Atza/)) {
-				document.cookie = "amazon_Login_accessToken=" + accessToken +";secure";
-			}
-			window.onAmazonLoginReady = function() {
-			amazon.Login.setClientId("' . $this->client_id . '");
-			    amazon.Login.setUseCookie(true);
-			};
-			';
+                var accessToken = "' . $acc_tk . '";
+                if (typeof accessToken === \'string\' && accessToken.match(/^Atza/)) {
+                document.cookie = "amazon_Login_accessToken=" + accessToken +";secure";
+            }
+            window.onAmazonLoginReady = function() {
+            amazon.Login.setClientId("' . $this->client_id . '");
+                amazon.Login.setUseCookie(true);
+            };
+            ';
             }
         }
         
         $logout_str = '';
-        if ($this->context->controller->php_self == 'guest-tracking') {            
-            $logout_str .= '<script type="text/javascript"> amazonLogout(); </script>';            
+        if ($this->context->controller->php_self == 'guest-tracking') {
+            $logout_str .= '<script type="text/javascript"> amazonLogout(); </script>';
         }
         
-        if ($this->button_visibility == '0')
+        if ($this->button_visibility == '0') {
             $css_string = '<style> #jsLoginAuthPage,#payWithAmazonCartDiv,#HOOK_ADVANCED_PAYMENT #payWithAmazonListDiv { display: none; } </style>';
-        else
+        } else {
             $css_string = '';
+        }
+        
+        if ($this->hide_login_btns == 1) {
+            $css_string.= '<style> #jsLoginAuthPage { display: none; } </style>';
+        }
         
         $js_file = 'views/js/amzpayments_login.js';
         $js_file = Tools::file_get_contents(_PS_MODULE_DIR_ . $this->name . '/' . $js_file);
@@ -1528,7 +1651,7 @@ class AmzPayments extends PaymentModule
         ), $js_file);
         $this->context->cookie->amz_js_string = self::prepareCookieValueForPrestaShopUse($amz_login_ready);
         $amz_login_ready = '<script type="text/javascript" src="' . Tools::str_replace_once((Configuration::get('PS_SSL_ENABLED') ? 'http://' : ''), (Configuration::get('PS_SSL_ENABLED') ? 'https://' : ''), $this->context->link->getModuleLink('amzpayments', 'jsmode', array('c' => 'amz_js_string', 't' => time()))) . '"></script>';
-        return $css_string . $amz_login_ready . $ext_js . '<script type="text/javascript"> var AMZACTIVE = \'' . ($show_amazon_button ? '1' : '0') . '\'; var AMZSELLERID = "' . $this->merchant_id . '"; var AMZ_BUTTON_TYPE_LOGIN = "' . $this->type_login . '"; var AMZ_BUTTON_TYPE_PAY = "' . $this->type_pay . '"; var AMZ_BUTTON_SIZE_PAY = "' . $this->button_size . '"; var AMZ_BUTTON_SIZE_LPA = "' . $this->button_size_lpa . '"; var AMZ_BUTTON_COLOR_LPA = "' . $this->button_color_lpa . '"; var AMZ_BUTTON_COLOR_PAY = "' . $this->button_color . '"; var AMZ_BUTTON_COLOR_LPA_NAVI = "' . $this->button_color_lpa_navi . '"; var AMZ_WIDGET_LANGUAGE = "' . $this->getWidgetLanguageCode() . '"; var CLIENT_ID = "' . $this->client_id . '"; var useRedirect = ' . (! self::currentSiteIsSSL() || $this->popup == '0' ? 'true' : 'false') . '; var LPA_MODE = "' . $this->lpa_mode . '"; var REDIRECTAMZ = "' . $redirect . '"; var LOGINREDIRECTAMZ_CHECKOUT = "' . $login_checkout_redirect . '"; var LOGINREDIRECTAMZ = "' . $login_redirect . '"; var is_logged = ' . $is_logged . '; var AMZACCTK = "' . $acc_tk . '"; var SETUSERAJAX = "' . $set_user_ajax . '";' . $js_file . ' </script>' . $logout_str;
+        return $css_string . $amz_login_ready . $ext_js . '<script type="text/javascript"> var AMZACTIVE = \'' . ($show_amazon_button ? '1' : '0') . '\'; var AMZSELLERID = "' . $this->merchant_id . '"; var AMZ_CREATE_ACCOUNT_EXP = "' . (($this->allow_guests == '0' || Configuration::get('PS_GUEST_CHECKOUT_ENABLED') == '0') && (!$this->context->customer->isLogged()) ? '1' : '0') . '"; var AMZ_BUTTON_TYPE_LOGIN = "' . $this->type_login . '"; var AMZ_BUTTON_TYPE_PAY = "' . $this->type_pay . '"; var AMZ_BUTTON_SIZE_PAY = "' . $this->button_size . '"; var AMZ_BUTTON_SIZE_LPA = "' . $this->button_size_lpa . '"; var AMZ_BUTTON_COLOR_LPA = "' . $this->button_color_lpa . '"; var AMZ_BUTTON_COLOR_PAY = "' . $this->button_color . '"; var AMZ_BUTTON_COLOR_LPA_NAVI = "' . $this->button_color_lpa_navi . '"; var AMZ_WIDGET_LANGUAGE = "' . $this->getWidgetLanguageCode() . '"; var CLIENT_ID = "' . $this->client_id . '"; var useRedirect = ' . (! self::currentSiteIsSSL() || $this->popup == '0' ? 'true' : 'false') . '; var LPA_MODE = "' . $this->lpa_mode . '"; var REDIRECTAMZ = "' . $redirect . '"; var LOGINREDIRECTAMZ_CHECKOUT = "' . $login_checkout_redirect . '"; var LOGINREDIRECTAMZ = "' . $login_redirect . '"; var is_logged = ' . $is_logged . '; var AMZACCTK = "' . $acc_tk . '"; var SETUSERAJAX = "' . $set_user_ajax . '";' . $js_file . ' </script>' . $logout_str;
     }
 
     public function hookDisplayAdminOrder($params)
@@ -1557,6 +1680,20 @@ class AmzPayments extends PaymentModule
             
             return $this->getAdminSkeleton($params['id_order'], true);
         }
+    }
+    
+    public function hookActionCarrierUpdate($params)
+    {
+        $old_carrier = $params['id_carrier'];
+        $new_carrier = $params['carrier']->id;
+        if ($this->shippings_not_allowed != '') {
+            $blocked_shipping_ids = explode(',', $this->shippings_not_allowed);
+            foreach ($blocked_shipping_ids as $k => $v) {
+                $blocked_shipping_ids[$k] = (int)$v == (int)$old_carrier ? (int)$new_carrier : (int)$v;
+            }
+            Configuration::updateValue('SHIPPINGS_NOT_ALLOWED', join(",", $blocked_shipping_ids));
+        }
+        return true;
     }
 
     public function hookUpdateOrderStatus($params)
@@ -1615,8 +1752,9 @@ class AmzPayments extends PaymentModule
     public function setAmazonReferenceIdForOrderTransactionId($amazon_reference_id, $order_id)
     {
         $q = 'SELECT `reference` FROM ' . _DB_PREFIX_ . 'orders WHERE `id_order` = ' . (int) $order_id;
-        if ($r = Db::getInstance()->getRow($q))
+        if ($r = Db::getInstance()->getRow($q)) {
             return Db::getInstance()->execute('UPDATE `' . _DB_PREFIX_ . 'order_payment` SET `transaction_id` = \'' . pSQL($amazon_reference_id) . '\' WHERE `order_reference` = \'' . pSQL($r['reference']) . '\'');
+        }
         
         return false;
     }
@@ -1624,8 +1762,9 @@ class AmzPayments extends PaymentModule
     public function getAmazonReferenceIdForOrderTransactionId($order_id)
     {
         $q = 'SELECT `reference` FROM ' . _DB_PREFIX_ . 'orders WHERE `id_order` = ' . (int) $order_id;
-        if ($r = Db::getInstance()->getRow($q))
+        if ($r = Db::getInstance()->getRow($q)) {
             return $r['reference'];
+        }
         
         return false;
     }
@@ -1640,7 +1779,6 @@ class AmzPayments extends PaymentModule
         $q = 'SELECT `amazon_order_reference_id` FROM `' . _DB_PREFIX_ . 'amz_orders` WHERE `id_order` = ' . (int) $orders_id;
         $r = Db::getInstance()->getRow($q);
         if ($r['amazon_order_reference_id']) {
-            
             $this->smarty->assign(array(
                 'displayName' => $this->displayName,
                 'amazon_order_reference_id' => $r['amazon_order_reference_id'],
@@ -1660,8 +1798,9 @@ class AmzPayments extends PaymentModule
         
         $rs_to_assign = array();
         foreach ($rs as $r) {
-            if ($r['amz_tx_type'] == 'order_ref')
+            if ($r['amz_tx_type'] == 'order_ref') {
                 $reference_status = $r['amz_tx_status'];
+            }
             
             $rs_to_assign[] = array(
                 'transaction_type' => $this->translateTransactionType($r['amz_tx_type']),
@@ -1687,11 +1826,11 @@ class AmzPayments extends PaymentModule
     public function getOrderAuthorizedAmount($order_ref)
     {
         $q = 'SELECT SUM(amz_tx_amount) AS auth_sum FROM ' . _DB_PREFIX_ . 'amz_transactions WHERE
-		amz_tx_order_reference = \'' . pSQL($order_ref) . '\'
-		AND
-		amz_tx_type=\'auth\'
-		AND
-		amz_tx_status = \'Open\'';
+        amz_tx_order_reference = \'' . pSQL($order_ref) . '\'
+        AND
+        amz_tx_type=\'auth\'
+        AND
+        amz_tx_status = \'Open\'';
         
         $r = Db::getInstance()->getRow($q);
         return (float) $r['auth_sum'];
@@ -1700,11 +1839,11 @@ class AmzPayments extends PaymentModule
     public function getOrderCapturedAmount($order_ref)
     {
         $q = 'SELECT SUM(amz_tx_amount) AS capture_sum FROM ' . _DB_PREFIX_ . 'amz_transactions WHERE
-		amz_tx_order_reference = \'' . pSQL($order_ref) . '\'
-		AND
-		amz_tx_type=\'capture\'
-		AND
-		amz_tx_status = \'Completed\'';
+        amz_tx_order_reference = \'' . pSQL($order_ref) . '\'
+        AND
+        amz_tx_type=\'capture\'
+        AND
+        amz_tx_status = \'Completed\'';
         $r = Db::getInstance()->getRow($q);
         return (float) $r['capture_sum'];
     }
@@ -1712,11 +1851,11 @@ class AmzPayments extends PaymentModule
     public function getOrderRefundedAmount($order_ref)
     {
         $q = 'SELECT SUM(amz_tx_amount) AS refund_sum FROM ' . _DB_PREFIX_ . 'amz_transactions WHERE
-		amz_tx_order_reference = \'' . pSQL($order_ref) . '\'
-		AND
-		amz_tx_type=\'refund\'
-		AND
-		amz_tx_status = \'Completed\'';
+        amz_tx_order_reference = \'' . pSQL($order_ref) . '\'
+        AND
+        amz_tx_type=\'refund\'
+        AND
+        amz_tx_status = \'Completed\'';
         $r = Db::getInstance()->getRow($q);
         return (float) $r['refund_sum'];
     }
@@ -1724,28 +1863,30 @@ class AmzPayments extends PaymentModule
     public static function getOrderOpenAuthorizations($order_ref)
     {
         $q = 'SELECT * FROM ' . _DB_PREFIX_ . 'amz_transactions WHERE
-		amz_tx_order_reference = \'' . pSQL($order_ref) . '\'
-		AND
-		amz_tx_type=\'auth\'
-		AND
-		amz_tx_status = \'Open\'';
+        amz_tx_order_reference = \'' . pSQL($order_ref) . '\'
+        AND
+        amz_tx_type=\'auth\'
+        AND
+        amz_tx_status = \'Open\'';
         $rs = Db::getInstance()->ExecuteS($q);
         $ret = array();
-        foreach ($rs as $r)
+        foreach ($rs as $r) {
             $ret[] = $r;
+        }
         return $ret;
     }
 
     public static function getOrderCaptures($order_ref)
     {
         $q = 'SELECT * FROM ' . _DB_PREFIX_ . 'amz_transactions WHERE
-		amz_tx_order_reference = \'' . pSQL($order_ref) . '\'
-		AND
-		amz_tx_type=\'capture\'';
+        amz_tx_order_reference = \'' . pSQL($order_ref) . '\'
+        AND
+        amz_tx_type=\'capture\'';
         $rs = Db::getInstance()->ExecuteS($q);
         $ret = array();
-        foreach ($rs as $r)
+        foreach ($rs as $r) {
             $ret[] = $r;
+        }
         
         return $ret;
     }
@@ -1753,15 +1894,16 @@ class AmzPayments extends PaymentModule
     public static function getOrderUnclosedCaptures($order_ref)
     {
         $q = 'SELECT * FROM ' . _DB_PREFIX_ . 'amz_transactions WHERE
-		amz_tx_order_reference = \'' . pSQL($order_ref) . '\'
-		AND
-		amz_tx_status != \'Closed\'
-		AND
-		amz_tx_type=\'capture\'';
+        amz_tx_order_reference = \'' . pSQL($order_ref) . '\'
+        AND
+        amz_tx_status != \'Closed\'
+        AND
+        amz_tx_type=\'capture\'';
         $rs = Db::getInstance()->ExecuteS($q);
         $ret = array();
-        foreach ($rs as $r)
+        foreach ($rs as $r) {
             $ret[] = $r;
+        }
         
         return $ret;
     }
@@ -1769,9 +1911,9 @@ class AmzPayments extends PaymentModule
     public static function getOrderState($order_ref)
     {
         $q = 'SELECT * FROM ' . _DB_PREFIX_ . 'amz_transactions WHERE
-		amz_tx_order_reference = \'' . pSQL($order_ref) . '\'
-		AND
-		amz_tx_type=\'order_ref\'';
+        amz_tx_order_reference = \'' . pSQL($order_ref) . '\'
+        AND
+        amz_tx_type=\'order_ref\'';
         $r = Db::getInstance()->getRow($q);
         return $r['amz_tx_status'];
     }
@@ -1837,7 +1979,7 @@ class AmzPayments extends PaymentModule
             
             if ($sql_arr['amz_tx_status'] == 'Completed') {
                 $q = 'SELECT * FROM ' . _DB_PREFIX_ . 'amz_transactions WHERE amz_tx_type=\'capture\'
-				AND amz_tx_amz_id = \'' . pSQL($capture_id) . '\'';
+                AND amz_tx_amz_id = \'' . pSQL($capture_id) . '\'';
                 $r = Db::getInstance()->getRow($q);
                 if ($r) {
                     $total = AmazonTransactions::getOrderRefTotal($r['amz_tx_order_reference']);
@@ -1894,7 +2036,7 @@ class AmzPayments extends PaymentModule
                     $capture_request->setSellerId($this->merchant_id);
                     $capture_request->setAmazonCaptureId($captureId);
                     try {
-                        $response = $service->getCaptureDetails($capture_request);                                                
+                        $response = $service->getCaptureDetails($capture_request);
                         $details = $response->getGetCaptureDetailsResult()->getCaptureDetails();
 
                         $sql_arr = array(
@@ -1916,7 +2058,7 @@ class AmzPayments extends PaymentModule
                             ';
                         if ($row = Db::getInstance()->getRow($checkQuery)) {
                             return;
-                        } else {                        
+                        } else {
                             Db::getInstance()->insert('amz_transactions', $sql_arr);
                             AmazonTransactions::setOrderStatusCapturedSuccesfully($order_ref);
                         }
@@ -2046,7 +2188,6 @@ class AmzPayments extends PaymentModule
             ));
             $captures_to_assign = array();
             foreach ($captures as $r) {
-                
                 $captures_to_assign[] = array(
                     'amount' => self::formatAmount($r['amz_tx_amount']),
                     'amount_refunded' => self::formatAmount($r['amz_tx_amount_refunded']),
@@ -2093,8 +2234,9 @@ class AmzPayments extends PaymentModule
         $left -= self::getAmountLeftToAuthorize($order_ref);
         $left = round(max(0, $left), 2);
         
-        if ($left > 75)
+        if ($left > 75) {
             $left = 75;
+        }
         
         return $left;
     }
@@ -2153,14 +2295,14 @@ class AmzPayments extends PaymentModule
         if ($this->capture_mode == 'after_shipping') {
             $q = 'SELECT DISTINCT ao.amazon_order_reference_id FROM  ' . _DB_PREFIX_ . 'orders o
             JOIN ' . _DB_PREFIX_ . 'amz_orders ao ON o.id_order = ao.id_order 
-			JOIN ' . _DB_PREFIX_ . 'amz_transactions AS a1 ON (ao.amazon_order_reference_id = a1.amz_tx_order_reference AND a1.amz_tx_type = \'auth\' AND a1.amz_tx_status = \'Open\')
-			LEFT JOIN ' . _DB_PREFIX_ . 'amz_transactions AS a2 ON (ao.amazon_order_reference_id = a2.amz_tx_order_reference AND a2.amz_tx_type = \'capture\')
-			WHERE
-			ao.amazon_order_reference_id != \'\'
-			AND
-			o.current_state = \'' . pSQL($this->capture_status_id) . '\'
-			AND
-			a2.amz_tx_id IS NULL';
+            JOIN ' . _DB_PREFIX_ . 'amz_transactions AS a1 ON (ao.amazon_order_reference_id = a1.amz_tx_order_reference AND a1.amz_tx_type = \'auth\' AND a1.amz_tx_status = \'Open\')
+            LEFT JOIN ' . _DB_PREFIX_ . 'amz_transactions AS a2 ON (ao.amazon_order_reference_id = a2.amz_tx_order_reference AND a2.amz_tx_type = \'capture\')
+            WHERE
+            ao.amazon_order_reference_id != \'\'
+            AND
+            o.current_state = \'' . pSQL($this->capture_status_id) . '\'
+            AND
+            a2.amz_tx_id IS NULL';
             $rs = Db::getInstance()->ExecuteS($q);
             foreach ($rs as $r) {
                 $ramz = AmazonTransactions::getAuthorizationForCapture($r['amazon_order_reference_id']);
@@ -2185,7 +2327,6 @@ class AmzPayments extends PaymentModule
         $q = 'SELECT * FROM ' . _DB_PREFIX_ . 'amz_orders WHERE amazon_order_reference_id = \'' . pSQL($order_ref) . '\'';
         $rs = Db::getInstance()->ExecuteS($q);
         foreach ($rs as $r) {
-            
             $order = new Order($r['id_order']);
             
             $lang_id = $order->id_lang;
@@ -2194,10 +2335,11 @@ class AmzPayments extends PaymentModule
             $customer = new Customer($order->id_customer);
             $email = $customer->email;
             
-            if ($type == 'soft')
+            if ($type == 'soft') {
                 $subject = $this->l('Your payment was rejected by Amazon');
-            elseif ($type == 'hard')
+            } elseif ($type == 'hard') {
                 $subject = $this->l('Your payment was rejected by Amazon - please contact us');
+            }
             
             Mail::Send($lang_id, 'amazon_' . $type . '_decline', $subject, array(
                 '{$ORDER_NR}' => $reference,
@@ -2252,17 +2394,17 @@ class AmzPayments extends PaymentModule
     public static function addressAlreadyExists($address, $customer)
     {
         $result = Db::getInstance(_PS_USE_SQL_SLAVE_)->getRow('
-				SELECT a.`id_address`
-				FROM `' . _DB_PREFIX_ . 'address` a
-				WHERE a.`lastname` = "' . pSQL($address->lastname) . '"
-				  AND a.`firstname` = "' . pSQL($address->firstname) . '"
-				  AND a.`address1` = "' . pSQL($address->address1) . '"
-				  AND a.`postcode` = "' . pSQL($address->postcode) . '"
-				  AND a.`city` = "' . pSQL($address->city) . '"
-				  AND a.`phone` = "' . pSQL($address->phone) . '"
-				  AND a.`id_customer` = "' . pSQL($customer->id) . '"		
-				  AND a.`deleted` = 0
-				');
+                SELECT a.`id_address`
+                FROM `' . _DB_PREFIX_ . 'address` a
+                WHERE a.`lastname` = "' . pSQL($address->lastname) . '"
+                  AND a.`firstname` = "' . pSQL($address->firstname) . '"
+                  AND a.`address1` = "' . pSQL($address->address1) . '"
+                  AND a.`postcode` = "' . pSQL($address->postcode) . '"
+                  AND a.`city` = "' . pSQL($address->city) . '"
+                  AND a.`phone` = "' . pSQL($address->phone) . '"
+                  AND a.`id_customer` = "' . pSQL($customer->id) . '"        
+                  AND a.`deleted` = 0
+                ');
         
         return $result['id_address'] ? true : false;
     }
@@ -2272,8 +2414,9 @@ class AmzPayments extends PaymentModule
         $order = new Order($order_id);
         $order->id_customer = $customer_id;
         $order->save();
-        if ($unset_cookie)
+        if ($unset_cookie) {
             unset(Context::getContext()->cookie->amz_connect_order);
+        }
         return true;
     }
 
@@ -2301,30 +2444,59 @@ class AmzPayments extends PaymentModule
         }
     }
     
-    public function requestTokenInfo($accessTokenValue) {
+    public function requestTokenInfo($accessTokenValue)
+    {
         $c = curl_init($this->getLpaApiUrl() . '/auth/o2/tokeninfo?access_token=' . urlencode($accessTokenValue));
+        curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($c, CURLOPT_CAINFO, $this->ca_bundle_file);
+        $r = curl_exec($c);
+        curl_close($c);
+        $d = Tools::jsonDecode($r);
+        return $d;
+    }
+    
+    public function requestProfile($accessTokenValue)
+    {
+        $c = curl_init($this->getLpaApiUrl() . '/user/profile');
+        curl_setopt($c, CURLOPT_HTTPHEADER, array(
+            'Authorization: bearer ' . $accessTokenValue
+        ));
+        curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($c, CURLOPT_CAINFO, $this->ca_bundle_file);
+        $r = curl_exec($c);
+        curl_close($c);
+        $d = Tools::jsonDecode($r);
+        return $d;
+    }
+    
+    public static function prepareNamesArray($names_array)
+    {
+        $regex = '/[^a-zA-ZäöüÄÖÜßÂâÀÁáàÇçÈÉËëéèÎîÏïÙÛùúòóûêôíÍŸÿªñÑ\s]/u';
+        $names_array[0] = preg_replace($regex, '', $names_array[0]);
+        $names_array[1] = preg_replace($regex, '', $names_array[1]);
         
-    	curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
-    	curl_setopt($c, CURLOPT_CAINFO, $this->ca_bundle_file);
-    	$r = curl_exec($c);
-    	curl_close($c);
-    	
-    	$d = Tools::jsonDecode($r);  
-    	return $d;
+        $names_array[0] = preg_replace('/(\d+)/', ' ', $names_array[0]);
+        $names_array[0] = trim(preg_replace('/ {2,}/', ' ', $names_array[0]));
+        
+        $names_array[1] = preg_replace('/(\d+)/', ' ', $names_array[1]);
+        $names_array[1] = trim(preg_replace('/ {2,}/', ' ', $names_array[1]));
+        
+        if (trim($names_array[1]) == '') {
+            $splitted_names_array = explode(' ', $names_array[0], 2);
+            $names_array[0] = $splitted_names_array[0];
+            if (!isset($splitted_names_array[1]) || trim($splitted_names_array[1]) == '') {
+                $names_array[1] = $names_array[0];
+            } else {
+                $names_array[1] = $splitted_names_array[1];
+            }
+        }
+        return $names_array;
     }
     
-    public function requestProfile($accessTokenValue) {
-    	$c = curl_init($this->getLpaApiUrl() . '/user/profile');
-    	
-    	curl_setopt($c, CURLOPT_HTTPHEADER, array(
-    			'Authorization: bearer ' . $accessTokenValue
-    	));
-    	curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
-    	curl_setopt($c, CURLOPT_CAINFO, $this->ca_bundle_file);
-    	$r = curl_exec($c);
-    	curl_close($c);
-    	$d = Tools::jsonDecode($r);
-    	return $d;
+    public static function prepareAddressLines(Address $address)
+    {
+        $address->address1 = Tools::str_replace_once('_', '-', $address->address1);
+        $address->address2 = Tools::str_replace_once('_', '-', $address->address2);
+        return $address;
     }
-    
 }

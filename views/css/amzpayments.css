@@ -80,9 +80,10 @@ body#module-amzpayments-amzpayments .delivery_option label {
 	top: 50%;
 }
 
-#module-amzpayments-amzpayments td.cart_delete.text-center div,
+/* #module-amzpayments-amzpayments td.cart_delete.text-center div,
 #module-amzpayments-amzpayments td.cart_quantity.text-center,
-#module-amzpayments-amzpayments th.cart_quantity.item.text-center,
+#module-amzpayments-amzpayments th.cart_quantity.item.text-center, */
+#module-amzpayments-amzpayments #HOOK_SHOPPING_CART,
 #module-amzpayments-amzpayments #order_step {
 	display: none;
 }
@@ -188,6 +189,10 @@ p.payment_module a.amzPayments::after {
 	}
 }
 
+#submitAddress {
+	margin-top: 20px;
+}
+
 #jsLoginAuthPage {
 	margin-top: 20px;
 	display: block;
@@ -215,4 +220,10 @@ p.payment_module a.amzPayments::after {
 		width: 48.8%;
 		padding-left: 190px;
 	} 
+	#HOOK_ADVANCED_PAYMENT #amzRowElement #payWithAmazonListDiv {
+		width: 100%;
+		padding: 37px;
+		padding-left: 190px;
+	}
+	
 }

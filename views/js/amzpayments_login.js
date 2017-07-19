@@ -90,12 +90,12 @@ function initAmazon(){
 			bindCartButton('payWithAmazonDiv');		   
 		}
 		if ($('#button_order_cart').length > 0 && $('#amz_cart_widgets_summary').length == 0) {
-			$('#button_order_cart').before('<div id="payWithAmazonCartDiv"></div>');
+			$('#button_order_cart').before('<div id="payWithAmazonCartDiv" class="' + (AMZ_CREATE_ACCOUNT_EXP == '1' ? 'amz_create_account' : null) + '"></div>');
 			bindCartButton('payWithAmazonCartDiv');
 		}
 
 		if ($("#pay_with_amazon_list_button").length > 0) {
-			$("#pay_with_amazon_list_button").append('<span id="payWithAmazonListDiv"></span>');
+			$("#pay_with_amazon_list_button").append('<span id="payWithAmazonListDiv" class="' + (AMZ_CREATE_ACCOUNT_EXP == '1' ? 'amz_create_account' : null) + '"></span>');
 			bindCartButton('payWithAmazonListDiv');			
 		}
 		
@@ -122,7 +122,7 @@ function checkForAmazonListButton() {
 	}	
 	if (jQuery("#HOOK_ADVANCED_PAYMENT").length > 0) {
 		if (jQuery("#payWithAmazonListDiv").length == 0) {
-			jQuery("#HOOK_ADVANCED_PAYMENT").append('<span id="payWithAmazonListDiv"></span>');
+			jQuery('<div class="col-xs-6 col-md-6" id="amzRowElement"><span id="payWithAmazonListDiv"></span></div>').appendTo("#HOOK_ADVANCED_PAYMENT .row");
 			bindCartButton('payWithAmazonListDiv');
 		}
 	}
@@ -150,16 +150,31 @@ function bindCartButton(div_id) {
 	            authRequest = amazon.Login.authorize (loginOptions, (useRedirect ? LOGINREDIRECTAMZ_CHECKOUT : null));
 	        },
 	        onSignIn: function(orderReference) {
-	            amazonOrderReferenceId = orderReference.getAmazonOrderReferenceId();		            
-	            jQuery(div_id).html('');
-	            jQuery.ajax({
+	            amazonOrderReferenceId = orderReference.getAmazonOrderReferenceId();
+	            jQuery(div_id).html('');	            
+	            if (jQuery('#' + div_id).hasClass('amz_create_account')) {
+	                $.ajax({
 	                    type: 'GET',
-	                    url: REDIRECTAMZ,
-	                    data: 'ajax=true&method=setsession&access_token=' + authRequest.access_token + '&amazon_id=' + amazonOrderReferenceId,
+	                    url: SETUSERAJAX,
+	                    data: 'ajax=true&method=setusertoshop&access_token=' + authRequest.access_token + '&amazon_id=' + amazonOrderReferenceId + '&action=checkout',
 	                    success: function(htmlcontent){
-	                    	window.location = REDIRECTAMZ + amazonOrderReferenceId;
+	                        if (htmlcontent == 'error') {
+	                            alert('An error occured - please try again or contact our support');
+	                        } else {
+	                            window.location = htmlcontent;
+	                        }					   
 	                    }
-	            });
+	                });		            	
+	            } else {
+		            jQuery.ajax({
+		                    type: 'GET',
+		                    url: REDIRECTAMZ,
+		                    data: 'ajax=true&method=setsession&access_token=' + authRequest.access_token + '&amazon_id=' + amazonOrderReferenceId,
+		                    success: function(htmlcontent){
+		                    	window.location = REDIRECTAMZ + amazonOrderReferenceId;
+		                    }
+		            });
+	            }
 	        },
 	        onError: function(error) {
 	            console.log(error); 

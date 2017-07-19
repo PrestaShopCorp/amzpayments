@@ -1,6 +1,6 @@
 <?php
 /**
- * 2013-2015 Amazon Advanced Payment APIs Modul
+ * 2013-2017 Amazon Advanced Payment APIs Modul
  *
  * for Support please visit www.patworx.de
  *
@@ -15,7 +15,7 @@
  * to license@prestashop.com so we can send you a copy immediately.
  *
  *  @author    patworx multimedia GmbH <service@patworx.de>
- *  @copyright 2013-2015 patworx multimedia GmbH
+ *  @copyright 2013-2017 patworx multimedia GmbH
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
@@ -74,12 +74,12 @@ class AmazonPaymentsCustomerHelper
     {
         $result = Db::getInstance(_PS_USE_SQL_SLAVE_)->getRow('
             SELECT * FROM `' . _DB_PREFIX_ . 'amz_customer` WHERE `id_customer` = \'' . (int)$customer->id . '\'    
-        ');       
+        ');
         
         if ($result) {
             Db::getInstance(_PS_USE_SQL_SLAVE_)->update('amz_customer', array(
                 'amazon_customer_id' => pSQL($amazon_customer_id)
-            ), 'id_customer = \'' . (int) $customer->id . '\'');            
+            ), 'id_customer = \'' . (int) $customer->id . '\'');
         } else {
             Db::getInstance(_PS_USE_SQL_SLAVE_)->insert('amz_customer', array(
                 'id_customer' => pSQL((int)$customer->id),

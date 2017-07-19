@@ -18,6 +18,10 @@
 	
 	<div id="walletWidgetDiv">
 	</div>
+		
+	<div id="addressMissings">		
+	</div>
+	<input type="button" id="submitAddress" class="exclusive" value="{l s='Save' mod='amzpayments'}" name="submitAddress" style="display: none;">
 </div>
 <div class="amz_cart_widgets">
 	<div id="amz_carriers" style="display: none;">

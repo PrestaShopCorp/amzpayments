@@ -1,6 +1,6 @@
 <?php
 /**
- * 2013-2015 Amazon Advanced Payment APIs Modul
+ * 2013-2017 Amazon Advanced Payment APIs Modul
  *
  * for Support please visit www.patworx.de
  *
@@ -15,17 +15,18 @@
  * to license@prestashop.com so we can send you a copy immediately.
  *
  *  @author    patworx multimedia GmbH <service@patworx.de>
- *  @copyright 2013-2015 patworx multimedia GmbH
+ *  @copyright 2013-2017 patworx multimedia GmbH
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
-if (!defined('_PS_VERSION_'))
-	exit;
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
 
 function upgrade_module_2_0_15($module)
 {
     $old_value = Configuration::get('CLIENT_ID');
     Configuration::updateValue('AMZ_CLIENT_ID', $old_value);
     Configuration::deleteByName('CLIENT_ID');
-	return true;
+    return true;
 }

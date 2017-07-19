@@ -38,6 +38,7 @@ $_MODULE['<{amzpayments}prestashop>amzpayments_ecd640fa2d15770cb1adee4075ad7afb'
 $_MODULE['<{amzpayments}prestashop>amzpayments_9b8926c200109a9e2a829e4d5ce14ade'] = 'Show buttons in frontend';
 $_MODULE['<{amzpayments}prestashop>amzpayments_00d23a76e43b46dae9ec7aa9dcbebb32'] = 'Enabled';
 $_MODULE['<{amzpayments}prestashop>amzpayments_b9f5c797ebbf55adccdd8539a65a0241'] = 'Disabled';
+$_MODULE['<{amzpayments}prestashop>amzpayments_8667cecb1de0a963f560deab1b02523d'] = 'Hide Login with Amazon Elements in Frontend';
 $_MODULE['<{amzpayments}prestashop>amzpayments_e900e40bc91d3f9f7f0a99fed68a2e96'] = 'Operation mode';
 $_MODULE['<{amzpayments}prestashop>amzpayments_4245499695408b974322be6f01b0d17a'] = 'Test mode';
 $_MODULE['<{amzpayments}prestashop>amzpayments_cebd5bbe0ffdecc270a8a324e5a277dd'] = 'Live mode';
@@ -59,7 +60,7 @@ $_MODULE['<{amzpayments}prestashop>amzpayments_63d098bd60c469852c135349eb50c6ad'
 $_MODULE['<{amzpayments}prestashop>amzpayments_679b25385157e8e2f4053d5225baee9d'] = 'Soft Decline (2min)';
 $_MODULE['<{amzpayments}prestashop>amzpayments_25f159eff77797ead5fbaf19eea4a7ae'] = 'Capture Decline';
 $_MODULE['<{amzpayments}prestashop>amzpayments_8eff3617002e9a854b9704717f35f7aa'] = 'Login in Popup-Window';
-$_MODULE['<{amzpayments}prestashop>amzpayments_d64946b0089fa5361240915d80d1cea6'] = 'Exclude shipping methods (Ids, comma-separated)';
+$_MODULE['<{amzpayments}prestashop>amzpayments_d64946b0089fa5361240915d80d1cea6'] = 'Exclude shipping methods';
 $_MODULE['<{amzpayments}prestashop>amzpayments_199ef1b03dbd9cff69ccdfe33f467a8c'] = 'Exclude products from Pay with Amazon';
 $_MODULE['<{amzpayments}prestashop>amzpayments_12c3d641b9e8ed280e818675cf288d6b'] = 'Allow guest orders?';
 $_MODULE['<{amzpayments}prestashop>amzpayments_9a6393c36c052c03efe4a8c0f0fcc487'] = 'Size of the Amazon Checkout button';

@@ -23,8 +23,8 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-function upgrade_module_2_0_20($module)
+function upgrade_module_2_0_58($module)
 {
-    Configuration::updateValue('TEMPLATE_VARIANT_BS', '0');
+    Configuration::updateValue('AMZ_HIDE_LOGIN_BTNS', '0');
     return true;
 }

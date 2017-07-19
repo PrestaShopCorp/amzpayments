@@ -1,6 +1,6 @@
 <?php
 /**
- * 2013-2015 Amazon Advanced Payment APIs Modul
+ * 2013-2017 Amazon Advanced Payment APIs Modul
  *
  * for Support please visit www.patworx.de
  *
@@ -15,7 +15,7 @@
  * to license@prestashop.com so we can send you a copy immediately.
  *
  *  @author    patworx multimedia GmbH <service@patworx.de>
- *  @copyright 2013-2015 patworx multimedia GmbH
+ *  @copyright 2013-2017 patworx multimedia GmbH
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
@@ -338,8 +338,9 @@ class AmazonTransactions
             $new_status = $amz_payments->capture_success_status_id;
             self::setOrderStatus($oid, $new_status);
         } else {
-            if (! isset(Context::getContext()->cookie->amzSetStatusCaptured))
+            if (! isset(Context::getContext()->cookie->amzSetStatusCaptured)) {
                 Context::getContext()->cookie->amzSetStatusCaptured = serialize(array());
+            }
             $tmpData = Tools::unSerialize(Context::getContext()->cookie->amzSetStatusCaptured);
             $tmpData[] = $order_ref;
             Context::getContext()->cookie->amzSetStatusCaptured = serialize($tmpData);
@@ -358,7 +359,7 @@ class AmazonTransactions
                 if (sizeof($history) > 0) {
                     return false;
                 }
-            }            
+            }
             self::setOrderStatus($oid, $new_status);
         }
     }
@@ -371,8 +372,9 @@ class AmazonTransactions
             $new_status = $amz_payments->capture_success_status_id;
             self::setOrderStatus($oid, $new_status);
         } else {
-            if (! isset(Context::getContext()->cookie->amzSetStatusCaptured))
+            if (! isset(Context::getContext()->cookie->amzSetStatusCaptured)) {
                 Context::getContext()->cookie->amzSetStatusCaptured = serialize(array());
+            }
             $tmpData = Tools::unSerialize(Context::getContext()->cookie->amzSetStatusCaptured);
             $tmpData[] = $order_ref;
             Context::getContext()->cookie->amzSetStatusCaptured = serialize($tmpData);
@@ -393,7 +395,7 @@ class AmazonTransactions
         $order_history = new OrderHistory();
         $order_history->id_order = (int)$oid;
         $order_history->changeIdOrderState((int)$status, (int)$oid, true);
-        $order_history->addWithemail(true);        
+        $order_history->addWithemail(true);
     }
 
     public static function getOrderRefTotal($order_ref)
@@ -410,5 +412,5 @@ class AmazonTransactions
 				WHERE amz_tx_amz_id = \'' . pSQL($amz_id) . '\'';
         $r = Db::getInstance()->getRow($q);
         return $r['amz_tx_order_reference'];
-    }    
+    }
 }

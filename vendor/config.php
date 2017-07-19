@@ -14,9 +14,11 @@
         $filePath = '/' . str_replace('_', DIRECTORY_SEPARATOR, $className) . '.php';
         $includePaths = explode(PATH_SEPARATOR, get_include_path());
         foreach($includePaths as $includePath){ 
-			if(file_exists($includePath . $filePath)){
-			    require_once $includePath . $filePath;
-                return;
+            if (strpos($includePath, 'amzpayments') !== false) {
+			    if(file_exists($includePath . $filePath)){
+			         require_once $includePath . $filePath;
+                     return;
+                }
             }
         }
     }

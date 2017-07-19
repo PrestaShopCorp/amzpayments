@@ -38,6 +38,7 @@ $_MODULE['<{amzpayments}prestashop>amzpayments_ecd640fa2d15770cb1adee4075ad7afb'
 $_MODULE['<{amzpayments}prestashop>amzpayments_9b8926c200109a9e2a829e4d5ce14ade'] = 'Mostra pulsanti in front-end';
 $_MODULE['<{amzpayments}prestashop>amzpayments_00d23a76e43b46dae9ec7aa9dcbebb32'] = 'Si';
 $_MODULE['<{amzpayments}prestashop>amzpayments_b9f5c797ebbf55adccdd8539a65a0241'] = 'No';
+$_MODULE['<{amzpayments}prestashop>amzpayments_8667cecb1de0a963f560deab1b02523d'] = 'Nascondere Componenti Accedi con Amazon in Frontend';
 $_MODULE['<{amzpayments}prestashop>amzpayments_e900e40bc91d3f9f7f0a99fed68a2e96'] = 'Modalità operativa';
 $_MODULE['<{amzpayments}prestashop>amzpayments_4245499695408b974322be6f01b0d17a'] = 'Modalità Test';
 $_MODULE['<{amzpayments}prestashop>amzpayments_cebd5bbe0ffdecc270a8a324e5a277dd'] = 'Modalità Live';
@@ -58,7 +59,7 @@ $_MODULE['<{amzpayments}prestashop>amzpayments_63d098bd60c469852c135349eb50c6ad'
 $_MODULE['<{amzpayments}prestashop>amzpayments_679b25385157e8e2f4053d5225baee9d'] = 'Rifiuto flessibile (2 min.)';
 $_MODULE['<{amzpayments}prestashop>amzpayments_25f159eff77797ead5fbaf19eea4a7ae'] = 'Rifiuto di acquisizione';
 $_MODULE['<{amzpayments}prestashop>amzpayments_8eff3617002e9a854b9704717f35f7aa'] = 'Accesso in finestra popup';
-$_MODULE['<{amzpayments}prestashop>amzpayments_d64946b0089fa5361240915d80d1cea6'] = 'Escludi metodi di spedizione (ID, separati da virgole)';
+$_MODULE['<{amzpayments}prestashop>amzpayments_d64946b0089fa5361240915d80d1cea6'] = 'Escludi metodi di spedizione';
 $_MODULE['<{amzpayments}prestashop>amzpayments_199ef1b03dbd9cff69ccdfe33f467a8c'] = 'Escludi prodotti da Paga con Amazon';
 $_MODULE['<{amzpayments}prestashop>amzpayments_12c3d641b9e8ed280e818675cf288d6b'] = 'Consentire ordini da parte di ospiti?';
 $_MODULE['<{amzpayments}prestashop>amzpayments_9a6393c36c052c03efe4a8c0f0fcc487'] = 'Dimensione del pulsante checkout Amazon';
@@ -158,6 +159,11 @@ $_MODULE['<{amzpayments}prestashop>order_summary_64b7812939d36ea6ed92a5e3780d581
 $_MODULE['<{amzpayments}prestashop>order_summary_3da897917815714364886cd0764aa227'] = 'Importo autorizzato';
 $_MODULE['<{amzpayments}prestashop>order_summary_f53c1ebef1d12dafe0e228236c393be7'] = 'Importo prelevato';
 $_MODULE['<{amzpayments}prestashop>order_summary_9f8c310d4b0402a61723b22c34fbd31c'] = 'Importo rimborsato';
+$_MODULE['<{amzpayments}prestashop>address_field_7cb32e708d6b961d476baced73d362bb'] = 'Partita IVA';
+$_MODULE['<{amzpayments}prestashop>address_field_b60bb13a87fe3ae5463aeb0980a5a8a1'] = 'Codice fiscale';
+$_MODULE['<{amzpayments}prestashop>address_field_fe66abce284ec8589e7d791185b5c442'] = 'Telefono';
+$_MODULE['<{amzpayments}prestashop>address_field_41c2fff4867cc204120f001e7af20f7a'] = 'Cellulare';
+$_MODULE['<{amzpayments}prestashop>address_field_46a2a41cc6e552044816a2d04634545d'] = 'Regione';
 $_MODULE['<{amzpayments}prestashop>amzpayments_fa31ce6046882558f0637d428a96abeb'] = 'Crea account cliente.';
 $_MODULE['<{amzpayments}prestashop>amzpayments_9a1ff3881b92951d9663aaef38e8b637'] = 'Non devi fare nulla. L\'account verrà creato con i dati del tuo ordine attuale.';
 $_MODULE['<{amzpayments}prestashop>amzpayments_eeceac1af4e7620894d6d2083921bb73'] = 'Acquista ora!';
@@ -175,3 +181,6 @@ $_MODULE['<{amzpayments}prestashop>displaytopcolumn_2e2117b7c81aa9ea6931641ea2c6
 $_MODULE['<{amzpayments}prestashop>displaytopcolumn_75fbf512d744977d62599cc3f0ae2bb4'] = 'is complete.';
 $_MODULE['<{amzpayments}prestashop>payment_ed20689b0d8d53ec534166a88b67f259'] = 'Paga con Amazon';
 $_MODULE['<{amzpayments}prestashop>payment_8811becbf523354e20e2017242326f70'] = '(Pagamento pratico e sicuro con il tuo account Amazon)';
+$_MODULE['<{amzpayments}prestashop>select_address_3e9e333adde6e70086bd29441c8c45eb'] = 'L\'indirizzo';
+$_MODULE['<{amzpayments}prestashop>select_address_a5058d1398eb35e54f561de54459aece'] = 'Seleziona indirizzo';
+$_MODULE['<{amzpayments}prestashop>select_address_a0bfb8e59e6c13fc8d990781f77694fe'] = 'Continuare';

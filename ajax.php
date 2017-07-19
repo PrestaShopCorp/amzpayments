@@ -1,6 +1,6 @@
 <?php
 /**
- * 2013-2015 Amazon Advanced Payment APIs Modul
+ * 2013-2017 Amazon Advanced Payment APIs Modul
  *
  * for Support please visit www.patworx.de
  *
@@ -15,21 +15,22 @@
  * to license@prestashop.com so we can send you a copy immediately.
  *
  *  @author    patworx multimedia GmbH <service@patworx.de>
- *  @copyright 2013-2015 patworx multimedia GmbH
+ *  @copyright 2013-2017 patworx multimedia GmbH
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
-include_once ('../../config/config.inc.php');
-include_once ('../../init.php');
-include_once ('../../modules/amzpayments/amzpayments.php');
+include_once('../../config/config.inc.php');
+include_once('../../init.php');
+include_once('../../modules/amzpayments/amzpayments.php');
 
 $module_name = Tools::getValue('moduleName');
 
 $amz_payments = new AmzPayments();
 
 if (Tools::getValue('action')) {
-    if (Tools::getValue('action') == 'shippingCapture')
+    if (Tools::getValue('action') == 'shippingCapture') {
         $_POST['action'] = 'shippingCapture';
+    }
 }
 switch (Tools::getValue('action')) {
     case 'getHistory':
@@ -54,8 +55,9 @@ switch (Tools::getValue('action')) {
 				WHERE amz_tx_order_reference = \'' . pSQL(Tools::getValue('orderRef')) . '\' 
 				AND amz_tx_status != \'Closed\' AND amz_tx_status != \'Declined\'';
         $rs = Db::getInstance()->ExecuteS($q);
-        foreach ($rs as $r)
+        foreach ($rs as $r) {
             $amz_payments->intelligentRefresh($r);
+        }
         echo '<br/><b>' . $amz_payments->l('Update is completed!') . '</b>';
         break;
     
@@ -67,12 +69,14 @@ switch (Tools::getValue('action')) {
         if ($response) {
             $details = $response->getAuthorizeResult()->getAuthorizationDetails();
             $status = $details->getAuthorizationStatus()->getState();
-            if ($status == 'Open' || $status == 'Pending')
+            if ($status == 'Open' || $status == 'Pending') {
                 echo $amz_payments->l('Authorisation request was started successfully');
-            else
+            } else {
                 echo '<br/><b>' . $amz_payments->l('Creation of the authorisation request has failed') . '</b>';
-        } else
+            }
+        } else {
             echo '<br/><b>' . $amz_payments->l('Creation of the authorisation request has failed') . '</b>';
+        }
         break;
     
     case 'captureTotalFromAuth':
@@ -80,10 +84,11 @@ switch (Tools::getValue('action')) {
         
         $details = $response->getCaptureResult()->getCaptureDetails();
         $status = $details->getCaptureStatus()->getState();
-        if ($status == 'Completed')
+        if ($status == 'Completed') {
             echo $amz_payments->l('Capture successful');
-        else
+        } else {
             echo '<br/><b>' . $amz_payments->l('Capture failed') . '</b>';
+        }
         break;
     
     case 'captureAmountFromAuth':
@@ -95,10 +100,11 @@ switch (Tools::getValue('action')) {
         if (is_object($response)) {
             $details = $response->getCaptureResult()->getCaptureDetails();
             $status = $details->getCaptureStatus()->getState();
-            if ($status == 'Completed')
+            if ($status == 'Completed') {
                 echo $amz_payments->l('Capture successful');
-            else
+            } else {
                 echo '<br/><b>' . $amz_payments->l('Capture failed') . '</b>';
+            }
         }
         break;
     
@@ -117,8 +123,9 @@ switch (Tools::getValue('action')) {
 						WHERE amz_tx_amz_id = \'' . pSQL(Tools::getValue('captureId')) . '\'';
                 DB::getInstance()->execute($q);
                 echo $amz_payments->l('Refund request was started successfully');
-            } else
+            } else {
                 echo $amz_payments->l('Refund failed');
+            }
         }
         break;
     
@@ -130,8 +137,9 @@ switch (Tools::getValue('action')) {
         if (function_exists('curl_version')) {
             $url = 'http://www.patworx.de/API/amazon_advanced_payments.php';
             $fields_string = '';
-            foreach ($_POST as $key => $value)
+            foreach ($_POST as $key => $value) {
                 $fields_string .= $key . '=' . $value . '&';
+            }
             
             $fields_string = rtrim($fields_string, '&');
             $ch = curl_init();
@@ -140,7 +148,8 @@ switch (Tools::getValue('action')) {
             curl_setopt($ch, CURLOPT_POSTFIELDS, $fields_string);
             $result = curl_exec($ch);
             curl_close($ch);
-        } else
+        } else {
             echo 'Please activate `curl´ or ask your hosting provider.';
+        }
         die();
 }

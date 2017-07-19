@@ -156,7 +156,7 @@ class AmzPayments extends PaymentModule
     {
         $this->name = 'amzpayments';
         $this->tab = 'payments_gateways';
-        $this->version = '2.0.58';
+        $this->version = '2.0.59';
         $this->author = 'patworx multimedia GmbH';
         $this->need_instance = 1;
         
@@ -303,6 +303,7 @@ class AmzPayments extends PaymentModule
                 CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'amz_address` (
                 `id` int(11) NOT NULL AUTO_INCREMENT,
                 `id_address` int(11) NOT NULL,
+                `amazon_hash` varchar(255) NOT NULL,
                 `amazon_order_reference_id` varchar(255) NOT NULL,
                 PRIMARY KEY (`id`)
         ) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;

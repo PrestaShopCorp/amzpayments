@@ -94,7 +94,7 @@ class AmzpaymentsSelect_AddressModuleFrontController extends ModuleFrontControll
                             $phone = (string) $physical_destination->getPhone();
                         }
 
-                        $address_delivery = AmazonPaymentsAddressHelper::findByAmazonOrderReferenceIdOrNew(Tools::getValue('amazonOrderReferenceId'));
+                        $address_delivery = AmazonPaymentsAddressHelper::findByAmazonOrderReferenceIdOrNew(Tools::getValue('amazonOrderReferenceId'), false, $physical_destination);
                         $address_delivery->id_customer = (int) $this->context->cookie->id_customer;
                         $address_delivery->id_country = Country::getByIso($iso_code);
                         $address_delivery->alias = 'Amazon Pay';
@@ -184,7 +184,7 @@ class AmzpaymentsSelect_AddressModuleFrontController extends ModuleFrontControll
                             $this->errors[] = $this->module->l('Please fill in the missing fields to save your address.');
                         }
 
-                        AmazonPaymentsAddressHelper::saveAddressAmazonReference($address_delivery, Tools::getValue('amazonOrderReferenceId'));
+                        AmazonPaymentsAddressHelper::saveAddressAmazonReference($address_delivery, Tools::getValue('amazonOrderReferenceId'), $physical_destination);
                          
                         if (! count($this->errors)) {
                             if ($this->context->cart->nbProducts()) {

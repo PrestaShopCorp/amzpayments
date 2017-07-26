@@ -44,5 +44,12 @@
 					{/foreach}
 				</select>
 			</div>		
+			{else}
+				<div id="{$field_name|escape:'html':'UTF-8'}">
+					<div class="form-group">
+						<label for="vat-number">{l s=$field_name}</label>
+						<input type="text" class="form-control additional_field" id="{$field_name|escape:'html':'UTF-8'}" name="{$field_name|escape:'html':'UTF-8'}" value="{$field_value|escape:'html':'UTF-8'}" />
+					</div>
+				</div>			
 			{/if}	
 {/nocache}

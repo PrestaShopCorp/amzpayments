@@ -168,6 +168,11 @@ p.payment_module a.amzPayments::after {
 	max-height: 400px;
 }
 
+#uniform-connect_amz_account {
+	float: none;
+	display: inline-block;
+}
+
 /* Smartphone and small window */
 #addressBookWidgetDiv {
 	width: 100%; 
@@ -179,8 +184,8 @@ p.payment_module a.amzPayments::after {
 }
 /* Desktop and tablet */
 @media only screen and (min-width: 768px) {
-    //#addressBookWidgetDiv {width: 400px; height: 228px;}
-    //#walletWidgetDiv {width: 400px; height: 228px;}
+    /* #addressBookWidgetDiv {width: 400px; height: 228px;} 
+    #walletWidgetDiv {width: 400px; height: 228px;} */
 }
 
 @media (max-width: 470px) {

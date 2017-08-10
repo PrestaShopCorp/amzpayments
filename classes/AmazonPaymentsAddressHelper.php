@@ -76,7 +76,9 @@ class AmazonPaymentsAddressHelper
     public static function addAdditionalValues(Address $address, array $additional_data)
     {
         foreach ($additional_data as $field => $value) {
-            $address->$field = pSQL($value);
+            if (!($field == 'id_state' && (int)$value < 0)) {
+                $address->$field = pSQL($value);
+            }
         }
         return $address;
     }

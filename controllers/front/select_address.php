@@ -188,7 +188,11 @@ class AmzpaymentsSelect_AddressModuleFrontController extends ModuleFrontControll
                          
                         if (! count($this->errors)) {
                             if ($this->context->cart->nbProducts()) {
-                                $goto = 'index.php?controller=order';
+                                if (Configuration::get('PS_SSL_ENABLED')) {
+                                    $goto = _PS_BASE_URL_SSL_ . __PS_BASE_URI__ . 'index.php?controller=order';
+                                } else {
+                                    $goto = _PS_BASE_URL_ . __PS_BASE_URI__ . 'index.php?controller=order';
+                                }
                             } else {
                                 if (Configuration::get('PS_SSL_ENABLED')) {
                                     $goto = _PS_BASE_URL_SSL_ . __PS_BASE_URI__;

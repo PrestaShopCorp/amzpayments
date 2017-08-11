@@ -226,7 +226,7 @@ class AmzpaymentsSelect_AddressModuleFrontController extends ModuleFrontControll
     {
         parent::initContent();
         $this->context->smarty->assign(array(
-            'ajaxSetAddressUrl' => $this->context->link->getModuleLink('amzpayments', 'select_address'),
+            'ajaxSetAddressUrl' => $this->context->link->getModuleLink('amzpayments', 'select_address', array(), true),
             'sellerID' => Configuration::get('AMZ_MERCHANT_ID')
         ));
         $this->setTemplate('select_address.tpl');

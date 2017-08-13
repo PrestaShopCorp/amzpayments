@@ -191,6 +191,8 @@ $_MODULE['<{amzpayments}prestashop>select_address_3e9e333adde6e70086bd29441c8c45
 $_MODULE['<{amzpayments}prestashop>select_address_a5058d1398eb35e54f561de54459aece'] = 'Seleziona indirizzo';
 $_MODULE['<{amzpayments}prestashop>select_address_a0bfb8e59e6c13fc8d990781f77694fe'] = 'Continua';
 $_MODULE['<{amzpayments}prestashop>select_address_daa6b483e9f6ca081ec7e0b4a352f9e9'] = 'Salva modifiche';
+$_MODULE['<{amzpayments}prestashop>select_address_7d5fd5da702c79b9fcb4fa1b7c63ee7f'] = 'Grazie per aver utilizzato Accedi con Amazon sul nostro sito.';
+$_MODULE['<{amzpayments}prestashop>select_address_50842b129a33396a62b7dc81a73a7c1a'] = 'Seleziona un indirizzo predefinito per la creazione del tuo account. Potrai poi scegliere un indirizzo di spedizione differente durante il checkout.';
 $_MODULE['<{amzpayments}prestashop>confirmation_2e2117b7c81aa9ea6931641ea2c6499f'] = 'Ihre Bestellung bei';
 $_MODULE['<{amzpayments}prestashop>confirmation_75fbf512d744977d62599cc3f0ae2bb4'] = 'ist vollständig.';
 $_MODULE['<{amzpayments}prestashop>confirmation_fb4ea5a18e5f77bece3219a4171320a9'] = 'Sie haben Amazon Pay als Bezahlmethode gewählt.';

@@ -14,7 +14,11 @@
 {/literal}
 </script>
 
-<h1>{l s='Please select your default address' mod='amzpayments'}</h1>
+<h1>{l s='Thank you for using Login with Amazon in our Shop.' mod='amzpayments'}</h1>
+
+<p>
+	{l s='Please select a default address for your account creation. You will be able to choose a different shipping address during checkout.' mod='amzpayments'}
+</p>
 
 <div class="row">
 	<div class="col-xs-12 col-sm-6" id="addressBookWidgetDivBs">

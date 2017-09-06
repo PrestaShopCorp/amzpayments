@@ -28,6 +28,14 @@ function checkVoucherForm()
 	}
 }
 
+setInterval(checkPPBtn, 500);
+function checkPPBtn()
+{
+	if ($("#amz_cart_widgets_summary #container_express_checkout").length > 0) {
+		$("#container_express_checkout").remove();
+	}	
+}
+
 function updateCarrierSelectionAndGift()
 {
 	if (!requestIsRunning) {

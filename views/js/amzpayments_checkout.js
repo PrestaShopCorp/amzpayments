@@ -28,6 +28,14 @@ function checkVoucherForm()
 	}
 }
 
+setInterval(checkPPBtn, 500);
+function checkPPBtn()
+{
+	if ($("#amz_cart_widgets_summary #container_express_checkout").length > 0) {
+		$("#container_express_checkout").remove();
+	}	
+}
+
 function updateCarrierSelectionAndGift()
 {
 	if (!requestIsRunning) {
@@ -225,6 +233,13 @@ function updateAddressSelection(amazonOrderReferenceId)
 				}
 				
 				updateCarrierList(jsonData.carrier_data);
+				if (typeof amazonCarrierErrorMessage !== 'undefined' || amazonCarrierErrorMessage !== null) {
+					if ($("#noCarrierWarning").length > 0) {
+						$("#noCarrierWarning").hide();
+						$("#noCarrierWarning").html(amazonCarrierErrorMessage);
+						$("#noCarrierWarning").show();
+					}
+				}
 				updateCartSummary(jsonData.summary);
 				updateHookShoppingCart(jsonData.HOOK_SHOPPING_CART);
 				updateHookShoppingCartExtra(jsonData.HOOK_SHOPPING_CART_EXTRA);

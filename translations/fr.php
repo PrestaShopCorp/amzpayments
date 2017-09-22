@@ -176,7 +176,9 @@ $_MODULE['<{amzpayments}prestashop>address_field_46a2a41cc6e552044816a2d04634545
 $_MODULE['<{amzpayments}prestashop>amzpayments_fa31ce6046882558f0637d428a96abeb'] = 'Créer un compte client.';
 $_MODULE['<{amzpayments}prestashop>amzpayments_9a1ff3881b92951d9663aaef38e8b637'] = 'Vous n\'avez rien à faire. Nous nous occupons de créer le compte avec les données de votre commande actuelle.';
 $_MODULE['<{amzpayments}prestashop>amzpayments_eeceac1af4e7620894d6d2083921bb73'] = 'Acheter maintenant';
-$_MODULE['<{amzpayments}prestashop>amzpayments_bs_c9cc8cce247e49bae79f15173ce97354'] = 'Save';
+$_MODULE['<{amzpayments}prestashop>amzpayments_ed2d210dda2538d57f8f3a455fbf54ef'] = 'Nous sommes désolés mais nous ne pouvons pas livrer à l’adresse sélectionnée, veuillez s’il vous plait en choisir une autre.';
+$_MODULE['<{amzpayments}prestashop>amzpayments_bs_ed2d210dda2538d57f8f3a455fbf54ef'] = 'Nous sommes désolés mais nous ne pouvons pas livrer à l’adresse sélectionnée, veuillez s’il vous plait en choisir une autre.';
+$_MODULE['<{amzpayments}prestashop>amzpayments_bs_c9cc8cce247e49bae79f15173ce97354'] = 'Continuer';
 $_MODULE['<{amzpayments}prestashop>amzpayments_bs_fa31ce6046882558f0637d428a96abeb'] = 'Créer un compte client.';
 $_MODULE['<{amzpayments}prestashop>amzpayments_bs_9a1ff3881b92951d9663aaef38e8b637'] = 'Vous n\'avez rien à faire. Nous nous occupons de créer le compte avec les données de votre commande actuelle.';
 $_MODULE['<{amzpayments}prestashop>amzpayments_bs_eeceac1af4e7620894d6d2083921bb73'] = 'Acheter maintenant';
@@ -191,6 +193,8 @@ $_MODULE['<{amzpayments}prestashop>select_address_3e9e333adde6e70086bd29441c8c45
 $_MODULE['<{amzpayments}prestashop>select_address_a5058d1398eb35e54f561de54459aece'] = 'Sélectionnez l\'adresse';
 $_MODULE['<{amzpayments}prestashop>select_address_a0bfb8e59e6c13fc8d990781f77694fe'] = 'Continuer';
 $_MODULE['<{amzpayments}prestashop>select_address_daa6b483e9f6ca081ec7e0b4a352f9e9'] = 'Sauvegarder les modifications';
+$_MODULE['<{amzpayments}prestashop>select_address_7d5fd5da702c79b9fcb4fa1b7c63ee7f'] = 'Merci d’utiliser Login avec Amazon sur votre site.';
+$_MODULE['<{amzpayments}prestashop>select_address_50842b129a33396a62b7dc81a73a7c1a'] = 'Veuillez s’il vous plait sélectionner l’adresse pour la création de votre compte. Vous pourrez choisir une addresse de livraison différente lors de la commande.';
 $_MODULE['<{amzpayments}prestashop>confirmation_2e2117b7c81aa9ea6931641ea2c6499f'] = 'Votre commande de ';
 $_MODULE['<{amzpayments}prestashop>confirmation_75fbf512d744977d62599cc3f0ae2bb4'] = 'est effective.';
 $_MODULE['<{amzpayments}prestashop>confirmation_fb4ea5a18e5f77bece3219a4171320a9'] = 'Vous avez choisi Amazon Pay comme moyen de paiement.';

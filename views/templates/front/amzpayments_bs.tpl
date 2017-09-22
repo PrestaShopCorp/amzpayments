@@ -61,6 +61,7 @@
 
 {literal}
 <script> 
+var amazonCarrierErrorMessage = '{/literal}{l s='There are no carriers that deliver to the address you selected in your address book, please select another one.' mod='amzpayments'}{literal}';
 var isFirstRun = true;
 var amazonOrderReferenceId = '{/literal}{$amz_session|escape:'htmlall':'UTF-8'}{literal}';	
 jQuery(document).ready(function($) {

@@ -74,7 +74,7 @@ function updateAddressSelection(amazonOrderReferenceId)
 	$.ajax({
 		type: 'POST',
 		headers: { "cache-control": "no-cache" },
-		url: '{/literal}{$ajaxSetAddressUrl|escape:'htmlall':'UTF-8'}{literal}' + '?rand=' + new Date().getTime(),
+		url: '{/literal}{$ajaxSetAddressUrl|escape:'javascript':'UTF-8'}{literal}' + '?rand=' + new Date().getTime(),
 		async: true,
 		cache: false,
 		dataType : "json",

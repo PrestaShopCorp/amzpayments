@@ -21,6 +21,7 @@
 
 class AmazonPaymentsAddressHelper
 {
+    public static $validation_errors = array();
 
     public static function findByAmazonOrderReferenceIdOrNew($amazon_order_reference_id, $boolean = false, $amazon_address = false)
     {
@@ -59,8 +60,10 @@ class AmazonPaymentsAddressHelper
     {
         $fields_to_set = array();
         foreach (Address::getFieldsValidate() as $field_to_validate => $validation_rule) {
-            if ($address->validateField($field_to_validate, $address->$field_to_validate) !== true) {
+            $validation = $address->validateField($field_to_validate, $address->$field_to_validate, null, array(), true);
+            if ($validation !== true) {
                 $fields_to_set[] = $field_to_validate;
+                self::$validation_errors[] = $validation;
             }
         }
         if (is_array($additional_data)) {

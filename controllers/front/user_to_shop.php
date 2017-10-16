@@ -224,7 +224,7 @@ class AmzpaymentsUser_To_ShopModuleFrontController extends ModuleFrontController
                                     list ($firstname, $lastname) = explode('-', trim($customer_name));
                                 } else {
                                     $firstname = trim($customer_name);
-                                    $lastname = 'Placeholder';
+                                    $lastname = '-';
                                 }
                                 
                                 $customer = new Customer();

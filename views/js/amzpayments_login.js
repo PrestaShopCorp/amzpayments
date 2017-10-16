@@ -116,20 +116,20 @@ function initAmazon(){
 function checkForAmazonListButton() {
 	if (jQuery("#pay_with_amazon_list_button").length > 0) {
 		if (jQuery.trim(jQuery("#pay_with_amazon_list_button").html()) == '') {
-			jQuery("#pay_with_amazon_list_button").append('<span id="payWithAmazonListDiv"></span>');
+			jQuery("#pay_with_amazon_list_button").append('<span id="payWithAmazonListDiv" class="' + (AMZ_CREATE_ACCOUNT_EXP == '1' ? 'amz_create_account' : null) + '"></span>');
 			bindCartButton('payWithAmazonListDiv');
 		}
 	}	
 	if (jQuery("#HOOK_ADVANCED_PAYMENT").length > 0) {
 		if (jQuery("#payWithAmazonListDiv").length == 0) {
-			jQuery('<div class="col-xs-6 col-md-6" id="amzRowElement"><span id="payWithAmazonListDiv"></span></div>').appendTo("#HOOK_ADVANCED_PAYMENT .row");
+			jQuery('<div class="col-xs-6 col-md-6" id="amzRowElement"><span id="payWithAmazonListDiv" class="' + (AMZ_CREATE_ACCOUNT_EXP == '1' ? 'amz_create_account' : null) + '"></span></div>').appendTo("#HOOK_ADVANCED_PAYMENT .row");
 			bindCartButton('payWithAmazonListDiv');
 		}
 	}
 	/* Adaption for onepagecheckout module */
 	if (jQuery("#form_onepagecheckoutps #onepagecheckoutps_step_three").length > 0) {
 		if (jQuery("#payWithAmazonPaymentOPC").length == 0) {
-			jQuery("#onepagecheckoutps_step_three").append('<span id="payWithAmazonPaymentOPC"></span>');
+			jQuery("#onepagecheckoutps_step_three").append('<span id="payWithAmazonPaymentOPC" class="' + (AMZ_CREATE_ACCOUNT_EXP == '1' ? 'amz_create_account' : null) + '"></span>');
 			bindCartButton('payWithAmazonPaymentOPC');
 		}
 	}

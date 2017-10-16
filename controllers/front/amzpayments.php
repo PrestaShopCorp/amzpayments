@@ -469,10 +469,14 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                 foreach ($fields_to_set as $field_to_set) {
                                     $this->context->smarty->assign('states', State::getStatesByIdCountry((int)Country::getByIso($iso_code)));
                                     $this->context->smarty->assign('field_name', $field_to_set);
+                                    $this->context->smarty->assign('field_name_translated', AmazonPaymentsAddressHelper::getThemeTranslation($field_to_set));
                                     $this->context->smarty->assign('field_value', isset($address_delivery->$field_to_set) ? $address_delivery->$field_to_set : '');
                                     $htmlstr .= $this->context->smarty->fetch($this->module->getLocalPath() . 'views/templates/front/address_field.tpl');
                                 }
                                 $this->errors[] = $this->module->l('Please fill in the missing fields to save your address.');
+                                foreach (AmazonPaymentsAddressHelper::$validation_errors as $errMsg) {
+                                    $this->errors[] = $errMsg;
+                                }
                             }
 
                             if (! count($this->errors)) {

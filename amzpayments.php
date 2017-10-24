@@ -1199,14 +1199,14 @@ class AmzPayments extends PaymentModule
             case 'fr':
                 $register_link.= 'SPEXFRAPA-PrestashopPL';
                 $let_customer_know_link = 'https://images-na.ssl-images-amazon.com/images/G/03/amazonservices/payments/website/Amazon_Payments_MarketingGuide_UK_July2015_OLD._V283105627_.pdf?ld=SPEXFRAPA-prestashop-CP-DP';
-                $integration_guide_link = 'http://www.patworx.de/LoginAndPay/WithAmazon/PrestaShopUK/Documentation?ld=SPEXFRAPA-prestashop-CP-DP';
+                $integration_guide_link = 'http://www.patworx.de/LoginAndPay/WithAmazon/PrestaShopUK/Documentation';
                 $youtube_video_link = false;
                 $youtube_video_embed_link = false;
                 break;
             case 'it':
                 $register_link.= 'SPEXITAPA-PrestashopPL';
                 $let_customer_know_link = 'https://images-na.ssl-images-amazon.com/images/G/03/amazonservices/payments/website/Amazon_Payments_MarketingGuide_UK_July2015_OLD._V283105627_.pdf?ld=SPEXITAPA-prestashop-CP-DP';
-                $integration_guide_link = 'http://www.patworx.de/LoginAndPay/WithAmazon/PrestaShopUK/Documentation?ld=SPEXITAPA-prestashop-CP-DP';
+                $integration_guide_link = 'http://www.patworx.de/LoginAndPay/WithAmazon/PrestaShopUK/Documentation';
                 $youtube_video_link = false;
                 $youtube_video_embed_link = false;
                 break;

@@ -99,6 +99,7 @@ $_MODULE['<{amzpayments}prestashop>amzpayments_dd9c5a48aa769b5db4e5fba108c39691'
 $_MODULE['<{amzpayments}prestashop>amzpayments_7de64f538bdd7057ea1bbf5b46572d67'] = 'Merci de remplir les champs manquants afin de sauvegarder votre adresse';
 $_MODULE['<{amzpayments}prestashop>amzpayments_5aa818b1473c50ce1b40bf66663182c6'] = 'Le moyen de paiement sélectionné n\'est pas disponible pour le moment. Veuillez en choisir un autre.';
 $_MODULE['<{amzpayments}prestashop>amzpayments_a2af94a3e3857e4903cf97df11fd9440'] = 'Le moyen de paiement sélectionné a été refusé. Veuillez choisir un autre moyen de paiement.';
+$_MODULE['<{amzpayments}prestashop>amzpayments_c08ff5513b2075eb1412b877ee9217d6'] = 'Cacher le bouton Amazon Pay dans le mini-panier';
 $_MODULE['<{amzpayments}prestashop>select_address_7de64f538bdd7057ea1bbf5b46572d67'] = 'Merci de remplir les champs manquants afin de sauvegarder votre adresse';
 $_MODULE['<{amzpayments}prestashop>configuration_56b55033f747893cf02a5797707ee383'] = 'Faites des clients Amazon vos clients, simplement et rapidement ';
 $_MODULE['<{amzpayments}prestashop>configuration_a7b8feea65558548dff1c84f2f8801ab'] = 'Voici le detail:';

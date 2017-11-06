@@ -101,6 +101,7 @@ $_MODULE['<{amzpayments}prestashop>amzpayments_12e5e0597b2980f55f11e5d775aabf8c'
 $_MODULE['<{amzpayments}prestashop>amzpayments_dd9c5a48aa769b5db4e5fba108c39691'] = 'Your payment was rejected by Amazon - please contact us';
 $_MODULE['<{amzpayments}prestashop>amzpayments_5aa818b1473c50ce1b40bf66663182c6'] = 'Your selected payment method is currently not available. Please select another one.';
 $_MODULE['<{amzpayments}prestashop>amzpayments_a2af94a3e3857e4903cf97df11fd9440'] = 'Your selected payment method was rejected. Please choose an alternative method.';
+$_MODULE['<{amzpayments}prestashop>amzpayments_c08ff5513b2075eb1412b877ee9217d6'] = 'Hide the button Amazon Pay in the Mini-Cart';
 $_MODULE['<{amzpayments}prestashop>configuration_56b55033f747893cf02a5797707ee383'] = 'Make Amazon customers your customers';
 $_MODULE['<{amzpayments}prestashop>configuration_a7b8feea65558548dff1c84f2f8801ab'] = 'That\'s how it works:';
 $_MODULE['<{amzpayments}prestashop>configuration_5b1a8c5b0fd7e134325ee37f10abed53'] = 'Register for Amazon Pay and complete your account setup by upload your verification documents on Seller Central.*';

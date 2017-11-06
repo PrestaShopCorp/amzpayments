@@ -99,6 +99,7 @@ $_MODULE['<{amzpayments}prestashop>amzpayments_dd9c5a48aa769b5db4e5fba108c39691'
 $_MODULE['<{amzpayments}prestashop>amzpayments_7de64f538bdd7057ea1bbf5b46572d67'] = 'Per favore completa i campi mancanti per salvare il tuo indirizzo';
 $_MODULE['<{amzpayments}prestashop>amzpayments_5aa818b1473c50ce1b40bf66663182c6'] = 'Il metodo di pagamento selezionato non è al momento disponibile. Scegline un altro.';
 $_MODULE['<{amzpayments}prestashop>amzpayments_a2af94a3e3857e4903cf97df11fd9440'] = 'Il metodo di pagamento selezionato è stato rifiutato. Scegli un metodo diverso.';
+$_MODULE['<{amzpayments}prestashop>amzpayments_c08ff5513b2075eb1412b877ee9217d6'] = 'Nascondi il bottone Amazon Pay nel mini-carrello';
 $_MODULE['<{amzpayments}prestashop>select_address_7de64f538bdd7057ea1bbf5b46572d67'] = 'Per favore completa i campi mancanti per salvare il tuo indirizzo';
 $_MODULE['<{amzpayments}prestashop>configuration_56b55033f747893cf02a5797707ee383'] = 'I clienti Amazon diventano i tuoi, in modo semplice e rapido ';
 $_MODULE['<{amzpayments}prestashop>configuration_a7b8feea65558548dff1c84f2f8801ab'] = 'Ecco come funziona:';

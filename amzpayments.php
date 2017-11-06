@@ -106,6 +106,8 @@ class AmzPayments extends PaymentModule
     
     public $hide_login_btns = 0;
 
+    public $hide_minicart_button = 0;
+
     public $ca_bundle_file;
 
     private $_postErrors = array();
@@ -149,14 +151,15 @@ class AmzPayments extends PaymentModule
         'preselect_create_account' => 'PRESELECT_CREATE_ACCOUNT',
         'force_account_creation' => 'FORCE_ACCOUNT_CREATION',
         'template_variant_bs' => 'TEMPLATE_VARIANT_BS',
-        'hide_login_btns' => 'AMZ_HIDE_LOGIN_BTNS'
+        'hide_login_btns' => 'AMZ_HIDE_LOGIN_BTNS',
+        'hide_minicart_button' => 'AMZ_HIDE_MINICART_BUTTON',
     );
 
     public function __construct()
     {
         $this->name = 'amzpayments';
         $this->tab = 'payments_gateways';
-        $this->version = '2.0.64';
+        $this->version = '2.0.65';
         $this->author = 'patworx multimedia GmbH';
         $this->need_instance = 1;
         
@@ -328,6 +331,7 @@ class AmzPayments extends PaymentModule
         Configuration::updateValue('BUTTON_SIZE_LPA', 'medium');
         Configuration::updateValue('TEMPLATE_VARIANT_BS', true);
         Configuration::updateValue('AMZ_HIDE_LOGIN_BTNS', false);
+        Configuration::updateValue('AMZ_HIDE_MINICART_BUTTON', false);
         
         return parent::install() && $this->registerHook('displayTopColumn') && $this->registerHook('actionCarrierUpdate') && $this->registerHook('displayBackOfficeHeader') && $this->registerHook('displayShoppingCartFooter') && $this->registerHook('displayNav') && $this->registerHook('adminOrder') && $this->registerHook('updateOrderStatus') && $this->registerHook('displayBackOfficeFooter') && $this->registerHook('displayPayment') && $this->registerHook('paymentReturn') && $this->registerHook('payment') && $this->registerhook('displayPaymentEU') && $this->registerHook('header');
     }
@@ -657,6 +661,24 @@ class AmzPayments extends PaymentModule
                             ),
                             array(
                                 'id' => 'active_off_hide_lgn_btns',
+                                'value' => '0',
+                                'label' => $this->l('Disabled')
+                            )
+                        )
+                    ),
+                    array(
+                        'type' => 'switch',
+                        'label' => $this->l('Hide Button in Frontend in MiniCart'),
+                        'name' => 'AMZ_HIDE_MINICART_BUTTON',
+                        'is_bool' => true,
+                        'values' => array(
+                            array(
+                                'id' => 'active_on_hide_minicart_btns',
+                                'value' => true,
+                                'label' => $this->l('Enabled')
+                            ),
+                            array(
+                                'id' => 'active_off_hide_minicart_btns',
                                 'value' => '0',
                                 'label' => $this->l('Disabled')
                             )
@@ -1651,6 +1673,10 @@ class AmzPayments extends PaymentModule
         
         if ($this->hide_login_btns == 1) {
             $css_string.= '<style> #jsLoginAuthPage { display: none; } </style>';
+        }
+        
+        if ($this->hide_minicart_button == 1) {
+            $css_string.= '<style> #payWithAmazonCartDiv { display: none; } </style>';
         }
         
         $js_file = 'views/js/amzpayments_login.js';

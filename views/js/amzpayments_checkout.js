@@ -32,8 +32,13 @@ setInterval(checkPPBtn, 500);
 function checkPPBtn()
 {
 	if ($("#amz_cart_widgets_summary #container_express_checkout").length > 0) {
+		/* The Paypal logo has been removed from the Amazon Pay checkout page because it was a source of confusion. */
 		$("#container_express_checkout").remove();
-	}	
+	}
+	if ($("#block_paygreen_infos").length > 0) {
+		/* The PayGreen logo has been removed from the Amazon Pay checkout page because it was a source of confusion. */
+		$("#block_paygreen_infos").remove();
+	}
 }
 
 function updateCarrierSelectionAndGift()
@@ -156,7 +161,7 @@ function updateAddressSelection(amazonOrderReferenceId)
 			}
 			else
 			{
-				$("#submitAddress").fadeOut('fast', function() { $("#addressMissings").empty() });;
+				$("#submitAddress").fadeOut('fast', function() { $("#addressMissings").empty(); checkCGV(); });
 				if (jsonData.refresh)
 					location.reload();
 				$('#cart_summary .address_'+deliveryAddress).each(function() {
@@ -245,9 +250,7 @@ function updateAddressSelection(amazonOrderReferenceId)
 				updateHookShoppingCartExtra(jsonData.HOOK_SHOPPING_CART_EXTRA);
 				if ($('#gift-price').length == 1)
 					$('#gift-price').html(jsonData.gift_price);
-				if ($("#cgv").length > 0) {
-					$("#cgv").trigger('change');
-				}
+				checkCGV();
 				$('#amzOverlay, #opc_account-overlay, #opc_delivery_methods-overlay, #opc_payment_methods-overlay').fadeOut('slow');
 			}
 		},
@@ -388,14 +391,25 @@ function bindInputs()
 }
 
 $('#cgv').live('change', function() {
-	
-	if ($(this).attr("checked") && $("#noCarrierWarning").length == 0 && $.trim($('#addressMissings').html()).length == 0) {
-		$("#amz_execute_order").removeAttr("disabled").removeClass("disabled");
-	} else {
-		$("#amz_execute_order").attr("disabled","disabled").addClass("disabled");
-	}
-	updateTOSStatus();
+	checkCGV();
 });
+
+function checkCGV() {
+	if ($("#cgv").length > 0) {
+		if ($("#cgv").attr("checked") && $("#noCarrierWarning").length == 0 && $.trim($('#addressMissings').html()).length == 0) {
+			$("#amz_execute_order").removeAttr("disabled").removeClass("disabled");
+		} else {
+			$("#amz_execute_order").attr("disabled","disabled").addClass("disabled");
+		}
+		updateTOSStatus();			
+	} else {
+		if ($("#noCarrierWarning").length == 0 && $.trim($('#addressMissings').html()).length == 0) {
+			$("#amz_execute_order").removeAttr("disabled").removeClass("disabled");
+		} else {
+			$("#amz_execute_order").attr("disabled","disabled").addClass("disabled");
+		}
+	}
+}
 
 function updateTOSStatus()
 {

@@ -21,6 +21,7 @@
 
 class AmazonPaymentsAddressHelper
 {
+    public static $validation_errors = array();
 
     public static function findByAmazonOrderReferenceIdOrNew($amazon_order_reference_id, $boolean = false, $amazon_address = false)
     {
@@ -59,8 +60,10 @@ class AmazonPaymentsAddressHelper
     {
         $fields_to_set = array();
         foreach (Address::getFieldsValidate() as $field_to_validate => $validation_rule) {
-            if ($address->validateField($field_to_validate, $address->$field_to_validate) !== true) {
+            $validation = $address->validateField($field_to_validate, $address->$field_to_validate, null, array(), true);
+            if ($validation !== true) {
                 $fields_to_set[] = $field_to_validate;
+                self::$validation_errors[] = $validation;
             }
         }
         if (is_array($additional_data)) {
@@ -111,5 +114,60 @@ class AmazonPaymentsAddressHelper
             $amazon_hash = md5($amazon_hash);
         }
         return $amazon_hash;
+    }
+    
+    public static function getThemeTranslation($s)
+    {
+        switch ($s) {
+            case 'company':
+                $s = 'Company';
+                break;
+            case 'vat_number':
+                $s = 'VAT number';
+                break;
+            case 'dni':
+                $s = 'Identification number';
+                break;
+            case 'firstname':
+                $s = 'First name';
+                break;
+            case 'lastname':
+                $s = 'Last name';
+                break;
+            case 'address1':
+                $s = 'Address';
+                break;
+            case 'address2':
+                $s = 'Address (Line 2)';
+                break;
+            case 'postcode':
+                $s = 'Zip/Postal Code';
+                break;
+            case 'city':
+                $s = 'City';
+                break;
+            case 'phone':
+                $s = 'Home phone';
+                break;
+            case 'phone_mobile':
+                $s = 'Mobile phone';
+                break;
+            case 'other':
+                $s = 'Additional information';
+                break;
+        }
+        $iso = Context::getContext()->language->iso_code;
+        if (Validate::isLangIsoCode($iso)) {
+            $lang_file = _PS_THEME_DIR_.'lang/'.$iso.'.php';
+            if (file_exists($lang_file) && include($lang_file)) {
+                $key = 'address_'.md5($s);
+                if (isset($_LANG)) {
+                    if (isset($_LANG[$key])) {
+                        return $_LANG[$key];
+                    }
+                }
+            }
+        }
+        return $s;
     }
 }

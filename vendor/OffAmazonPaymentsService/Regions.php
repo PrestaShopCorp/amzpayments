@@ -25,4 +25,5 @@ final class OffAmazonPaymentsService_Regions
     const IT = "it";
     const FR = "fr";
     const ES = "es";
+    const JP = "jp";
 }

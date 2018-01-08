@@ -55,6 +55,7 @@ class AmazonTransactions
         if ($currency_code == '0') {
             $currency_code = 'EUR';
         }
+        $currency_code = self::transformCurrencyCode($currency_code);
         $authorize_request = new OffAmazonPaymentsService_Model_AuthorizeRequest();
         $authorize_request->setAmazonOrderReferenceId($order_ref);
         $authorize_request->setSellerId($amz_payments->merchant_id);
@@ -103,6 +104,7 @@ class AmazonTransactions
 
     public static function refund(AmzPayments $amz_payments, $service, $capture_id, $amount, $currency_code = 'EUR')
     {
+        $currency_code = self::transformCurrencyCode($currency_code);
         $order_ref = self::getOrderRefFromAmzId($capture_id);
         $refund = new OffAmazonPaymentsService_Model_Price();
         $refund->setCurrencyCode($currency_code);
@@ -140,6 +142,7 @@ class AmazonTransactions
 
     public static function capture(AmzPayments $amz_payments, $service, $auth_id, $amount, $currency_code = 'EUR', $display_error_message = false)
     {
+        $currency_code = self::transformCurrencyCode($currency_code);
         if ($auth_id) {
             $order_ref = self::getOrderRefFromAmzId($auth_id);
             $capture_request = new OffAmazonPaymentsService_Model_CaptureRequest();
@@ -413,4 +416,13 @@ class AmazonTransactions
         $r = Db::getInstance()->getRow($q);
         return $r['amz_tx_order_reference'];
     }
+    
+    public static function transformCurrencyCode($currency_iso)
+    {
+        if ($currency_iso == 'JPY') {
+            return 'YEN';
+        }
+        return $currency_iso;
+    }
+    
 }

@@ -44,6 +44,7 @@ function initAmazon(){
 
 	if($('.amazonLoginWr').length > 0){
 	   $('.amazonLoginWr').each(function(){
+		 if ($(this).attr('data-is-set') != '1') {
 	   		var amzBtnColor = AMZ_BUTTON_COLOR_LPA;
 	   		if ($(this).attr("id") == "amazonLogin")
 	   			amzBtnColor = AMZ_BUTTON_COLOR_LPA_NAVI;
@@ -81,9 +82,10 @@ function initAmazon(){
 	                console.log(error); 
 	            }
 	        });
-	        
-	        
+	       $(this).attr('data-is-set', '1');
+		} 
 	  });
+	  setTipr(".amazonLoginWr"); 
 	}
 	if (LPA_MODE == 'login_pay' || LPA_MODE == 'pay') {
 		if($('#payWithAmazonDiv').length > 0){
@@ -180,6 +182,13 @@ function bindCartButton(div_id) {
 	            console.log(error); 
 	        }
 	    });
+			setTipr('#' + div_id);
 	    jQuery('#' + div_id).attr('data-is-set', '1');
 	}	
+}
+
+function setTipr(element) {
+	if (jQuery("#amazonpay_tooltip").length > 0) {
+		jQuery(element).find("img").attr('data-tip', jQuery("#amazonpay_tooltip").html()).tipr();
+	}
 }

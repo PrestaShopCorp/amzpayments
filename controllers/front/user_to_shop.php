@@ -242,7 +242,15 @@ class AmzpaymentsUser_To_ShopModuleFrontController extends ModuleFrontController
                                 
                                 if (! count($this->errors)) {
                                     $customer->firstname = Tools::ucwords($customer->firstname);
-                                    $customer->is_guest = 0;
+                                    if (Tools::getValue('action') == 'checkout') {
+                                        if (self::$amz_payments->allow_guests == '0' || Configuration::get('PS_GUEST_CHECKOUT_ENABLED') == '0') {
+                                            $customer->is_guest = 0;
+                                        } else {
+                                            $customer->is_guest = 1;
+                                        }
+                                    } else {
+                                        $customer->is_guest = 0;
+                                    }
                                     $customer->active = 1;
                                     
                                     if (! count($this->errors)) {

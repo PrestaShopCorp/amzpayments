@@ -57,9 +57,11 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
     {
         if (is_dir(_PS_MODULE_DIR_ . 'chronopost')) {
             $chronorelais_module_uri = _MODULE_DIR_ . 'chronopost';
-            $this->context->controller->addCSS($chronorelais_module_uri . '/views/css/chronorelais.css', 'all');
-            $this->context->controller->addJS('https://maps.google.com/maps/api/js?sensor=false');
-            $this->context->controller->addJS($chronorelais_module_uri . '/views/js/chronorelais.js');
+            $this->context->controller->addCSS($chronorelais_module_uri.'/views/css/chronorelais.css', 'all');
+            $this->context->controller->addCSS($chronorelais_module_uri.'/views/css/chronordv.css', 'all');
+            $this->context->controller->addJS($chronorelais_module_uri.'/views/js/chronorelais.js');
+            $this->context->controller->addJS($chronorelais_module_uri.'/views/js/chronordv.js');
+            $this->context->controller->addJS('https://maps.google.com/maps/api/js?key='.Configuration::get('CHRONOPOST_MAP_APIKEY'));
         }
 
         self::$amz_payments = new AmzPayments();
@@ -605,6 +607,9 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
 
                                 $currency_order = new Currency((int) $this->context->cart->id_currency);
                                 $currency_code = $currency_order->iso_code;
+                                if ($currency_code == 'JYP') {
+                                    $currency_code = 'YEN';
+                                }
 
                                 if (! AmazonTransactions::isAlreadyConfirmedOrder(Tools::getValue('amazonOrderReferenceId'))) {
                                     if (isset($this->context->cookie->setHadErrorNowWallet) && $this->context->cookie->setHadErrorNowWallet == 1) {
@@ -768,10 +773,13 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                 }
 
                                 if (!$has_overridden_address) {
-                                    $address_delivery->save();
-                                    AmazonPaymentsAddressHelper::saveAddressAmazonReference($address_delivery, Tools::getValue('amazonOrderReferenceId'), $physical_destination);
-
-                                    $this->context->cart->id_address_delivery = $address_delivery->id;
+                                    try {
+                                        $address_delivery->save();
+                                        AmazonPaymentsAddressHelper::saveAddressAmazonReference($address_delivery, Tools::getValue('amazonOrderReferenceId'), $physical_destination);
+                                        $this->context->cart->id_address_delivery = $address_delivery->id;
+                                    } catch (Exception $e) {
+                                        $this->exceptionLog($e);
+                                    }
                                 }
 
                                 $billing_address_object = $reference_details_result_wrapper->GetOrderReferenceDetailsResult->getOrderReferenceDetails()->getBillingAddress();
@@ -885,6 +893,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                         try {
                                             $this->service->confirmOrderReference($confirm_order_ref_req_model);
                                         } catch (OffAmazonPaymentsService_Exception $e) {
+                                            $this->exceptionLog($e);
                                             echo 'ERROR: ' . $e->getMessage();
                                         }
                                         unset($this->context->cookie->setHadErrorNowWallet);
@@ -908,7 +917,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                             } else {
                                                 die(Tools::jsonEncode(array(
                                                     'hasError' => true,
-                                                    'redirection' => 'index.php?controller=order',
+                                                    'redirection' => __PS_BASE_URI__ . 'index.php?controller=order',
                                                     'errors' => array(
                                                         Tools::displayError(self::$amz_payments->l('Your selected payment method has been declined. Please chose another one.'))
                                                     )
@@ -931,7 +940,14 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                 if ((int) Configuration::get('AMZ_ORDER_STATUS_ID') > 0) {
                                     $new_order_status_id = Configuration::get('AMZ_ORDER_STATUS_ID');
                                 }
-                                $this->module->validateOrder((int) $this->context->cart->id, $new_order_status_id, $total, $this->module->displayName, null, array(), null, false, $customer->secure_key);
+                                
+                                try {
+                                    $this->module->validateOrder((int) $this->context->cart->id, $new_order_status_id, $total, $this->module->displayName, null, array(), null, false, $customer->secure_key);
+                                } catch (Exception $e) {
+                                    $this->exceptionLog($e);
+                                    echo $e->getMessage();
+                                    exit();
+                                }
 
                                 if (self::$amz_payments->authorization_mode == 'after_checkout') {
                                     $authorization_reference_id = Tools::getValue('amazonOrderReferenceId');
@@ -985,21 +1001,37 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                 if (! $customer->is_guest) {
                                     if (! AmzPayments::addressAlreadyExists($address_delivery, $customer)) {
                                         $address_delivery->id_customer = $customer->id;
-                                        $address_delivery->save();
+                                        try {
+                                            $address_delivery->save();
+                                        } catch (Exception $e) {
+                                            $this->exceptionLog($e);
+                                        }
                                     }
                                     if (! AmzPayments::addressAlreadyExists($address_invoice, $customer)) {
                                         $address_invoice->id_customer = $customer->id;
-                                        $address_invoice->save();
+                                        try {
+                                            $address_invoice->save();
+                                        } catch (Exception $e) {
+                                            $this->exceptionLog($e);
+                                        }
                                     }
                                 } else {
                                     if ($registered_customer = AmazonPaymentsCustomerHelper::findByEmailAddress($customer->email)) {
                                         if (! AmzPayments::addressAlreadyExists($address_delivery, $registered_customer)) {
                                             $address_delivery->id_customer = $registered_customer->id;
-                                            $address_delivery->save();
+                                            try {
+                                                $address_delivery->save();
+                                            } catch (Exception $e) {
+                                                $this->exceptionLog($e);
+                                            }
                                         }
                                         if (! AmzPayments::addressAlreadyExists($address_invoice, $registered_customer)) {
                                             $address_invoice->id_customer = $registered_customer->id;
-                                            $address_invoice->save();
+                                            try {
+                                                $address_invoice->save();
+                                            } catch (Exception $e) {
+                                                $this->exceptionLog($e);
+                                            }
                                         }
                                     }
                                     $this->context->cookie->show_success_amz_message = true;
@@ -1639,5 +1671,17 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
             Product::addCustomizationPrice($result['summary']['products'], $result['customizedDatas']);
         }
         return $result;
+    }
+    
+    protected function getLogFileName()
+    {
+        return dirname(__FILE__) . '/../../amz_exception.log';
+    }
+    
+    protected function exceptionLog($e)
+    {
+        $logstr = date("Y-m-d H:i:s") . ' Exception logging: ' . "\r\n";
+        $logstr.= print_r($e, true);
+        file_put_contents($this->getLogFileName(), $logstr, FILE_APPEND);
     }
 }

@@ -159,7 +159,7 @@ class AmzPayments extends PaymentModule
     {
         $this->name = 'amzpayments';
         $this->tab = 'payments_gateways';
-        $this->version = '2.0.65';
+        $this->version = '2.0.66';
         $this->author = 'patworx multimedia GmbH';
         $this->need_instance = 1;
         
@@ -519,7 +519,7 @@ class AmzPayments extends PaymentModule
 
     protected function getPossibleRegionEntries()
     {
-        return 'DE, UK, US, FR, IT, ES';
+        return 'DE, UK, US, FR, IT, ES, JP';
     }
 
     protected function getCronURL()
@@ -535,7 +535,8 @@ class AmzPayments extends PaymentModule
     protected function getAllowedReturnUrls($type = 1, $joined = false)
     {
         $urls = array();
-        $language_ids = Language::getLanguages(true, false, true);
+        $shop_id = isset(Context::getContext()->shop) ? Context::getContext()->shop->id : false;
+        $language_ids = Language::getLanguages(true, $shop_id, true);
         foreach ($language_ids as $id_lang) {
             $url = str_replace('http://', 'https://', $this->context->link->getModuleLink('amzpayments', 'process_login', array(), null, (int)$id_lang));
             if ($type == 2) {
@@ -1172,14 +1173,14 @@ class AmzPayments extends PaymentModule
         $this->context->smarty->assign('current_version', $this->version);
         $this->context->smarty->assign('allowed_return_url_1', $this->getAllowedReturnUrls(1));
         $this->context->smarty->assign('allowed_return_url_2', $this->getAllowedReturnUrls(2));
-        $this->context->smarty->assign('allowed_js_origins', str_replace('http://', 'https://', _PS_BASE_URL_));
+        $this->context->smarty->assign('allowed_js_origins', $this->getBaseLink(null, true));
         
         $register_link = 'https://sellercentral-europe.amazon.com/hz/me/sp/redirect?ld=';
 
         $this->context->smarty->assign('lang_iso_code', $this->context->language->iso_code);
         switch ($this->context->language->iso_code) {
             case 'de':
-                $register_link.= 'SPEXDEAPA-PrestashopPL';
+                $register_link = 'https://sellercentral-europe.amazon.com/hz/me/sp/redirect?spId=A1AOZCKI9MBRZA&language=de_DE&source=SPPL';
                 $let_customer_know_link = 'https://payments.amazon.de/merchant/tools?ld=SPEXDEAPA-prestashop-2016-03-Configuration';
                 $integration_guide_link = 'http://www.patworx.de/LoginUndBezahlen/MitAmazon/PrestaShop/Dokumentation';
                 $youtube_video_link = 'https://www.youtube.com/watch?v=pbv64mDMqc8';
@@ -1197,21 +1198,21 @@ class AmzPayments extends PaymentModule
                 $youtube_video_embed_link = false;
                 break;
             case 'fr':
-                $register_link.= 'SPEXFRAPA-PrestashopPL';
+                $register_link = 'https://sellercentral-europe.amazon.com/hz/me/sp/redirect?spId=A1AOZCKI9MBRZA&language=fr_FR&source=SPPL';
                 $let_customer_know_link = 'https://images-na.ssl-images-amazon.com/images/G/03/amazonservices/payments/website/Amazon_Payments_MarketingGuide_UK_July2015_OLD._V283105627_.pdf?ld=SPEXFRAPA-prestashop-CP-DP';
                 $integration_guide_link = 'http://www.patworx.de/LoginAndPay/WithAmazon/PrestaShopUK/Documentation';
                 $youtube_video_link = false;
                 $youtube_video_embed_link = false;
                 break;
             case 'it':
-                $register_link.= 'SPEXITAPA-PrestashopPL';
+                $register_link = 'https://sellercentral-europe.amazon.com/hz/me/sp/redirect?spId=A1AOZCKI9MBRZA&language=it_IT&source=SPPL';
                 $let_customer_know_link = 'https://images-na.ssl-images-amazon.com/images/G/03/amazonservices/payments/website/Amazon_Payments_MarketingGuide_UK_July2015_OLD._V283105627_.pdf?ld=SPEXITAPA-prestashop-CP-DP';
                 $integration_guide_link = 'http://www.patworx.de/LoginAndPay/WithAmazon/PrestaShopUK/Documentation';
                 $youtube_video_link = false;
                 $youtube_video_embed_link = false;
                 break;
             case 'es':
-                $register_link.= 'SPEXESAPA-PrestashopPL';
+                $register_link = 'https://sellercentral-europe.amazon.com/hz/me/sp/redirect?spId=A1AOZCKI9MBRZA&language=es_ES&source=SPPL';
                 $let_customer_know_link = 'https://payments.amazon.co.uk/merchant/tools?ld=SPEXUKAPA-prestashop-2016-03-Configuration';
                 $integration_guide_link = 'http://www.patworx.de/LoginAndPay/WithAmazon/PrestaShopUK/Documentation';
                 $youtube_video_link = false;
@@ -1238,7 +1239,7 @@ class AmzPayments extends PaymentModule
             'locale' =>  $this->getLocalCodeForSimplePath(),
             'loginRedirectURLs_1' => $this->getAllowedReturnUrls(1),
             'loginRedirectURLs_2' => $this->getAllowedReturnUrls(2),
-            'allowedLoginDomains' => str_replace('http://', 'https://', _PS_BASE_URL_),
+            'allowedLoginDomains' => $this->getBaseLink(null, true),
             'storeDescription' => Configuration::get('PS_SHOP_NAME'),
             'language' => $this->getLanguageCodeForSimplePath(),
             'returnMethod' => 'GET',
@@ -1297,6 +1298,8 @@ class AmzPayments extends PaymentModule
             return 'uk';
         } elseif (Tools::strtolower($this->region) == 'us') {
             return 'us';
+        } elseif (Tools::strtolower($this->region) == 'jp') {
+            return 'jp';
         }
         return 'de';
     }
@@ -1310,13 +1313,14 @@ class AmzPayments extends PaymentModule
             return 'GBP';
         } elseif ($currency->iso_code == 'USD') {
             return 'USD';
+        } elseif ($currency->iso_code == 'JPY' || $currency->iso_code == 'YEN') {
+            return 'YEN';
         }
         return 'USD';
     }
 
     public function getButtonURL()
     {
-        $this->registerHook('paymentReturn');
         if ($this->environment == 'SANDBOX') {
             if (in_array(Tools::strtolower($this->region), array('de', 'fr', 'it', 'es'))) {
                 return 'https://payments-sandbox.amazon.de/gp/widgets/button';
@@ -1324,6 +1328,8 @@ class AmzPayments extends PaymentModule
                 return 'https://payments-sandbox.amazon.co.uk/gp/widgets/button';
             } elseif (Tools::strtolower($this->region) == 'us') {
                 return 'https://payments-sandbox.amazon.com/gp/widgets/button';
+            } elseif (Tools::strtolower($this->region) == 'jp') {
+                return 'https://payments-sandbox.amazon.co.jp/gp/widgets/button';
             }
         } else {
             if (in_array(Tools::strtolower($this->region), array('de', 'fr', 'it', 'es'))) {
@@ -1332,6 +1338,8 @@ class AmzPayments extends PaymentModule
                 return 'https://payments.amazon.co.uk/gp/widgets/button';
             } elseif (Tools::strtolower($this->region) == 'us') {
                 return 'https://payments.amazon.com/gp/widgets/button';
+            } elseif (Tools::strtolower($this->region) == 'jp') {
+                return 'https://payments.amazon.co.jp/gp/widgets/button';
             }
         }
     }
@@ -1345,6 +1353,8 @@ class AmzPayments extends PaymentModule
                 return 'https://api.sandbox.amazon.co.uk';
             } elseif (Tools::strtolower($this->region) == 'us') {
                 return 'https://api.sandbox.amazon.com';
+            } elseif (Tools::strtolower($this->region) == 'jp') {
+                return 'https://api-sandbox.amazon.co.jp';
             }
         } else {
             if (in_array(Tools::strtolower($this->region), array('de', 'fr', 'it', 'es'))) {
@@ -1353,6 +1363,8 @@ class AmzPayments extends PaymentModule
                 return 'https://api.amazon.co.uk';
             } elseif (Tools::strtolower($this->region) == 'us') {
                 return 'https://api.amazon.com';
+            } elseif (Tools::strtolower($this->region) == 'jp') {
+                return 'https://api.amazon.co.jp';
             }
         }
     }
@@ -1380,7 +1392,7 @@ class AmzPayments extends PaymentModule
     public function getCarrierOptions()
     {
         $ret = array();
-        $carriers = Carrier::getCarriers(Configuration::get('PS_LANG_DEFAULT'));
+        $carriers = Carrier::getCarriers(Configuration::get('PS_LANG_DEFAULT'), false, false, false, null, Carrier::ALL_CARRIERS);
         foreach ($carriers as $carrier) {
             $ret[] = array('id' => 'carrier_' . $carrier['id_carrier'] . '_on',
                            'value' => $carrier['id_carrier'],
@@ -1516,6 +1528,8 @@ class AmzPayments extends PaymentModule
             return true;
         } elseif (Tools::strtolower($this->region) == 'us' && Tools::strtoupper($currency->iso_code) == 'USD') {
             return true;
+        } elseif (Tools::strtolower($this->region) == 'jp' && (Tools::strtoupper($currency->iso_code) == 'JPY' || Tools::strtoupper($currency->iso_code) == 'YEN')) {
+            return true;
         }
         return false;
     }
@@ -1550,10 +1564,12 @@ class AmzPayments extends PaymentModule
     
     public function hookDisplayTopColumn($params)
     {
+        $content = $this->display(__FILE__, 'views/templates/hooks/_tooltip.tpl');
         if (isset($this->context->cookie->show_success_amz_message) && Tools::getValue('controller') == 'guesttracking') {
             unset($this->context->cookie->show_success_amz_message);
-            return $this->display(__FILE__, 'views/templates/hooks/displaytopcolumn.tpl');
+            $content.= $this->display(__FILE__, 'views/templates/hooks/displaytopcolumn.tpl');
         }
+        return $content;
     }
 
     public function hookDisplayPayment($params)
@@ -1592,6 +1608,8 @@ class AmzPayments extends PaymentModule
         }
         
         $this->context->controller->addCSS($this->_path . 'views/css/amzpayments.css', 'all');
+        $this->context->controller->addCSS($this->_path . 'views/css/tipr.css', 'all');
+        $this->context->controller->addJS($this->_path . 'views/js/tipr.min.js');
         $redirect = $this->context->link->getModuleLink('amzpayments', 'amzpayments');
         
         if (Configuration::get('PS_SSL_ENABLED')) {
@@ -1624,9 +1642,15 @@ class AmzPayments extends PaymentModule
         
         if ($this->getRegionalCodeForURL() == 'us') {
             if ($this->environment == 'SANDBOX') {
-                $ext_js = 'https://static-na.payments-amazon.com/OffAmazonPayments/us/sandbox/js/Widgets.js ';
+                $ext_js = 'https://static-na.payments-amazon.com/OffAmazonPayments/us/sandbox/js/Widgets.js';
             } else {
-                $ext_js = 'https://static-na.payments-amazon.com/OffAmazonPayments/us/js/Widgets.js ';
+                $ext_js = 'https://static-na.payments-amazon.com/OffAmazonPayments/us/js/Widgets.js';
+            }
+        } elseif ($this->getRegionalCodeForURL() == 'jp') {
+            if ($this->environment == 'SANDBOX') {
+                $ext_js = 'https://static-fe.payments-amazon.com/OffAmazonPayments/jp/sandbox/lpa/js/Widgets.js';
+            } else {
+                $ext_js = 'https://static-fe.payments-amazon.com/OffAmazonPayments/jp/lpa/js/Widgets.js';
             }
         } else {
             if ($this->environment == 'SANDBOX') {
@@ -2539,5 +2563,31 @@ class AmzPayments extends PaymentModule
         $address->address1 = Tools::str_replace_once('_', '-', $address->address1);
         $address->address2 = Tools::str_replace_once('_', '-', $address->address2);
         return $address;
+    }
+    
+    public function getBaseLink($id_shop = null, $ssl = null, $relative_protocol = false)
+    {
+        static $force_ssl = null;
+        
+        if ($ssl === null) {
+            if ($force_ssl === null) {
+                $force_ssl = (Configuration::get('PS_SSL_ENABLED') && Configuration::get('PS_SSL_ENABLED_EVERYWHERE'));
+            }
+            $ssl = $force_ssl;
+        }
+        
+        if (Configuration::get('PS_MULTISHOP_FEATURE_ACTIVE') && $id_shop !== null) {
+            $shop = new Shop($id_shop);
+        } else {
+            $shop = Context::getContext()->shop;
+        }
+        
+        if ($relative_protocol) {
+            $base = '//'.($ssl && Configuration::get('PS_SSL_ENABLED') ? $shop->domain_ssl : $shop->domain);
+        } else {
+            $base = (($ssl && Configuration::get('PS_SSL_ENABLED')) ? 'https://'.$shop->domain_ssl : 'http://'.$shop->domain);
+        }
+        
+        return $base;
     }
 }

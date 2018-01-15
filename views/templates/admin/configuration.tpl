@@ -33,7 +33,7 @@
 				<li><span>{l s='Register for Amazon Payments and complete your account setup by upload your verification documents on Seller Central.*' mod='amzpayments'}
 					<br />
 					{if $use_simple_path}
-						<form method="POST" action="https://sellercentral-europe.amazon.com/hz/me/sp/redirect" target="_blank" id="amazonRegForm"> 
+						<form method="POST" action="https://sellercentral-europe.amazon.com/hz/me/sp/redirect?spId={$simple_path.spId|escape:'htmlall':'UTF-8'}&language={$simple_path.language|escape:'htmlall':'UTF-8'}&Source={$simple_path.Source|escape:'htmlall':'UTF-8'}" target="_blank" id="amazonRegForm"> 
 							<input type="hidden" value="{$simple_path.locale|escape:'htmlall':'UTF-8'}" name="locale" />  
 							<input type="hidden" value="{$simple_path.spId|escape:'htmlall':'UTF-8'}" name="spId" />  
 							<input type="hidden" value="{$simple_path.uniqueId|escape:'htmlall':'UTF-8'}" name="uniqueId" />  

@@ -206,3 +206,4 @@ $_MODULE['<{amzpayments}prestashop>displaytopcolumn_2e2117b7c81aa9ea6931641ea2c6
 $_MODULE['<{amzpayments}prestashop>displaytopcolumn_75fbf512d744977d62599cc3f0ae2bb4'] = 'est effective.';
 $_MODULE['<{amzpayments}prestashop>payment_ed20689b0d8d53ec534166a88b67f259'] = 'Payez avec Amazon';
 $_MODULE['<{amzpayments}prestashop>payment_8811becbf523354e20e2017242326f70'] = '(Paiement sécurisé et pratique avec votre compte Amazon)';
+$_MODULE['<{amzpayments}prestashop>_tooltip_0f5b2c5d07a33dc481cb9ecc8f7bb232'] = 'Vous êtes client Amazon? Payez désormais avec les informations de paiement et les coordonnées stockées dans votre compte Amazon';

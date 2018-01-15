@@ -1176,10 +1176,12 @@ class AmzPayments extends PaymentModule
         $this->context->smarty->assign('allowed_js_origins', $this->getBaseLink(null, true));
         
         $register_link = 'https://sellercentral-europe.amazon.com/hz/me/sp/redirect?ld=';
-
+        $ld = '';
+        
         $this->context->smarty->assign('lang_iso_code', $this->context->language->iso_code);
         switch ($this->context->language->iso_code) {
             case 'de':
+                $ld = 'SPEXDEAPA-Prestashop-core_DE';
                 $register_link = 'https://sellercentral-europe.amazon.com/hz/me/sp/redirect?spId=A1AOZCKI9MBRZA&language=de_DE&source=SPPL';
                 $let_customer_know_link = 'https://payments.amazon.de/merchant/tools?ld=SPEXDEAPA-prestashop-2016-03-Configuration';
                 $integration_guide_link = 'http://www.patworx.de/LoginUndBezahlen/MitAmazon/PrestaShop/Dokumentation';
@@ -1188,8 +1190,10 @@ class AmzPayments extends PaymentModule
                 break;
             case 'en':
                 if (isset($this->context->language->local) && Tools::strtolower($this->context->language->local) == 'en-us') {
+                    $ld = 'SPEXUSAPA-Prestashop-core_US';
                     $register_link.= 'SPEXUSAPA-PrestashopPL';
                 } else {
+                    $ld = 'SPEXUKAPA-Prestashop-core_UK';
                     $register_link.= 'SPEXUKAPA-PrestashopPL';
                 }
                 $let_customer_know_link = 'https://payments.amazon.co.uk/merchant/tools?ld=SPEXUKAPA-prestashop-2016-03-Configuration';
@@ -1198,6 +1202,7 @@ class AmzPayments extends PaymentModule
                 $youtube_video_embed_link = false;
                 break;
             case 'fr':
+                $ld = 'SPEXFRAPA-Prestashop-core_FR';
                 $register_link = 'https://sellercentral-europe.amazon.com/hz/me/sp/redirect?spId=A1AOZCKI9MBRZA&language=fr_FR&source=SPPL';
                 $let_customer_know_link = 'https://images-na.ssl-images-amazon.com/images/G/03/amazonservices/payments/website/Amazon_Payments_MarketingGuide_UK_July2015_OLD._V283105627_.pdf?ld=SPEXFRAPA-prestashop-CP-DP';
                 $integration_guide_link = 'http://www.patworx.de/LoginAndPay/WithAmazon/PrestaShopUK/Documentation';
@@ -1205,6 +1210,7 @@ class AmzPayments extends PaymentModule
                 $youtube_video_embed_link = false;
                 break;
             case 'it':
+                $ld = 'SPEXITAPA-Prestashop-core_IT';
                 $register_link = 'https://sellercentral-europe.amazon.com/hz/me/sp/redirect?spId=A1AOZCKI9MBRZA&language=it_IT&source=SPPL';
                 $let_customer_know_link = 'https://images-na.ssl-images-amazon.com/images/G/03/amazonservices/payments/website/Amazon_Payments_MarketingGuide_UK_July2015_OLD._V283105627_.pdf?ld=SPEXITAPA-prestashop-CP-DP';
                 $integration_guide_link = 'http://www.patworx.de/LoginAndPay/WithAmazon/PrestaShopUK/Documentation';
@@ -1212,6 +1218,7 @@ class AmzPayments extends PaymentModule
                 $youtube_video_embed_link = false;
                 break;
             case 'es':
+                $ld = 'SPEXESAPA-Prestashop-core_ES';
                 $register_link = 'https://sellercentral-europe.amazon.com/hz/me/sp/redirect?spId=A1AOZCKI9MBRZA&language=es_ES&source=SPPL';
                 $let_customer_know_link = 'https://payments.amazon.co.uk/merchant/tools?ld=SPEXUKAPA-prestashop-2016-03-Configuration';
                 $integration_guide_link = 'http://www.patworx.de/LoginAndPay/WithAmazon/PrestaShopUK/Documentation';
@@ -1242,6 +1249,7 @@ class AmzPayments extends PaymentModule
             'allowedLoginDomains' => $this->getBaseLink(null, true),
             'storeDescription' => Configuration::get('PS_SHOP_NAME'),
             'language' => $this->getLanguageCodeForSimplePath(),
+            'ld' => $ld,
             'returnMethod' => 'GET',
             'Source' => 'SPPL',
             'sandboxMerchantIPNURL' => $this->getIPNURL(),

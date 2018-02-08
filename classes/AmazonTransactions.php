@@ -64,7 +64,7 @@ class AmazonTransactions
         if ($amz_payments->capture_mode == 'after_auth') {
             $authorize_request->setCaptureNow(true);
         }
-
+        /*
         if ($amz_payments->provocation == 'hard_decline' && $amz_payments->environment == 'SANDBOX') {
             $authorize_request->setSellerAuthorizationNote('{"SandboxSimulation": {"State":"Declined", "ReasonCode":"AmazonRejected"}}');
         }
@@ -73,6 +73,7 @@ class AmazonTransactions
             Context::getContext()->cookie->setHadErrorNowWallet = 1;
             $authorize_request->setSellerAuthorizationNote('{"SandboxSimulation": {"State":"Declined", "ReasonCode":"InvalidPaymentMethod", "PaymentMethodUpdateTimeInMins":2}}');
         }
+        */
         
         $authorize_request->setAuthorizationReferenceId(self::getNextAuthRef($order_ref));
         $authorize_request->setAuthorizationAmount(new OffAmazonPaymentsService_Model_Price());
@@ -424,5 +425,4 @@ class AmazonTransactions
         }
         return $currency_iso;
     }
-    
 }

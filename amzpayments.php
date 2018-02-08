@@ -32,6 +32,8 @@ define('CURRENT_MODULE_DIR', realpath(dirname(__FILE__)));
 require_once(CURRENT_MODULE_DIR . '/classes/AmazonTransactions.php');
 require_once(CURRENT_MODULE_DIR . '/classes/AmazonPaymentsCustomerHelper.php');
 require_once(CURRENT_MODULE_DIR . '/classes/AmazonPaymentsAddressHelper.php');
+require_once(CURRENT_MODULE_DIR . '/classes/AmazonPaymentsHelperForm.php');
+require_once(CURRENT_MODULE_DIR . '/classes/AmazonPaymentsLogHelper.php');
 
 class AmzPayments extends PaymentModule
 {
@@ -47,6 +49,8 @@ class AmzPayments extends PaymentModule
     public $region;
 
     public $lpa_mode;
+    
+    public $config_setting_mode = 0;
 
     public $button_visibility = 1;
 
@@ -107,6 +111,12 @@ class AmzPayments extends PaymentModule
     public $hide_login_btns = 0;
 
     public $hide_minicart_button = 0;
+    
+    public $promo_header = 0;
+    
+    public $promo_product = 1;
+    
+    public $promo_footer = 1;
 
     public $ca_bundle_file;
 
@@ -124,6 +134,7 @@ class AmzPayments extends PaymentModule
         'secret_key' => 'SECRET_KEY',
         'client_id' => 'AMZ_CLIENT_ID',
         'region' => 'REGION',
+        'config_setting_mode' => 'AMZ_CONFIG_SETTING_MODE',
         'lpa_mode' => 'LPA_MODE',
         'button_visibility' => 'BUTTON_VISIBILITY',
         'environment' => 'ENVIRONMENT',
@@ -153,13 +164,19 @@ class AmzPayments extends PaymentModule
         'template_variant_bs' => 'TEMPLATE_VARIANT_BS',
         'hide_login_btns' => 'AMZ_HIDE_LOGIN_BTNS',
         'hide_minicart_button' => 'AMZ_HIDE_MINICART_BUTTON',
+        'promo_header' => 'AMZ_PROMO_HEADER',
+        'promo_header_style' => 'AMZ_PROMO_HEADER_STYLE',
+        'promo_product' => 'AMZ_PROMO_PRODUCT',
+        'promo_product_style' => 'AMZ_PROMO_PRODUCT_STYLE',
+        'promo_footer' => 'AMZ_PROMO_FOOTER',
+        'promo_footer_style' => 'AMZ_PROMO_FOOTER_STYLE',
     );
 
     public function __construct()
     {
         $this->name = 'amzpayments';
         $this->tab = 'payments_gateways';
-        $this->version = '2.0.68';
+        $this->version = '2.1.0';
         $this->author = 'patworx multimedia GmbH';
         $this->need_instance = 1;
         
@@ -323,17 +340,32 @@ class AmzPayments extends PaymentModule
 
         $this->installOrderStates();
 
+        $this->resetDefaultSettings();
+        
+        return parent::install() && $this->registerHook('displayFooter') && $this->registerHook('displayProductButtons') && $this->registerHook('displayBanner') && $this->registerHook('displayTopColumn') && $this->registerHook('actionCarrierUpdate') && $this->registerHook('displayBackOfficeHeader') && $this->registerHook('displayShoppingCartFooter') && $this->registerHook('displayNav') && $this->registerHook('adminOrder') && $this->registerHook('updateOrderStatus') && $this->registerHook('displayBackOfficeFooter') && $this->registerHook('displayPayment') && $this->registerHook('paymentReturn') && $this->registerHook('payment') && $this->registerhook('displayPaymentEU') && $this->registerHook('header');
+    }
+    
+    protected function resetDefaultSettings()
+    {
         Configuration::updateValue('BUTTON_VISIBILITY', true);
         Configuration::updateValue('POPUP', true);
         Configuration::updateValue('ALLOW_GUEST', true);
         Configuration::updateValue('ENVIRONMENT', 'LIVE');
+        Configuration::updateValue('REGION', $this->getDefaultModuleRegion());
         Configuration::updateValue('BUTTON_SIZE', 'medium');
         Configuration::updateValue('BUTTON_SIZE_LPA', 'medium');
         Configuration::updateValue('TEMPLATE_VARIANT_BS', true);
+        Configuration::updateValue('IPN_STATUS', true);
         Configuration::updateValue('AMZ_HIDE_LOGIN_BTNS', false);
         Configuration::updateValue('AMZ_HIDE_MINICART_BUTTON', false);
-        
-        return parent::install() && $this->registerHook('displayTopColumn') && $this->registerHook('actionCarrierUpdate') && $this->registerHook('displayBackOfficeHeader') && $this->registerHook('displayShoppingCartFooter') && $this->registerHook('displayNav') && $this->registerHook('adminOrder') && $this->registerHook('updateOrderStatus') && $this->registerHook('displayBackOfficeFooter') && $this->registerHook('displayPayment') && $this->registerHook('paymentReturn') && $this->registerHook('payment') && $this->registerhook('displayPaymentEU') && $this->registerHook('header');
+        Configuration::updateValue('AMZ_PROMO_HEADER', false);
+        Configuration::updateValue('AMZ_PROMO_PRODUCT', true);
+        Configuration::updateValue('AMZ_PROMO_FOOTER', true);
+        Configuration::updateValue('AMZ_PROMO_HEADER_STYLE', false);
+        Configuration::updateValue('AMZ_PROMO_PRODUCT_STYLE', false);
+        Configuration::updateValue('AMZ_PROMO_FOOTER_STYLE', false);
+        Configuration::updateValue('CAPTURE_MODE', 'after_auth');
+        Configuration::updateValue('LPA_MODE', 'login_pay');
     }
 
     protected function installOrderStates()
@@ -420,14 +452,16 @@ class AmzPayments extends PaymentModule
 
     private function _postValidation()
     {
-        if (Tools::isSubmit('submitAmzpaymentsModule')) {
+        if (Tools::isSubmit('submitAmzpaymentsModule') || Tools::isSubmit('submitAmzpaymentsModuleConnect')) {
             foreach (self::$config_array as $name => $f) {
-                if (Tools::getValue($f) === false && $f != 'SHIPPINGS_NOT_ALLOWED') {
+                if (Tools::getValue($f) === false && !in_array($f, array('SHIPPINGS_NOT_ALLOWED', 'PROVOCATION', 'PRODUCTS_NOT_ALLOWED', 'AMZ_HIDE_LOGIN_BTNS', 'AMZ_HIDE_MINICART_BUTTON', 'AMZ_PROMO_HEADER'))) {
                     $this->_postErrors[] = $this->l($name) . ' ' . $this->l(': details are required.');
                 }
             }
             if (Tools::getValue('REGION') == '') {
                 $this->_postErrors[] = $this->l('Region is wrong.');
+            } elseif (Tools::getValue('AMZ_MERCHANT_ID') == '' || Tools::getValue('ACCESS_KEY') == '' || Tools::getValue('SECRET_KEY') == '') {
+                $this->_postErrors[] = $this->l('Keys are missing.');
             } else {
                 $service = $this->getService(array(
                     'merchantId' => Tools::getValue('AMZ_MERCHANT_ID'),
@@ -442,32 +476,39 @@ class AmzPayments extends PaymentModule
                 $order_ref_request = new OffAmazonPaymentsService_Model_GetOrderReferenceDetailsRequest();
                 $order_ref_request->setSellerId(Tools::getValue('AMZ_MERCHANT_ID'));
                 $order_ref_request->setAmazonOrderReferenceId('S00-0000000-0000000');
+                $this->context->smarty->assign('keys_valid', true);
                 try {
                     $service->getOrderReferenceDetails($order_ref_request);
                 } catch (OffAmazonPaymentsService_Exception $e) {
                     switch ($e->getErrorCode()) {
                         case 'InvalidAccessKeyId':
                             $this->_postErrors[] = $this->l('MWS Access Key is wrong.');
+                            $this->context->smarty->assign('keys_valid', false);
                             break;
                         
                         case 'SignatureDoesNotMatch':
                             $this->_postErrors[] = $this->l('MWS Secret Key is wrong.');
+                            $this->context->smarty->assign('keys_valid', false);
                             break;
                         
                         case 'InvalidParameterValue':
                             if (strpos($e->getErrorMessage(), 'Invalid seller id') !== false) {
                                 $this->_postErrors[] = $this->l('Merchant ID is wrong.');
+                                $this->context->smarty->assign('keys_valid', false);
                             }
                             break;
                     }
                 }
             }
         }
+        if (sizeof($this->_postErrors) > 0) {
+            $this->exceptionLog(false, "BE Settings: \r\n" . print_r($this->_postErrors, true));
+        }
     }
 
     private function _postProcess()
     {
-        if (Tools::isSubmit('submitAmzpaymentsModule')) {
+        if (Tools::isSubmit('submitAmzpaymentsModule') || Tools::isSubmit('submitAmzpaymentsModuleConnect')) {
             foreach (self::$config_array as $f => $conf_key) {
                 if ($conf_key == 'SHIPPINGS_NOT_ALLOWED') {
                     $carriers_set = array();
@@ -493,7 +534,7 @@ class AmzPayments extends PaymentModule
 
     private function _displayForm()
     {
-        $helper = new HelperForm();
+        $helper = new AmazonPaymentsHelperForm();
         
         $helper->show_toolbar = false;
         $helper->table = $this->table;
@@ -512,9 +553,7 @@ class AmzPayments extends PaymentModule
             'id_language' => $this->context->language->id
         );
         
-        return $helper->generateForm(array(
-            $this->getConfigForm()
-        ));
+        return $helper->generateAmazonForm($this->context->smarty, $this->getConfigForm());
     }
 
     protected function getPossibleRegionEntries()
@@ -563,69 +602,114 @@ class AmzPayments extends PaymentModule
 
     public function getConfigForm()
     {
-        return array(
+        $connect_form = array(
             'form' => array(
                 'legend' => array(
-                    'title' => $this->l('Settings'),
+                    'title' => $this->l('Connect'),
                     'icon' => 'icon-cogs'
                 ),
                 'input' => array(
                     array(
                         'col' => 3,
+                        'type' => 'select',
+                        'prefix' => '<i class="icon icon-tag"></i>',
+                        'name' => 'REGION',
+                        'label' => $this->l('region'),
+                        'options' => array(
+                            'query' => array(
+                                array(
+                                    'id_region' => 'FR',
+                                    'name' => $this->l('France')
+                                ),
+                                array(
+                                    'id_region' => 'DE',
+                                    'name' => $this->l('Germany')
+                                ),
+                                array(
+                                    'id_region' => 'UK',
+                                    'name' => $this->l('United Kingdom')
+                                ),
+                                array(
+                                    'id_region' => 'US',
+                                    'name' => $this->l('USA')
+                                ),
+                                array(
+                                    'id_region' => 'IT',
+                                    'name' => $this->l('Italy')
+                                ),
+                                array(
+                                    'id_region' => 'ES',
+                                    'name' => $this->l('Spain')
+                                ),
+                                array(
+                                    'id_region' => 'JP',
+                                    'name' => $this->l('Japan')
+                                ),
+                            ),
+                            'id' => 'id_region',
+                            'name' => 'name'
+                        )
+                    ),
+                    array(
+                        'col' => 3,
                         'type' => 'text',
                         'prefix' => '<i class="icon icon-tag"></i>',
                         'name' => 'AMZ_MERCHANT_ID',
-                        'label' => $this->l('merchant_id')
+                        'label' => $this->l('Merchant ID')
                     ),
                     array(
                         'col' => 3,
                         'type' => 'text',
                         'prefix' => '<i class="icon icon-tag"></i>',
                         'name' => 'ACCESS_KEY',
-                        'label' => $this->l('access_key')
+                        'label' => $this->l('Access Key ID')
                     ),
                     array(
                         'col' => 3,
                         'type' => 'text',
                         'prefix' => '<i class="icon icon-tag"></i>',
                         'name' => 'SECRET_KEY',
-                        'label' => $this->l('secret_key')
+                        'label' => $this->l('Secret Access Key')
                     ),
                     array(
                         'col' => 3,
                         'type' => 'text',
                         'prefix' => '<i class="icon icon-tag"></i>',
                         'name' => 'AMZ_CLIENT_ID',
-                        'label' => $this->l('client_id')
+                        'label' => $this->l('Client ID')
                     ),
-                    array(
-                        'col' => 3,
-                        'type' => 'text',
-                        'prefix' => '<i class="icon icon-tag"></i>',
-                        'name' => 'REGION',
-                        'hint' => $this->l('Allowed values: ') . $this->getPossibleRegionEntries(),
-                        'label' => $this->l('region')
-                    ),
+                )
+            )
+        );
+        
+        $display_form = array(
+            'form' => array(
+                'legend' => array(
+                    'title' => $this->l('Amazon Pay Display'),
+                    'icon' => 'icon-cogs'
+                ),
+                'input' => array(
                     array(
                         'col' => 3,
                         'type' => 'select',
                         'prefix' => '<i class="icon icon-tag"></i>',
                         'name' => 'LPA_MODE',
-                        'label' => $this->l('lpa_mode'),
+                        'hint' => $this->l('"Login and Pay" allows users to login and pay using their Amazon account. "Pay only" allows users to pay using their Amazon account.'),
+                        'label' => $this->l('Mode'),
                         'options' => array(
                             'query' => array(
                                 array(
-                                    'id_lpa_mode' => 'pay',
-                                    'name' => $this->l('mode_pay')
-                                ),
-                                array(
-                                    'id_lpa_mode' => 'login',
-                                    'name' => $this->l('mode_login')
-                                ),
-                                array(
                                     'id_lpa_mode' => 'login_pay',
-                                    'name' => $this->l('mode_login_pay')
-                                )
+                                    'name' => $this->l('Login and Pay')
+                                ),
+                                array(
+                                    'id_lpa_mode' => 'pay',
+                                    'name' => $this->l('Pay')
+                                ),
+                                /*array(
+                                    'id_lpa_mode' => 'login',
+                                    'name' => $this->l('Login')
+                                ),*/
                             ),
                             'id' => 'id_lpa_mode',
                             'name' => 'name'
@@ -633,7 +717,26 @@ class AmzPayments extends PaymentModule
                     ),
                     array(
                         'type' => 'switch',
-                        'label' => $this->l('button_visibility'),
+                        'label' => $this->l('Login in pop-up window'),
+                        'hint' => $this->l('This option determines whether your customer is presented with a pop-up window to authenticate (recommended) or if the customer is instead redirected to an Amazon Pay page to authenticate.'),
+                        'name' => 'POPUP',
+                        'is_bool' => true,
+                        'values' => array(
+                            array(
+                                'id' => 'active_on_popup',
+                                'value' => true,
+                                'label' => $this->l('Enabled')
+                            ),
+                            array(
+                                'id' => 'active_off_popup',
+                                'value' => '0',
+                                'label' => $this->l('Disabled')
+                            )
+                        )
+                    ),
+                    array(
+                        'type' => 'switch',
+                        'label' => $this->l('Show buttons'),
                         'name' => 'BUTTON_VISIBILITY',
                         'is_bool' => true,
                         'values' => array(
@@ -651,7 +754,8 @@ class AmzPayments extends PaymentModule
                     ),
                     array(
                         'type' => 'switch',
-                        'label' => $this->l('Hide Login with Amazon Elements in Frontend'),
+                        'label' => $this->l('Debug mode'),
+                        'hint' => $this->l('Enabling this option hides the Amazon Pay and Login with Amazon buttons without deactivating the plugin.  (Default: No)'),
                         'name' => 'AMZ_HIDE_LOGIN_BTNS',
                         'is_bool' => true,
                         'values' => array(
@@ -685,24 +789,65 @@ class AmzPayments extends PaymentModule
                             )
                         )
                     ),
+                )
+            )
+        );
+        
+        $config_setting_form = array(
+            'form' => array(
+                'input' => array(
+                    array(
+                        'type' => 'radio',
+                        'label' => $this->l('Configuration mode'),
+                        'name' => 'AMZ_CONFIG_SETTING_MODE',
+                        'is_bool' => 'true',
+                        'values' => array(
+                            array(
+                                'id' => 'AMZ_CONFIG_SETTING_MODE_off',
+                                'value' => 0,
+                                'label' => $this->l('Standard Configuration (fits most shops)')
+                            ),
+                            array(
+                                'id' => 'AMZ_CONFIG_SETTING_MODE_on',
+                                'value' => 1,
+                                'label' => $this->l('Advanced Configuration')
+                            )
+                        )
+                    )
+                )
+            )
+        );
+        
+        $payment_form = array(
+            'form' => array(
+                'legend' => array(
+                    'title' => $this->l('Payment Transactions'),
+                    'icon' => 'icon-cogs'
+                ),
+                'input' => array(
                     array(
                         'col' => 3,
                         'type' => 'select',
                         'prefix' => '<i class="icon icon-tag"></i>',
-                        'name' => 'ENVIRONMENT',
-                        'label' => $this->l('environment'),
+                        'hint' => $this->l('"Synchronous" recommended for an average basket below 300€. "Asynchronous" recommended for an average basket above 300€.'),
+                        'name' => 'AUTHORIZATION_MODE',
+                        'label' => $this->l('Authorization processing mode'),
                         'options' => array(
                             'query' => array(
                                 array(
-                                    'id_lpa_environment' => 'SANDBOX',
-                                    'name' => $this->l('Test mode')
+                                    'id_lpa_auth_mode' => 'fast_auth',
+                                    'name' => $this->l('Synchronous')
                                 ),
                                 array(
-                                    'id_lpa_environment' => 'LIVE',
-                                    'name' => $this->l('Live mode')
+                                    'id_lpa_auth_mode' => 'after_checkout',
+                                    'name' => $this->l('Asynchronous')
+                                ),
+                                array(
+                                    'id_lpa_auth_mode' => 'manually',
+                                    'name' => $this->l('Manual')
                                 )
                             ),
-                            'id' => 'id_lpa_environment',
+                            'id' => 'id_lpa_auth_mode',
                             'name' => 'name'
                         )
                     ),
@@ -710,24 +855,24 @@ class AmzPayments extends PaymentModule
                         'col' => 3,
                         'type' => 'select',
                         'prefix' => '<i class="icon icon-tag"></i>',
-                        'name' => 'AUTHORIZATION_MODE',
-                        'label' => $this->l('authorization_mode'),
+                        'name' => 'CAPTURE_MODE',
+                        'label' => $this->l('Capture mode'),
                         'options' => array(
                             'query' => array(
                                 array(
-                                    'id_lpa_auth_mode' => 'fast_auth',
-                                    'name' => $this->l('during checkout / before completing the order')
+                                    'id_lpa_capt_mode' => 'after_shipping',
+                                    'name' => $this->l('On shipment')
                                 ),
                                 array(
-                                    'id_lpa_auth_mode' => 'after_checkout',
-                                    'name' => $this->l('immediately after the order')
+                                    'id_lpa_capt_mode' => 'after_auth',
+                                    'name' => $this->l('On order')
                                 ),
                                 array(
-                                    'id_lpa_auth_mode' => 'manually',
-                                    'name' => $this->l('manual')
+                                    'id_lpa_capt_mode' => 'manually',
+                                    'name' => $this->l('Manual')
                                 )
                             ),
-                            'id' => 'id_lpa_auth_mode',
+                            'id' => 'id_lpa_capt_mode',
                             'name' => 'name'
                         )
                     ),
@@ -748,7 +893,7 @@ class AmzPayments extends PaymentModule
                         'type' => 'select',
                         'prefix' => '<i class="icon icon-tag"></i>',
                         'name' => 'AUTHORIZED_STATUS_ID',
-                        'label' => $this->l('authorized_status_id'),
+                        'label' => $this->l('Order status for authorized payments'),
                         'options' => array(
                             'query' => OrderState::getOrderStates((int) Configuration::get('PS_LANG_DEFAULT')),
                             'id' => 'id_order_state',
@@ -759,33 +904,8 @@ class AmzPayments extends PaymentModule
                         'col' => 3,
                         'type' => 'select',
                         'prefix' => '<i class="icon icon-tag"></i>',
-                        'name' => 'CAPTURE_MODE',
-                        'label' => $this->l('capture_mode'),
-                        'options' => array(
-                            'query' => array(
-                                array(
-                                    'id_lpa_capt_mode' => 'after_shipping',
-                                    'name' => $this->l('after delivery')
-                                ),
-                                array(
-                                    'id_lpa_capt_mode' => 'after_auth',
-                                    'name' => $this->l('directly after the authorisation')
-                                ),
-                                array(
-                                    'id_lpa_capt_mode' => 'manually',
-                                    'name' => $this->l('manual')
-                                )
-                            ),
-                            'id' => 'id_lpa_capt_mode',
-                            'name' => 'name'
-                        )
-                    ),
-                    array(
-                        'col' => 3,
-                        'type' => 'select',
-                        'prefix' => '<i class="icon icon-tag"></i>',
                         'name' => 'CAPTURE_STATUS_ID',
-                        'label' => $this->l('capture_status_id'),
+                        'label' => $this->l('Order status for shipped orders'),
                         'options' => array(
                             'query' => OrderState::getOrderStates((int) Configuration::get('PS_LANG_DEFAULT')),
                             'id' => 'id_order_state',
@@ -797,7 +917,7 @@ class AmzPayments extends PaymentModule
                         'type' => 'select',
                         'prefix' => '<i class="icon icon-tag"></i>',
                         'name' => 'CAPTURE_SUCCESS_STATUS_ID',
-                        'label' => $this->l('capture_success_status_id'),
+                        'label' => $this->l('Order status for successful captures'),
                         'options' => array(
                             'query' => OrderState::getOrderStates((int) Configuration::get('PS_LANG_DEFAULT')),
                             'id' => 'id_order_state',
@@ -809,7 +929,7 @@ class AmzPayments extends PaymentModule
                         'type' => 'select',
                         'prefix' => '<i class="icon icon-tag"></i>',
                         'name' => 'AMZ_DECLINE_STATUS_ID',
-                        'label' => $this->l('decline_status_id'),
+                        'label' => $this->l('Order status for declined payments'),
                         'options' => array(
                             'query' => array_merge(array(array('id_order_state' => 0, 'id_lang' => (int) Configuration::get('PS_LANG_DEFAULT'), 'name' => '')), OrderState::getOrderStates((int) Configuration::get('PS_LANG_DEFAULT'))),
                             'id' => 'id_order_state',
@@ -817,221 +937,28 @@ class AmzPayments extends PaymentModule
                         )
                     ),
                     array(
-                        'col' => 3,
-                        'type' => 'select',
-                        'prefix' => '<i class="icon icon-tag"></i>',
-                        'name' => 'PROVOCATION',
-                        'label' => $this->l('provocation'),
-                        'options' => array(
-                            'query' => array(
-                                array(
-                                    'id_lpa_prov' => '0',
-                                    'name' => $this->l('No')
-                                ),
-                                array(
-                                    'id_lpa_prov' => 'hard_decline',
-                                    'name' => $this->l('Hard Decline')
-                                ),
-                                array(
-                                    'id_lpa_prov' => 'soft_decline',
-                                    'name' => $this->l('Soft Decline (2min)')
-                                ),
-                                array(
-                                    'id_lpa_prov' => 'capture_decline',
-                                    'name' => $this->l('Capture Decline')
-                                )
-                            ),
-                            'id' => 'id_lpa_prov',
-                            'name' => 'name'
-                        )
-                    ),
-                    array(
                         'type' => 'switch',
-                        'label' => $this->l('popup'),
-                        'name' => 'POPUP',
+                        'label' => $this->l('Inform the customer when the payment is rejected'),
+                        'name' => 'SEND_MAILS_ON_DECLINE',
                         'is_bool' => true,
                         'values' => array(
                             array(
-                                'id' => 'active_on_popup',
+                                'id' => 'active_on_send_decline',
                                 'value' => true,
                                 'label' => $this->l('Enabled')
                             ),
                             array(
-                                'id' => 'active_off_popup',
+                                'id' => 'active_off_send_decline',
                                 'value' => '0',
                                 'label' => $this->l('Disabled')
                             )
                         )
                     ),
                     array(
-                        'col' => 3,
-                        'type' => 'checkbox',
-                        'prefix' => '<i class="icon icon-tag"></i>',
-                        'name' => 'SHIPPINGS_NOT_ALLOWED',
-                        'label' => $this->l('shippings_not_allowed'),
-                        'values' => array('query' => $this->getCarrierOptions(),
-                            'id' => 'id',
-                            'name' => 'label',
-                        ),
-                    ),
-                    array(
-                        'col' => 3,
-                        'type' => 'text',
-                        'prefix' => '<i class="icon icon-tag"></i>',
-                        'name' => 'PRODUCTS_NOT_ALLOWED',
-                        'label' => $this->l('products_not_allowed')
-                    ),
-                    array(
                         'type' => 'switch',
-                        'label' => $this->l('allow_guests'),
-                        'name' => 'ALLOW_GUEST',
-                        'is_bool' => true,
-                        'values' => array(
-                            array(
-                                'id' => 'active_on_guests',
-                                'value' => true,
-                                'label' => $this->l('Enabled')
-                            ),
-                            array(
-                                'id' => 'active_off_guests',
-                                'value' => '0',
-                                'label' => $this->l('Disabled')
-                            )
-                        )
-                    ),
-                    array(
-                        'col' => 3,
-                        'type' => 'select',
-                        'prefix' => '<i class="icon icon-tag"></i>',
-                        'name' => 'BUTTON_SIZE_LPA',
-                        'label' => $this->l('button_size_lpa'),
-                        'options' => array(
-                            'query' => array(
-                                array(
-                                    'id_buttonsize' => 'small',
-                                    'name' => $this->l('small')
-                                ),
-                                array(
-                                    'id_buttonsize' => 'medium',
-                                    'name' => $this->l('normal')
-                                ),
-                                array(
-                                    'id_buttonsize' => 'large',
-                                    'name' => $this->l('big')
-                                ),
-                                array(
-                                    'id_buttonsize' => 'x-large',
-                                    'name' => $this->l('very big')
-                                )
-                            ),
-                            'id' => 'id_buttonsize',
-                            'name' => 'name'
-                        )
-                    ),
-                    array(
-                        'col' => 3,
-                        'type' => 'select',
-                        'prefix' => '<i class="icon icon-tag"></i>',
-                        'name' => 'BUTTON_COLOR_LPA',
-                        'label' => $this->l('button_color_lpa'),
-                        'options' => array(
-                            'query' => array(
-                                array(
-                                    'id_buttonsize' => 'Gold',
-                                    'name' => $this->l('Amazon yellow')
-                                ),
-                                array(
-                                    'id_buttonsize' => 'LightGray',
-                                    'name' => $this->l('Light grey')
-                                ),
-                                array(
-                                    'id_buttonsize' => 'DarkGray',
-                                    'name' => $this->l('Dark grey')
-                                )
-                            ),
-                            'id' => 'id_buttonsize',
-                            'name' => 'name'
-                        )
-                    ),
-                    array(
-                        'col' => 3,
-                        'type' => 'select',
-                        'prefix' => '<i class="icon icon-tag"></i>',
-                        'name' => 'BUTTON_COLOR_LPA_NAVI',
-                        'label' => $this->l('button_color_lpa_navi'),
-                        'options' => array(
-                            'query' => array(
-                                array(
-                                    'id_buttonsize' => 'Gold',
-                                    'name' => $this->l('Amazon yellow')
-                                ),
-                                array(
-                                    'id_buttonsize' => 'LightGray',
-                                    'name' => $this->l('Light grey')
-                                ),
-                                array(
-                                    'id_buttonsize' => 'DarkGray',
-                                    'name' => $this->l('Dark grey')
-                                )
-                            ),
-                            'id' => 'id_buttonsize',
-                            'name' => 'name'
-                        )
-                    ),
-                    array(
-                        'col' => 3,
-                        'type' => 'select',
-                        'prefix' => '<i class="icon icon-tag"></i>',
-                        'name' => 'TYPE_LOGIN',
-                        'label' => $this->l('type_login'),
-                        'options' => array(
-                            'query' => array(
-                                array(
-                                    'id_buttonsize' => 'LwA',
-                                    'name' => $this->l('Login with Amazon')
-                                ),
-                                array(
-                                    'id_buttonsize' => 'Login',
-                                    'name' => $this->l('Login')
-                                ),
-                                array(
-                                    'id_buttonsize' => 'A',
-                                    'name' => $this->l('Just an "A"')
-                                )
-                            ),
-                            'id' => 'id_buttonsize',
-                            'name' => 'name'
-                        )
-                    ),
-                    array(
-                        'col' => 3,
-                        'type' => 'select',
-                        'prefix' => '<i class="icon icon-tag"></i>',
-                        'name' => 'TYPE_PAY',
-                        'label' => $this->l('type_pay'),
-                        'options' => array(
-                            'query' => array(
-                                array(
-                                    'id_buttonsize' => 'PwA',
-                                    'name' => $this->l('Pay with Amazon')
-                                ),
-                                array(
-                                    'id_buttonsize' => 'Pay',
-                                    'name' => $this->l('Pay')
-                                ),
-                                array(
-                                    'id_buttonsize' => 'A',
-                                    'name' => $this->l('Just an "A"')
-                                )
-                            ),
-                            'id' => 'id_buttonsize',
-                            'name' => 'name'
-                        )
-                    ),
-                    array(
-                        'type' => 'switch',
-                        'label' => $this->l('ipn_status'),
+                        'label' => $this->l('Enable Instant Payment Notifications (IPN)'),
                         'name' => 'IPN_STATUS',
+                        'hint' => $this->l('With IPNs enabled, your shop receives changes to the payment status in real time.'),
                         'is_bool' => true,
                         'desc' => $this->l('Use this URL for IPN: ') . ' ' . $this->getIPNURL(),
                         'values' => array(
@@ -1049,8 +976,9 @@ class AmzPayments extends PaymentModule
                     ),
                     array(
                         'type' => 'switch',
-                        'label' => $this->l('cron_status'),
+                        'label' => $this->l('Enable cron job'),
                         'name' => 'CRON_STATUS',
+                        'hint' => $this->l('With cron job enabled, your shop polls changes to the payment status on a scheduled basis.'),
                         'is_bool' => true,
                         'desc' => $this->l('Use this URL for your cronjob: ') . ' ' . $this->getCronURL(),
                         'values' => array(
@@ -1070,30 +998,24 @@ class AmzPayments extends PaymentModule
                         'col' => 3,
                         'type' => 'text',
                         'prefix' => '<i class="icon icon-tag"></i>',
+                        'hint' => $this->l('Enter a password for the cron job.'),
                         'name' => 'CRON_PASSWORD',
-                        'label' => $this->l('cron_password')
+                        'label' => $this->l('Password for cron job')
                     ),
+                )
+            )
+        );
+        
+        $account_mngmtn = array(
+            'form' => array(
+                'legend' => array(
+                    'title' => $this->l('PrestaShop Account Management'),
+                    'icon' => 'icon-cogs'
+                ),
+                'input' => array(
                     array(
                         'type' => 'switch',
-                        'label' => $this->l('send_mails_on_decline'),
-                        'name' => 'SEND_MAILS_ON_DECLINE',
-                        'is_bool' => true,
-                        'values' => array(
-                            array(
-                                'id' => 'active_on_send_decline',
-                                'value' => true,
-                                'label' => $this->l('Enabled')
-                            ),
-                            array(
-                                'id' => 'active_off_send_decline',
-                                'value' => '0',
-                                'label' => $this->l('Disabled')
-                            )
-                        )
-                    ),
-                    array(
-                        'type' => 'switch',
-                        'label' => $this->l('preselect_create_account'),
+                        'label' => $this->l('Enable account creation when customers sign in or pay'),
                         'name' => 'PRESELECT_CREATE_ACCOUNT',
                         'is_bool' => true,
                         'values' => array(
@@ -1111,7 +1033,7 @@ class AmzPayments extends PaymentModule
                     ),
                     array(
                         'type' => 'switch',
-                        'label' => $this->l('force_account_creation'),
+                        'label' => $this->l('Force account creation'),
                         'name' => 'FORCE_ACCOUNT_CREATION',
                         'is_bool' => true,
                         'values' => array(
@@ -1129,8 +1051,50 @@ class AmzPayments extends PaymentModule
                     ),
                     array(
                         'type' => 'switch',
-                        'label' => $this->l('template_variant_bs'),
+                        'label' => $this->l('Enable guest orders'),
+                        'name' => 'ALLOW_GUEST',
+                        'is_bool' => true,
+                        'values' => array(
+                            array(
+                                'id' => 'active_on_guests',
+                                'value' => true,
+                                'label' => $this->l('Enabled')
+                            ),
+                            array(
+                                'id' => 'active_off_guests',
+                                'value' => '0',
+                                'label' => $this->l('Disabled')
+                            )
+                        )
+                    ),
+                )
+            )
+        );
+        
+        $misc_form = array(
+            'form' => array(
+                'legend' => array(
+                    'title' => $this->l('Miscellaneous'),
+                    'icon' => 'icon-cogs'
+                ),
+                'input' => array(
+                    array(
+                        'col' => 3,
+                        'type' => 'checkbox',
+                        'prefix' => '<i class="icon icon-tag"></i>',
+                        'hint' => $this->l('Excluded shipping methods are removed from the list of options available when using Amazon Pay.'),
+                        'name' => 'SHIPPINGS_NOT_ALLOWED',
+                        'label' => $this->l('Exclude shipping methods'),
+                        'values' => array('query' => $this->getCarrierOptions(),
+                            'id' => 'id',
+                            'name' => 'label',
+                        ),
+                    ),
+                    array(
+                        'type' => 'switch',
+                        'label' => $this->l('Bootstrap template'),
                         'name' => 'TEMPLATE_VARIANT_BS',
+                        'hint' => $this->l('Activate this option if you use a theme in your PrestaShop based on Bootstrap (default).'),
                         'is_bool' => true,
                         'values' => array(
                             array(
@@ -1145,16 +1109,311 @@ class AmzPayments extends PaymentModule
                             )
                         )
                     ),
-                ),
-                'submit' => array(
-                    'title' => $this->l('Save')
                 )
             )
         );
+        
+        $status_form = array(
+            'form' => array(
+                'legend' => array(
+                    'title' => $this->l('Amazon Pay mode'),
+                    'icon' => 'icon-cogs'
+                ),
+                'input' => array(
+                    array(
+                        'col' => 3,
+                        'type' => 'select',
+                        'prefix' => '<i class="icon icon-tag"></i>',
+                        'name' => 'ENVIRONMENT',
+                        'label' => $this->l('Mode'),
+                        'options' => array(
+                            'query' => array(
+                                array(
+                                    'id_lpa_environment' => 'SANDBOX',
+                                    'name' => $this->l('Sandbox (test)')
+                                ),
+                                array(
+                                    'id_lpa_environment' => 'LIVE',
+                                    'name' => $this->l('Production (live)')
+                                )
+                            ),
+                            'id' => 'id_lpa_environment',
+                            'name' => 'name'
+                        )
+                    ),
+                )
+            )
+        );
+        
+        $banners_form = array(
+            'form' => array(
+                'legend' => array(
+                    'title' => $this->l('Amazon Pay banners and acceptance marks'),
+                    'icon' => 'icon-cogs'
+                ),
+                'input' => array(
+                    array(
+                        'type' => 'switch',
+                        'label' => $this->l('Amazon Pay banner in your website header'),
+                        'name' => 'AMZ_PROMO_HEADER',
+                        'is_bool' => true,
+                        'values' => array(
+                            array(
+                                'id' => 'active_on_promo_header',
+                                'value' => true,
+                                'label' => $this->l('Enabled')
+                            ),
+                            array(
+                                'id' => 'active_off_promo_header',
+                                'value' => '0',
+                                'label' => $this->l('Disabled')
+                            )
+                        )
+                    ),
+                    array(
+                        'type' => 'select',
+                        'label' => $this->l('Style'),
+                        'name' => 'AMZ_PROMO_HEADER_STYLE',
+                        'options' => array(
+                            'query' => array(
+                                array(
+                                    'id_promo_header_style' => '0',
+                                    'name' => $this->l('LightGrey')
+                                ),
+                                array(
+                                    'id_promo_header_style' => '1',
+                                    'name' => $this->l('DarkGrey')
+                                )
+                            ),
+                            'id' => 'id_promo_header_style',
+                            'name' => 'name'
+                        )
+                    ),
+                    array(
+                        'type' => 'switch',
+                        'label' => $this->l('Amazon Pay banner on your product pages'),
+                        'name' => 'AMZ_PROMO_PRODUCT',
+                        'is_bool' => true,
+                        'values' => array(
+                            array(
+                                'id' => 'active_on_promo_product',
+                                'value' => true,
+                                'label' => $this->l('Enabled')
+                            ),
+                            array(
+                                'id' => 'active_off_promo_product',
+                                'value' => '0',
+                                'label' => $this->l('Disabled')
+                            )
+                        )
+                    ),
+                    array(
+                        'type' => 'select',
+                        'label' => $this->l('Style'),
+                        'name' => 'AMZ_PROMO_PRODUCT_STYLE',
+                        'options' => array(
+                            'query' => array(
+                                array(
+                                    'id_promo_product_style' => '0',
+                                    'name' => $this->l('LightGrey')
+                                ),
+                                array(
+                                    'id_promo_product_style' => '1',
+                                    'name' => $this->l('DarkGrey')
+                                )
+                            ),
+                            'id' => 'id_promo_product_style',
+                            'name' => 'name'
+                        )
+                    ),
+                    array(
+                        'type' => 'switch',
+                        'label' => $this->l('Amazon Pay acceptance mark in your website footer'),
+                        'name' => 'AMZ_PROMO_FOOTER',
+                        'is_bool' => true,
+                        'values' => array(
+                            array(
+                                'id' => 'active_on_promo_footer',
+                                'value' => true,
+                                'label' => $this->l('Enabled')
+                            ),
+                            array(
+                                'id' => 'active_off_promo_footer',
+                                'value' => '0',
+                                'label' => $this->l('Disabled')
+                            )
+                        )
+                    ),
+                    array(
+                        'type' => 'select',
+                        'label' => $this->l('Style'),
+                        'name' => 'AMZ_PROMO_FOOTER_STYLE',
+                        'options' => array(
+                            'query' => array(
+                                array(
+                                    'id_promo_footer_style' => '0',
+                                    'name' => $this->l('LightGrey')
+                                ),
+                                array(
+                                    'id_promo_footer_style' => '1',
+                                    'name' => $this->l('DarkGrey')
+                                )
+                            ),
+                            'id' => 'id_promo_footer_style',
+                            'name' => 'name'
+                        )
+                    ),
+                )
+            )
+        );
+        
+        $buttons_form  = array(
+            'form' => array(
+                'legend' => array(
+                    'title' => $this->l('Amazon Pay and Login with Amazon buttons'),
+                    'icon' => 'icon-cogs'
+                ),
+                'input' => array(
+                    array(
+                        'type' => 'select',
+                        'prefix' => '<i class="icon icon-tag"></i>',
+                        'name' => 'BUTTON_SIZE_LPA',
+                        'label' => $this->l('button_size_lpa'),
+                        'options' => array(
+                            'query' => array(
+                                array(
+                                    'id_buttonsize' => 'small',
+                                    'name' => $this->l('small')
+                                ),
+                                array(
+                                    'id_buttonsize' => 'medium',
+                                    'name' => $this->l('medium')
+                                ),
+                                array(
+                                    'id_buttonsize' => 'large',
+                                    'name' => $this->l('large')
+                                ),
+                                array(
+                                    'id_buttonsize' => 'x-large',
+                                    'name' => $this->l('x-large')
+                                )
+                            ),
+                            'id' => 'id_buttonsize',
+                            'name' => 'name'
+                        )
+                    ),
+                    array(
+                        'type' => 'select',
+                        'prefix' => '<i class="icon icon-tag"></i>',
+                        'name' => 'BUTTON_COLOR_LPA',
+                        'label' => $this->l('button_color_lpa'),
+                        'options' => array(
+                            'query' => array(
+                                array(
+                                    'id_buttonsize' => 'Gold',
+                                    'name' => $this->l('gold')
+                                ),
+                                array(
+                                    'id_buttonsize' => 'LightGray',
+                                    'name' => $this->l('light gray')
+                                ),
+                                array(
+                                    'id_buttonsize' => 'DarkGray',
+                                    'name' => $this->l('dark gray')
+                                )
+                            ),
+                            'id' => 'id_buttonsize',
+                            'name' => 'name'
+                        )
+                    ),
+                    array(
+                        'type' => 'select',
+                        'prefix' => '<i class="icon icon-tag"></i>',
+                        'name' => 'TYPE_PAY',
+                        'label' => $this->l('type_pay'),
+                        'options' => array(
+                            'query' => array(
+                                array(
+                                    'id_buttonsize' => 'PwA',
+                                    'name' => $this->l('Amazon Pay')
+                                ),
+                                array(
+                                    'id_buttonsize' => 'Pay',
+                                    'name' => $this->l('Pay')
+                                ),
+                                array(
+                                    'id_buttonsize' => 'A',
+                                    'name' => $this->l('logo only')
+                                )
+                            ),
+                            'id' => 'id_buttonsize',
+                            'name' => 'name'
+                        )
+                    ),
+                    array(
+                        'type' => 'select',
+                        'prefix' => '<i class="icon icon-tag"></i>',
+                        'name' => 'BUTTON_COLOR_LPA_NAVI',
+                        'label' => $this->l('button_color_lpa_navi'),
+                        'options' => array(
+                            'query' => array(
+                                array(
+                                    'id_buttonsize' => 'Gold',
+                                    'name' => $this->l('gold')
+                                ),
+                                array(
+                                    'id_buttonsize' => 'LightGray',
+                                    'name' => $this->l('light gray')
+                                ),
+                                array(
+                                    'id_buttonsize' => 'DarkGray',
+                                    'name' => $this->l('dark gray')
+                                )
+                            ),
+                            'id' => 'id_buttonsize',
+                            'name' => 'name'
+                        )
+                    ),
+                    array(
+                        'type' => 'select',
+                        'prefix' => '<i class="icon icon-tag"></i>',
+                        'name' => 'TYPE_LOGIN',
+                        'label' => $this->l('type_login'),
+                        'options' => array(
+                            'query' => array(
+                                array(
+                                    'id_buttonsize' => 'LwA',
+                                    'name' => $this->l('Login with Amazon')
+                                ),
+                                array(
+                                    'id_buttonsize' => 'Login',
+                                    'name' => $this->l('Login')
+                                ),/*
+                                array(
+                                    'id_buttonsize' => 'A',
+                                    'name' => $this->l('logo only')
+                                )*/
+                            ),
+                            'id' => 'id_buttonsize',
+                            'name' => 'name'
+                        )
+                    ),
+                )
+            )
+        );
+        
+        return array($connect_form, $config_setting_form, $display_form, $payment_form, $account_mngmtn, $misc_form, $status_form, $banners_form, $buttons_form);
     }
 
     public function getContent()
     {
+        if (Tools::getValue('resetDefault') == 'true') {
+            $this->resetDefaultSettings();
+            $this->context->smarty->assign('after_reset', '1');
+        }
+        if (Tools::getValue('getLog') == 'true') {
+            AmazonPaymentsLogHelper::generateAndSendLogfile($this);
+        }
         
         if (Tools::isSubmit('submitAmzpaymentsModule')) {
             $this->_postValidation();
@@ -1168,80 +1427,118 @@ class AmzPayments extends PaymentModule
             }
         }
         
+        if ($this->access_key != '' && $this->merchant_id != '') {
+            $check = getimagesize("https://payments.amazon.de/gp/widgets/button?sellerId=" . $this->merchant_id);
+            if ($check[0] > 1) {
+                $this->context->smarty->assign('kyc_passed', 1);
+            } else {
+                $this->context->smarty->assign('kyc_passed', 0);
+            }
+        }
+        
+        $this->context->smarty->assign('reset_link', $this->context->link->getAdminLink('AdminModules', false) . '&configure=' . $this->name . '&tab_module=' . $this->tab . '&module_name=' . $this->name . '&token=' . Tools::getAdminTokenLite('AdminModules') . '&resetDefault=true');
+        $this->context->smarty->assign('banners', $this->getBannersForLanguageCode());
+        $this->context->smarty->assign('no_ssl', !Configuration::get('PS_SSL_ENABLED'));
         $this->context->smarty->assign('displayName', $this->displayName);
         $this->context->smarty->assign('module_name', $this->name);
         $this->context->smarty->assign('current_version', $this->version);
         $this->context->smarty->assign('allowed_return_url_1', $this->getAllowedReturnUrls(1));
         $this->context->smarty->assign('allowed_return_url_2', $this->getAllowedReturnUrls(2));
         $this->context->smarty->assign('allowed_js_origins', $this->getBaseLink(null, true));
+        $this->context->smarty->assign('base_url', $this->getBaseLink());
+        $this->context->smarty->assign('language_code', $this->context->language->iso_code);
+        $this->context->smarty->assign('log_url', $this->context->link->getAdminLink('AdminModules', false) . '&configure=' . $this->name . '&tab_module=' . $this->tab . '&module_name=' . $this->name . '&token=' . Tools::getAdminTokenLite('AdminModules') . '&getLog=true');
         
         $register_link = 'https://sellercentral-europe.amazon.com/hz/me/sp/redirect?ld=';
-        $ld = '';
-        
+
         $this->context->smarty->assign('lang_iso_code', $this->context->language->iso_code);
         switch ($this->context->language->iso_code) {
             case 'de':
                 $ld = 'SPEXDEAPA-Prestashop-core_DE';
                 $register_link = 'https://sellercentral-europe.amazon.com/hz/me/sp/redirect?spId=A1AOZCKI9MBRZA&language=de_DE&source=SPPL';
-                $let_customer_know_link = 'https://payments.amazon.de/merchant/tools?ld=SPEXDEAPA-prestashop-2016-03-Configuration';
-                $integration_guide_link = 'http://www.patworx.de/LoginUndBezahlen/MitAmazon/PrestaShop/Dokumentation';
-                $youtube_video_link = 'https://www.youtube.com/watch?v=pbv64mDMqc8';
-                $youtube_video_embed_link = 'https://www.youtube.com/embed/pbv64mDMqc8?rel=0&showinfo=0';
+                $faq_link = 'https://pay.amazon.com/de/help/201810860';
+                $videoamazonyoutube = 'https://www.youtube.com/embed/KjMYIXMETc0?rel=0&showinfo=0';
+                $new_customer_link = 'https://pay.amazon.com/de/contactsales';
+                $youtube_video_link = 'https://pay.amazon.com/de/help/BC5GMPSFCTKQF5R';
+                $youtube_video_embed_link = 'https://www.youtube.com/embed/T5I3Kvd1HWU?rel=0&showinfo=0';
                 break;
             case 'en':
                 if (isset($this->context->language->local) && Tools::strtolower($this->context->language->local) == 'en-us') {
                     $ld = 'SPEXUSAPA-Prestashop-core_US';
                     $register_link.= 'SPEXUSAPA-PrestashopPL';
+                    $faq_link = 'https://pay.amazon.com/us/help/201810860';
+                    $new_customer_link = 'https://pay.amazon.com/us/contactsales';
                 } else {
                     $ld = 'SPEXUKAPA-Prestashop-core_UK';
                     $register_link.= 'SPEXUKAPA-PrestashopPL';
+                    $faq_link = 'https://pay.amazon.com/uk/help/201810860';
+                    $new_customer_link = 'https://pay.amazon.com/uk/contactsales';
                 }
-                $let_customer_know_link = 'https://payments.amazon.co.uk/merchant/tools?ld=SPEXUKAPA-prestashop-2016-03-Configuration';
-                $integration_guide_link = 'http://www.patworx.de/LoginAndPay/WithAmazon/PrestaShopUK/Documentation';
-                $youtube_video_link = false;
-                $youtube_video_embed_link = false;
+                $videoamazonyoutube = 'https://www.youtube.com/embed/KjMYIXMETc0?rel=0&showinfo=0';
+                $youtube_video_link = 'https://pay.amazon.com/uk/help/BC5GMPSFCTKQF5R';
+                $youtube_video_embed_link = 'https://www.youtube.com/embed/t1y6NRqJ3QM?rel=0&showinfo=0';
                 break;
             case 'fr':
                 $ld = 'SPEXFRAPA-Prestashop-core_FR';
                 $register_link = 'https://sellercentral-europe.amazon.com/hz/me/sp/redirect?spId=A1AOZCKI9MBRZA&language=fr_FR&source=SPPL';
-                $let_customer_know_link = 'https://images-na.ssl-images-amazon.com/images/G/03/amazonservices/payments/website/Amazon_Payments_MarketingGuide_UK_July2015_OLD._V283105627_.pdf?ld=SPEXFRAPA-prestashop-CP-DP';
-                $integration_guide_link = 'http://www.patworx.de/LoginAndPay/WithAmazon/PrestaShopUK/Documentation';
-                $youtube_video_link = false;
-                $youtube_video_embed_link = false;
+                $faq_link = 'https://pay.amazon.com/fr/help/201810860';
+                $new_customer_link = 'https://pay.amazon.com/fr/contactsales';
+                $videoamazonyoutube = 'https://www.youtube.com/embed/KjMYIXMETc0?rel=0&showinfo=0';
+                $youtube_video_link = 'https://pay.amazon.com/fr/help/BC5GMPSFCTKQF5R';
+                $youtube_video_embed_link = 'https://www.youtube.com/embed/OgLoSqEgO7U?rel=0&showinfo=0';
                 break;
             case 'it':
                 $ld = 'SPEXITAPA-Prestashop-core_IT';
                 $register_link = 'https://sellercentral-europe.amazon.com/hz/me/sp/redirect?spId=A1AOZCKI9MBRZA&language=it_IT&source=SPPL';
-                $let_customer_know_link = 'https://images-na.ssl-images-amazon.com/images/G/03/amazonservices/payments/website/Amazon_Payments_MarketingGuide_UK_July2015_OLD._V283105627_.pdf?ld=SPEXITAPA-prestashop-CP-DP';
-                $integration_guide_link = 'http://www.patworx.de/LoginAndPay/WithAmazon/PrestaShopUK/Documentation';
-                $youtube_video_link = false;
-                $youtube_video_embed_link = false;
+                $faq_link = 'https://pay.amazon.com/it/help/201810860';
+                $new_customer_link = 'https://pay.amazon.com/it/contactsales';
+                $videoamazonyoutube = 'https://www.youtube.com/embed/KjMYIXMETc0?rel=0&showinfo=0';
+                $youtube_video_link = 'https://pay.amazon.com/it/help/BC5GMPSFCTKQF5R';
+                $youtube_video_embed_link = 'https://www.youtube.com/embed/dL4niF9HvUY?rel=0&showinfo=0';
                 break;
             case 'es':
                 $ld = 'SPEXESAPA-Prestashop-core_ES';
                 $register_link = 'https://sellercentral-europe.amazon.com/hz/me/sp/redirect?spId=A1AOZCKI9MBRZA&language=es_ES&source=SPPL';
-                $let_customer_know_link = 'https://payments.amazon.co.uk/merchant/tools?ld=SPEXUKAPA-prestashop-2016-03-Configuration';
-                $integration_guide_link = 'http://www.patworx.de/LoginAndPay/WithAmazon/PrestaShopUK/Documentation';
-                $youtube_video_link = false;
-                $youtube_video_embed_link = false;
+                $faq_link = 'https://pay.amazon.com/es/help/201810860';
+                $new_customer_link = 'https://pay.amazon.com/es/contactsales';
+                $videoamazonyoutube = 'https://www.youtube.com/embed/KjMYIXMETc0?rel=0&showinfo=0';
+                $youtube_video_link = 'https://pay.amazon.com/es/help/BC5GMPSFCTKQF5R';
+                $youtube_video_embed_link = 'https://www.youtube.com/embed/-B8cZsOYvsA?rel=0&showinfo=0';
                 break;
             default:
+                $ld = '';
                 $register_link.= 'SPEXDEAPA-PrestashopPL';
-                $let_customer_know_link = 'https://payments.amazon.co.uk/merchant/tools?ld=SPEXUKAPA-prestashop-2016-03-Configuration';
-                $integration_guide_link = 'http://www.patworx.de/LoginAndPay/WithAmazon/PrestaShopUK/Documentation';
-                $youtube_video_link = false;
-                $youtube_video_embed_link = false;
+                $faq_link = 'https://pay.amazon.com/de/help/201810860';
+                $videoamazonyoutube = 'https://www.youtube.com/embed/KjMYIXMETc0?rel=0&showinfo=0';
+                $new_customer_link = 'https://pay.amazon.com/de/contactsales';
+                $youtube_video_link = 'https://pay.amazon.com/de/help/BC5GMPSFCTKQF5R';
+                $youtube_video_embed_link = 'https://www.youtube.com/embed/t1y6NRqJ3QM?rel=0&showinfo=0';
                 break;
         }
 
         $this->context->smarty->assign('register_link', $register_link);
-        $this->context->smarty->assign('let_customer_know_link', $let_customer_know_link);
+        $this->context->smarty->assign('faq_link', $faq_link);
+        $this->context->smarty->assign('videoamazonyoutube', $videoamazonyoutube);
         $this->context->smarty->assign('youtube_video_link', $youtube_video_link);
         $this->context->smarty->assign('youtube_video_embed_link', $youtube_video_embed_link);
-        $this->context->smarty->assign('integration_guide_link', $integration_guide_link);
-        
+        $this->context->smarty->assign('new_customer_link', $new_customer_link);
         $this->context->smarty->assign('use_simple_path', true);
+        $this->context->smarty->assign('ld', $ld);
+        $this->context->smarty->assign('simple_path', $this->getSimplePathData());
+        
+        $this->reloadConfigVars();
+        $this->context->smarty->assign('module_dir', $this->_path);
+        $this->context->smarty->assign('configform', str_replace('</form>', '', $this->_displayForm()));
+        
+        $output = $this->context->smarty->fetch($this->local_path . 'views/templates/admin/configuration.tpl');
+        
+        return $output;
+    }
+    
+    public function getSimplePathData()
+    {
         $simple_path_data = array('spId' => $this->getPfId(),
+            'ref' => $this->getRef(),
             'uniqueId' => Tools::encryptIV('amzPaymentsSimplePath'),
             'locale' =>  $this->getLocalCodeForSimplePath(),
             'loginRedirectURLs_1' => $this->getAllowedReturnUrls(1),
@@ -1249,22 +1546,12 @@ class AmzPayments extends PaymentModule
             'allowedLoginDomains' => $this->getBaseLink(null, true),
             'storeDescription' => Configuration::get('PS_SHOP_NAME'),
             'language' => $this->getLanguageCodeForSimplePath(),
-            'ld' => $ld,
             'returnMethod' => 'GET',
             'Source' => 'SPPL',
             'sandboxMerchantIPNURL' => $this->getIPNURL(),
             'productionMerchantIPNURL' => $this->getIPNURL(),
         );
-        
-        $this->context->smarty->assign('simple_path', $simple_path_data);
-        
-        $this->reloadConfigVars();
-        $this->context->smarty->assign('module_dir', $this->_path);
-        $this->context->smarty->assign('configform', $this->_displayForm());
-        
-        $output = $this->context->smarty->fetch($this->local_path . 'views/templates/admin/configuration.tpl');
-        
-        return $output;
+        return $simple_path_data;
     }
     
     public function getLocalPath()
@@ -1310,6 +1597,26 @@ class AmzPayments extends PaymentModule
             return 'jp';
         }
         return 'de';
+    }
+    
+    public function getRef()
+    {
+        if (Tools::strtolower($this->region) == 'de') {
+            return 'ml_de_ap_np_ba_spli_xx_xx_xx_pre';
+        } elseif (Tools::strtolower($this->region) == 'uk') {
+            return 'ml_uk_ap_np_ba_spli_xx_xx_xx_pre';
+        } elseif (Tools::strtolower($this->region) == 'us') {
+            return 'ml_us_ap_np_ba_spli_xx_xx_xx_pre';
+        } elseif (Tools::strtolower($this->region) == 'jp') {
+            return 'ml_jp_ap_np_ba_spli_xx_xx_xx_pre';
+        } elseif (Tools::strtolower($this->region) == 'fr') {
+            return 'ml_fr_ap_np_ba_spli_xx_xx_xx_pre';
+        } elseif (Tools::strtolower($this->region) == 'es') {
+            return 'ml_es_ap_np_ba_spli_xx_xx_xx_pre';
+        } elseif (Tools::strtolower($this->region) == 'it') {
+            return 'ml_it_ap_np_ba_spli_xx_xx_xx_pre';
+        }
+        return 'ml_de_ap_np_ba_spli_xx_xx_xx_pre';
     }
 
     private function getLocalCodeForSimplePath()
@@ -1777,6 +2084,36 @@ class AmzPayments extends PaymentModule
     public function hookPaymentReturn($params)
     {
         return $this->display(__FILE__, 'views/templates/hooks/confirmation.tpl');
+    }
+    
+    public function hookDisplayBanner($params)
+    {
+        if (Configuration::get('AMZ_PROMO_HEADER') == '1') {
+            $banners = $this->getBannersForLanguageCode();
+            $banners_style = Configuration::get('AMZ_PROMO_HEADER_STYLE') == '1' ? 'dark' : 'light';
+            $this->context->smarty->assign('banner_url', $banners[$banners_style]['header']);
+            return $this->display(__FILE__, 'views/templates/hooks/display_banner.tpl');
+        }
+    }
+    
+    public function hookDisplayProductButtons($params)
+    {
+        if (Configuration::get('AMZ_PROMO_PRODUCT') == '1') {
+            $banners = $this->getBannersForLanguageCode();
+            $banners_style = Configuration::get('AMZ_PROMO_PRODUCT_STYLE') == '1' ? 'dark' : 'light';
+            $this->context->smarty->assign('banner_url', $banners[$banners_style]['product']);
+            return $this->display(__FILE__, 'views/templates/hooks/display_product_buttons.tpl');
+        }
+    }
+    
+    public function hookDisplayFooter($params)
+    {
+        if (Configuration::get('AMZ_PROMO_FOOTER') == '1') {
+            $banners = $this->getBannersForLanguageCode();
+            $banners_style = Configuration::get('AMZ_PROMO_FOOTER_STYLE') == '1' ? 'dark' : 'light';
+            $this->context->smarty->assign('banner_url', $banners[$banners_style]['footer']);
+            return $this->display(__FILE__, 'views/templates/hooks/display_footer.tpl');
+        }
     }
 
     public function setAmzOrdersReferences($order_id, $value, $field)
@@ -2497,6 +2834,69 @@ class AmzPayments extends PaymentModule
     {
         return str_replace('-', '_', $this->getWidgetLanguageCode());
     }
+    
+    public function getBannersForLanguageCode()
+    {
+        $banners = array(
+            'de' => array(
+                'light' => array('header' => 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Banners/DE/DELightGrey900x60.jpg', 'product' => 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Banners/DE/DELightGrey300x60.jpg', 'footer' => 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Banners/DE/DELightGrey230x60.jpg'),
+                'dark' => array('header' => 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Banners/DE/DEDarkGrey900x60.jpg', 'product' => 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Banners/DE/DEDarkGrey300x60.jpg', 'footer' => 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Banners/DE/DEDarkGrey230x60.jpg')
+            ),
+            'es' => array(
+                'light' => array('header' => 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Banners/ES/ESLightGrey900x60.jpg', 'product' => 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Banners/ES/ESLightGrey300x60.jpg', 'footer' => 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Banners/ES/ESLightGrey230x60.jpg'),
+                'dark' => array('header' => 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Banners/ES/ESDarkGrey900x60.jpg', 'product' => 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Banners/ES/ESDarkGrey300x60.jpg', 'footer' => 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Banners/ES/ESDarkGrey230x60.jpg')
+            ),
+            'fr' => array(
+                'light' => array('header' => 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Banners/FR/FRLightGrey900x60.jpg', 'product' => 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Banners/FR/FRLightGrey300x60.jpg', 'footer' => 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Banners/FR/FRLightGrey230x60.jpg'),
+                'dark' => array('header' => 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Banners/FR/FRDarkGrey900x60.jpg', 'product' => 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Banners/FR/FRDarkGrey300x60.jpg', 'footer' => 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Banners/FR/FRDarkGrey230x60.jpg')
+            ),
+            'it' => array(
+                'light' => array('header' => 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Banners/IT/ITLightGrey900x60.jpg', 'product' => 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Banners/IT/ITLightGrey300x60.jpg', 'footer' => 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Banners/IT/ITLightGrey230x60.jpg'),
+                'dark' => array('header' => 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Banners/IT/ITDarkGrey900x60.jpg', 'product' => 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Banners/IT/ITDarkGrey300x60.jpg', 'footer' => 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Banners/IT/ITDarkGrey230x60.jpg')
+            ),
+            'uk' => array(
+                'light' => array('header' => 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Banners/UK/UKLightGrey900x60.jpg', 'product' => 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Banners/UK/UKLightGrey300x60.jpg', 'footer' => 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Banners/UK/UKLightGrey230x60.jpg'),
+                'dark' => array('header' => 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Banners/UK/UKDarkGrey900x60.jpg', 'product' => 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Banners/UK/UKDarkGrey300x60.jpg', 'footer' => 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Banners/UK/UKDarkGrey230x60.jpg')
+            )
+        );
+        switch ($this->context->language->iso_code) {
+            case 'de':
+                return $banners['de'];
+            case 'us':
+            case 'en':
+                return $banners['uk'];
+            case 'fr':
+                return $banners['fr'];
+            case 'it':
+                return $banners['it'];
+            case 'es':
+                return $banners['es'];
+            default:
+                return $banners['uk'];
+        }
+    }
+    
+    public function getDefaultModuleRegion()
+    {
+        switch ($this->context->language->iso_code) {
+            case 'de':
+                return 'DE';
+            case 'us':
+                return 'US';
+            case 'en':
+            case 'gb':
+            case 'uk':
+                return 'UK';
+            case 'fr':
+                return 'FR';
+            case 'it':
+                return 'IT';
+            case 'es':
+                return 'ES';
+            case 'jp':
+                return 'JP';
+        }
+    }
 
     public function getWidgetLanguageCode()
     {
@@ -2597,5 +2997,23 @@ class AmzPayments extends PaymentModule
         }
         
         return $base;
+    }
+    
+    public function getLogFileName()
+    {
+        return CURRENT_MODULE_DIR . '/amz_exception.log';
+    }
+
+    public function exceptionLog($e, $string = false)
+    {
+        $logstr = date("Y-m-d H:i:s") . ' Exception logging: ' . "\r\n";
+        if ($e) {
+            $logstr.= print_r($e, true);
+        }
+        if ($string) {
+            $logstr.= $string;
+        }
+        $logstr.= "\r\n\r\n";
+        file_put_contents($this->getLogFileName(), $logstr, FILE_APPEND);
     }
 }

@@ -128,6 +128,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
 
         $this->context->smarty->assign('is_multi_address_delivery', $this->context->cart->isMultiAddressDelivery() || ((int) Tools::getValue('multi-shipping') == 1));
         $this->context->smarty->assign('open_multishipping_fancybox', (int) Tools::getValue('multi-shipping') == 1);
+        unset($this->context->cookie->setHadErrorNowWallet);
 
         if ($this->context->cart->nbProducts()) {
             if (Tools::isSubmit('ajax')) {
@@ -308,7 +309,11 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                             if (isset($this->context->cookie->amz_access_token)) {
                                 $get_order_reference_details_request->setAddressConsentToken(AmzPayments::prepareCookieValueForAmazonPaymentsUse($this->context->cookie->amz_access_token));
                             }
-                            $reference_details_result_wrapper = $this->service->getOrderReferenceDetails($get_order_reference_details_request);
+                            try {
+                                $reference_details_result_wrapper = $this->service->getOrderReferenceDetails($get_order_reference_details_request);
+                            } catch (Exception $e) {
+                                self::$amz_payments->exceptionLog($e);
+                            }
                             $physical_destination = $reference_details_result_wrapper->GetOrderReferenceDetailsResult->getOrderReferenceDetails()
                             ->getDestination()
                             ->getPhysicalDestination();
@@ -479,6 +484,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                 foreach (AmazonPaymentsAddressHelper::$validation_errors as $errMsg) {
                                     $this->errors[] = $errMsg;
                                 }
+                                self::$amz_payments->exceptionLog(false, "Customer login, missing address Data: \r\n" . print_r($this->errors, true));
                             }
 
                             if (! count($this->errors)) {
@@ -583,13 +589,12 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                             die();
 
                         case 'executeOrder':
-
                             $has_overridden_address = false;
                             if (is_dir(_PS_MODULE_DIR_ . 'dpdfrance') && Module::isEnabled('dpdfrance')) {
                                 if ((int)$this->context->cart->id_carrier == (int)Configuration::get('DPDFRANCE_RELAIS_CARRIER_ID') ||
                                     (int)$this->context->cart->id_carrier == (int)Configuration::get('DPDFRANCE_PREDICT_CARRIER_ID')) {
                                         $has_overridden_address = true;
-                                    }
+                                }
                             }
 
                             $customer = new Customer((int) $this->context->cart->id_customer);
@@ -644,6 +649,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                     try {
                                         $this->service->confirmOrderReference($confirm_order_reference_request);
                                     } catch (OffAmazonPaymentsService_Exception $e) {
+                                        $this->exceptionLog($e);
                                         die(Tools::jsonEncode(array(
                                             'hasError' => true,
                                             'errors' => array(
@@ -1672,16 +1678,9 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
         }
         return $result;
     }
-    
-    protected function getLogFileName()
-    {
-        return dirname(__FILE__) . '/../../amz_exception.log';
-    }
-    
+        
     protected function exceptionLog($e)
     {
-        $logstr = date("Y-m-d H:i:s") . ' Exception logging: ' . "\r\n";
-        $logstr.= print_r($e, true);
-        file_put_contents($this->getLogFileName(), $logstr, FILE_APPEND);
+        self::$amz_payments->exceptionLog($e);
     }
 }

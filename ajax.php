@@ -1,6 +1,6 @@
 <?php
 /**
- * 2013-2017 Amazon Advanced Payment APIs Modul
+ * 2013-2016 Amazon Advanced Payment APIs Modul
  *
  * for Support please visit www.patworx.de
  *
@@ -15,13 +15,25 @@
  * to license@prestashop.com so we can send you a copy immediately.
  *
  *  @author    patworx multimedia GmbH <service@patworx.de>
- *  @copyright 2013-2017 patworx multimedia GmbH
+ *  @copyright 2013-2016 patworx multimedia GmbH
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
+
+use PrestaShopBundle\Security\Admin\Employee;
 
 include_once('../../config/config.inc.php');
 include_once('../../init.php');
 include_once('../../modules/amzpayments/amzpayments.php');
+
+$cookies = new Cookie('psAdmin');
+if (isset($cookies->id_employee)) {
+    $empl = new EmployeeCore((int)$cookies->id_employee);
+    if (!$empl) {
+        die('unauthorized access');
+    }
+} else {
+    die('unauthorized access');
+}
 
 $module_name = Tools::getValue('moduleName');
 
@@ -67,8 +79,8 @@ switch (Tools::getValue('action')) {
         $currency = new Currency($order->id_currency);
         $response = AmazonTransactions::authorize($amz_payments, $amz_payments->getService(), Tools::getValue('orderRef'), Tools::getValue('amount'), $currency->iso_code);
         if ($response) {
-            $details = $response->getAuthorizeResult()->getAuthorizationDetails();
-            $status = $details->getAuthorizationStatus()->getState();
+            $details = $response['AuthorizeResult']['AuthorizationDetails'];
+            $status = $details['AuthorizationStatus']['State'];
             if ($status == 'Open' || $status == 'Pending') {
                 echo $amz_payments->l('Authorisation request was started successfully');
             } else {
@@ -82,8 +94,8 @@ switch (Tools::getValue('action')) {
     case 'captureTotalFromAuth':
         $response = AmazonTransactions::captureTotalFromAuth($amz_payments, $amz_payments->getService(), Tools::getValue('authId'));
         
-        $details = $response->getCaptureResult()->getCaptureDetails();
-        $status = $details->getCaptureStatus()->getState();
+        $details = $response['CaptureResult']['CaptureDetails'];
+        $status = $details['CaptureStatus']['State'];
         if ($status == 'Completed') {
             echo $amz_payments->l('Capture successful');
         } else {
@@ -97,14 +109,16 @@ switch (Tools::getValue('action')) {
         $order = new Order((int) $order_id);
         $currency = new Currency($order->id_currency);
         $response = AmazonTransactions::capture($amz_payments, $amz_payments->getService(), Tools::getValue('authId'), Tools::getValue('amount'), $currency->iso_code);
-        if (is_object($response)) {
-            $details = $response->getCaptureResult()->getCaptureDetails();
-            $status = $details->getCaptureStatus()->getState();
+        if (is_array($response)) {
+            $details = $response['CaptureResult']['CaptureDetails'];
+            $status = $details['CaptureStatus']['State'];
             if ($status == 'Completed') {
                 echo $amz_payments->l('Capture successful');
             } else {
                 echo '<br/><b>' . $amz_payments->l('Capture failed') . '</b>';
             }
+        } else {
+            echo $response;
         }
         break;
     
@@ -114,9 +128,9 @@ switch (Tools::getValue('action')) {
         $order = new Order((int) $order_id);
         $currency = new Currency($order->id_currency);
         $response = AmazonTransactions::refund($amz_payments, $amz_payments->getService(), Tools::getValue('captureId'), Tools::getValue('amount'), $currency->iso_code);
-        if (is_object($response)) {
-            $details = $response->getRefundResult()->getRefundDetails();
-            $status = $details->getRefundStatus()->getState();
+        if (is_array($response)) {
+            $details = $response['RefundResult']['RefundDetails'];
+            $status = $details['RefundStatus']['State'];
             if ($status == 'Pending') {
                 $q = 'UPDATE ' . _DB_PREFIX_ . 'amz_transactions 
 						SET amz_tx_amount_refunded = amz_tx_amount_refunded + ' . (float) Tools::getValue('amount') . '
@@ -126,6 +140,8 @@ switch (Tools::getValue('action')) {
             } else {
                 echo $amz_payments->l('Refund failed');
             }
+        } else {
+            echo $response;
         }
         break;
     

@@ -4,7 +4,7 @@
 *
 *  @author patworx multimedia GmbH <service@patworx.de>
 *  In collaboration with alkim media
-*  @copyright  2013-2015 patworx multimedia GmbH
+*  @copyright  2013-2016 patworx multimedia GmbH
 *  @license    Released under the GNU General Public License
 *}
 
@@ -15,9 +15,9 @@
 	<div class="row">
 		<h3>
 			<i class="icon-money"></i>
-			{$displayName|escape:'htmlall':'UTF-8'}
+			{$displayName|escape:'html':'UTF-8'}
 		</h3>
-		<div class="amzAdminWr amzContainer16" data-orderRef="{$amazon_order_reference_id|escape:'htmlall':'UTF-8'}">
+		<div class="amzAdminWr amzContainer16" data-orderRef="{$amazon_order_reference_id}">
 			<div class="panel amzAdminOrderHistoryWr">
 				<div class="amzAdminOrderHistory">
 					{$orderHistory}

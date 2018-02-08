@@ -4,56 +4,97 @@
 *
 *  @author patworx multimedia GmbH <service@patworx.de>
 *  In collaboration with alkim media
-*  @copyright  2013-2015 patworx multimedia GmbH
+*  @copyright  2013-2016 patworx multimedia GmbH
 *  @license    Released under the GNU General Public License
 *}
-<div id="amzOverlay"><img src="{$amz_module_path|escape:'htmlall':'UTF-8'}views/img/loading_indicator.gif" /></div>
+{extends file='page.tpl'}
 
-<div class="row">
-	<div class="col-xs-12 col-sm-6" id="addressBookWidgetDivBs">
-	</div>
-	
-	<div class="col-xs-12 col-sm-6" id="walletWidgetDivBs">
-	</div>
-	
-	<div class="col-xs-12 col-sm-6" id="addressMissings">		
-	</div>
-	<input type="button" id="submitAddress" class="exclusive" value="{l s='Save' mod='amzpayments'}" name="submitAddress" style="display: none;">
-</div>
+{block name='page_content'}
+<div id="amzOverlay"><img src="{$amz_module_path}views/img/loading_indicator.gif" /></div>
 
-<div class="row">
-	<div class="col-xs-12 amz_cart_widgets_bs">
-		<div id="amz_carriers" style="display: none;">
-			{include file="$tpl_dir./order-carrier.tpl"}
-		</div>	
-	</div>
-</div>
-<div class="row">
-	<div class="col-xs-12 amz_cart_widgets_summary amz_cart_widgets_summary_bs" id="amz_cart_widgets_summary">
-		{include file="$tpl_dir./shopping-cart.tpl"}
-	</div>
-</div>
+<section id="main">
+	<header class="page-header">
+		<h1>{l s='Pay with Amazon' mod='amzpayments'}</h1>
+	</header>
+	<section id="content" class="page-content">
 
-<div class="row">
-	<div class="col-xs-12 text-right">
+		<div class="row">
+			<div class="col-xs-12 col-sm-6" id="addressBookWidgetDivBs">
+			</div>
+			<div class="col-xs-12 col-sm-6" id="walletWidgetDivBs">
+			</div>
+			<div class="col-xs-12 col-sm-6" id="addressMissings">
+			</div>
+			<input type="button" id="submitAddress" class="exclusive" value="{l s='Save' mod='amzpayments'}" name="submitAddress" style="display: none;"> 			
+		</div>
+		
+		<div class="row">
+			<div class="col-xs-12 amz_cart_coupon">
+				<div id="amz_coupon">
+					{include file="module:amzpayments/views/templates/front/_coupon.tpl"}
+				</div>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col-xs-12 amz_cart_widgets_bs">
+				<div id="amz_carriers" style="display: none;">
+					{include file="module:amzpayments/views/templates/front/_carriers.tpl"}
+				</div>	
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-xs-12" id="amz_terms" style="display: none;">
+				{include file="module:amzpayments/views/templates/front/_conditions.tpl"}
+			</div>
+		</div>
+				
 		{if $show_amazon_account_creation_allowed}
 			{if $force_account_creation}
 				<input type="hidden" id="connect_amz_account" value="1" name="connect_amz_account" />
 			{else}
-				<p class="checkbox">
-					<input type="checkbox" id="connect_amz_account" value="1" name="connect_amz_account" {if $preselect_create_account}checked="checked"{/if}/>
-					<label for="connect_amz_account">
-						{l s='Create customer account.' mod='amzpayments'}
-						<br />
-						<span style="font-size: 10px;">{l s='You don\'t need to do anything. We create the account with the data of your current order.' mod='amzpayments'}</span>
-					</label>
-				</p>
+				<div class="row">
+					<div class="col-xs-12" id="amz_connect_accounts_div" style="display: none;">
+  			          <div class="pull-xs-left">
+            			  <span class="custom-checkbox">
+			                <input id="connect_amz_account" name="connect_amz_account" type="checkbox" value = "1" />
+            			    <span><i class="material-icons checkbox-checked">&#xE5CA;</i></span>
+              			  </span>
+            		  </div>
+            		  <div class="condition-label">
+              			<label for="connect_amz_account">
+                			{l s='Create customer account.' mod='amzpayments'}
+							<br />
+							<span style="font-size: 10px;">{l s='You don\'t need to do anything. We create the account with the data of your current order.' mod='amzpayments'}</span>
+              			</label>
+            		  </div>
+					</div>
+				</div>
 			{/if}
 		{/if}
-		<input type="button" id="amz_execute_order" class="exclusive" value="{l s='Buy now' mod='amzpayments'}" name="Submit" disabled="disabled">
-	</div>
-</div>
-<div style="clear:both"></div>
+		
+		<div class="row">
+			<div class="col-xs-12 amz_cart_widgets_summary amz_cart_widgets_summary_bs" id="amz_cart_widgets_summary"  style="display: none;"></div>
+		</div>
+
+		<div class="row">
+			<div class="col-xs-12 text-right" id="amz_execute_order_div" style="display: none;">
+				<input type="button" id="amz_execute_order" class="btn btn-primary disabled" value="{l s='Order with an obligation to pay' d='Shop.Theme.Checkout'}" name="Submit" disabled="disabled">
+			</div>
+		</div>
+		<div style="clear:both"></div>
+
+  		<div class="modal fade" id="modal">
+    		<div class="modal-dialog" role="document">
+      			<div class="modal-content">
+      			</div>
+    		</div>
+  		</div>
+
+	</section>
+	<footer class="page-footer"></footer>
+</section>
+
 
 {if $sandboxMode}
 
@@ -61,14 +102,13 @@
 
 {literal}
 <script> 
-var amazonCarrierErrorMessage = '{/literal}{l s='There are no carriers that deliver to the address you selected in your address book, please select another one.' mod='amzpayments'}{literal}';
 var isFirstRun = true;
-var amazonOrderReferenceId = '{/literal}{$amz_session|escape:'htmlall':'UTF-8'}{literal}';	
+var amazonOrderReferenceId = '{/literal}{$amz_session}{literal}';	
 jQuery(document).ready(function($) {
 	var amzAddressSelectCounter = 0;
 	
 	new OffAmazonPayments.Widgets.AddressBook({
-		sellerId: '{/literal}{$sellerID|escape:'htmlall':'UTF-8'}{literal}',
+		sellerId: '{/literal}{$sellerID}{literal}',
 		{/literal}{if $amz_session == ''}{literal}
 		onOrderReferenceCreate: function(orderReference) {			
 			 amazonOrderReferenceId = orderReference.getAmazonOrderReferenceId();
@@ -82,19 +122,17 @@ jQuery(document).ready(function($) {
         	});
 		},
         {/literal}{/if}{literal}
-		{/literal}{if $amz_session != ''}{literal}amazonOrderReferenceId: '{/literal}{$amz_session|escape:'htmlall':'UTF-8'}{literal}', {/literal}{/if}{literal}
+		{/literal}{if $amz_session != ''}{literal}amazonOrderReferenceId: '{/literal}{$amz_session}{literal}', {/literal}{/if}{literal}
 		onAddressSelect: function(orderReference) {
 			if (isFirstRun) {
 				setTimeout(function() { 
 					$("#carrier_area").hide();
 					updateAddressSelection(amazonOrderReferenceId); 
 					isFirstRun = false; 
-					/*
 					setTimeout(function() {
 						updateAddressSelection(amazonOrderReferenceId);
 						$("#carrier_area").fadeIn();
 					}, 1000); 
-					*/
 				}, 1000);
 			} else {
 				updateAddressSelection(amazonOrderReferenceId);		
@@ -110,8 +148,8 @@ jQuery(document).ready(function($) {
 	}).bind("addressBookWidgetDivBs");
 	
 	new OffAmazonPayments.Widgets.Wallet({
-		sellerId: '{/literal}{$sellerID|escape:'htmlall':'UTF-8'}{literal}',
-		{/literal}{if $amz_session != ''}{literal}amazonOrderReferenceId: '{/literal}{$amz_session|escape:'htmlall':'UTF-8'}{literal}', {/literal}{/if}{literal}
+		sellerId: '{/literal}{$sellerID}{literal}',
+		{/literal}{if $amz_session != ''}{literal}amazonOrderReferenceId: '{/literal}{$amz_session}{literal}', {/literal}{/if}{literal}
 		design: {
 			designMode: 'responsive'
 		},
@@ -121,14 +159,13 @@ jQuery(document).ready(function($) {
 			console.log(error.getErrorMessage());
 		}
 	}).bind("walletWidgetDivBs");
-	
 });
 
 function reCreateWalletWidget() {
 	$("#walletWidgetDivBs").html('');
 	new OffAmazonPayments.Widgets.Wallet({
-		sellerId: '{/literal}{$sellerID|escape:'htmlall':'UTF-8'}{literal}',
-		{/literal}{if $amz_session != ''}{literal}amazonOrderReferenceId: '{/literal}{$amz_session|escape:'htmlall':'UTF-8'}{literal}', {/literal}{/if}{literal}
+		sellerId: '{/literal}{$sellerID}{literal}',
+		{/literal}{if $amz_session != ''}{literal}amazonOrderReferenceId: '{/literal}{$amz_session}{literal}', {/literal}{/if}{literal}
 		design: {
 			designMode: 'responsive'
 		},
@@ -143,12 +180,11 @@ function reCreateWalletWidget() {
 function reCreateAddressBookWidget() {
 	$("#addressBookWidgetDivBs").html('');
 	new OffAmazonPayments.Widgets.AddressBook({
-		sellerId: '{/literal}{$sellerID|escape:'htmlall':'UTF-8'}{literal}',
-		{/literal}{if $amz_session != ''}{literal}amazonOrderReferenceId: '{/literal}{$amz_session|escape:'htmlall':'UTF-8'}{literal}', {/literal}{/if}{literal}
+		sellerId: '{/literal}{$sellerID}{literal}',
+		{/literal}{if $amz_session != ''}{literal}amazonOrderReferenceId: '{/literal}{$amz_session}{literal}', {/literal}{/if}{literal}
 		onAddressSelect: function(orderReference) {
 			updateAddressSelection(amazonOrderReferenceId);			
 		},
-		displayMode: "Read",
 		design: {
 			designMode: 'responsive'
 		},
@@ -159,3 +195,5 @@ function reCreateAddressBookWidget() {
 }
 </script>
 {/literal}
+
+{/block}

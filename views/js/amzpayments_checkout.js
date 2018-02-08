@@ -4,7 +4,7 @@
 *
 *  @author patworx multimedia GmbH <service@patworx.de>
 *  In collaboration with alkim media
-*  @copyright  2013-2015 patworx multimedia GmbH
+*  @copyright  2013-2016 patworx multimedia GmbH
 *  @license    Released under the GNU General Public License
 */
 
@@ -12,34 +12,85 @@ var requestIsRunning = false;
 $(document).ready(function() {
 	
 	$("#amz_cart_widgets_summary .cart_navigation, #payWithAmazonDiv").hide();
-	$('#cgv').trigger('change');
 	
-	$( document ).on("change", ".delivery_option_radio", function() {
+	$( document ).on("change", ".delivery-options input[type=radio]", function() {
 		updateCarrierSelectionAndGift();
 	});
 	
+    $('.js-terms a').on('click', (event) => {
+	    event.preventDefault();
+	    var url = $(event.target).attr('href');
+	    if (url) {
+	      url += '?content_only=1';
+	      $.get(url, function (content) {
+	        $('#modal').find('.modal-content').html($(content).find('.page-cms').contents());
+	      });
+	    }
+	    $('#modal').modal('show');
+	});
+	
+	$("#amz_execute_order").on('click', function() {		
+		$('#amzOverlay').fadeIn('slow');
+		
+		var connectRequest = '';
+		if ($("#connect_amz_account").length > 0) {
+			if ($("#connect_amz_account").is(':checked') || $("#connect_amz_account").attr("type") == 'hidden') {
+				connectRequest = '&connect_amz_account=' + $("#connect_amz_account").val();
+			}
+		}
+		
+		$.ajax({
+			type: 'POST',
+			headers: { "cache-control": "no-cache" },
+			url: REDIRECTAMZ + '?rand=' + new Date().getTime(),
+			async: true,
+			cache: false,
+			dataType : "json",
+			data: 'amazonOrderReferenceId=' + amazonOrderReferenceId + '&allow_refresh=1&ajax=true&method=executeOrder&confirm=1&' + connectRequest,
+			success: function(jsonData)
+			{
+				if (jsonData.hasError)
+				{
+					var errors = '';
+					for(var error in jsonData.errors)
+
+						if(error !== 'indexOf')
+							errors += $('<div />').html(jsonData.errors[error]).text() + "\n";
+					alert(errors);
+					
+					if (typeof jsonData.redirection !== 'undefined') {
+						if (jsonData.redirection.length > 0) {
+							window.location.href = jsonData.redirection;
+							return;
+						}
+					}
+					$('#amzOverlay, #opc_delivery_methods-overlay, #opc_payment_methods-overlay').fadeOut('slow');
+					$("form#voucher, .ajax_cart_block_remove_link, .cart_quantity_up, .cart_quantity_down, .cart_quantity_delete").remove();
+					
+					$("#opc_delivery_methods-overlay").css("height", $("#opc_delivery_methods").outerHeight()).css("width",  $("#opc_delivery_methods").outerWidth()).css("background", "none repeat scroll 0 0 rgba(99, 99, 99, 0.5)").css("position","absolute").css("z-index","1000").fadeIn();
+					/* $("#amz_execute_order").attr("disabled","disabled").addClass("disabled"); */ 
+					$('#gift, .delivery_option_radio, #recyclable').click(function(){
+					    return false;
+					});
+					reCreateWalletWidget();
+					reCreateAddressBookWidget();
+				}
+				else
+				{
+					window.location.href = jsonData.redirection;
+				}
+			},
+			error: function(XMLHttpRequest, textStatus, errorThrown) {
+				if (textStatus !== 'abort')
+					alert("TECHNICAL ERROR: unable to save adresses \n\nDetails:\nError thrown: " + XMLHttpRequest + "\n" + 'Text status: ' + textStatus);
+				$('#amzOverlay, #opc_account-overlay, #opc_delivery_methods-overlay, #opc_payment_methods-overlay').fadeOut('slow');
+			}
+		});	
+		
+		
+	});		
+	
 });
-
-setInterval(checkVoucherForm, 1000);
-function checkVoucherForm()
-{
-	if ($("form#voucher").length > 0) {
-		if ($("form#voucher").attr("action") != REDIRECTAMZ) { $("form#voucher").attr("action", REDIRECTAMZ); }
-	}
-}
-
-setInterval(checkPPBtn, 500);
-function checkPPBtn()
-{
-	if ($("#amz_cart_widgets_summary #container_express_checkout").length > 0) {
-		/* The Paypal logo has been removed from the Amazon Pay checkout page because it was a source of confusion. */
-		$("#container_express_checkout").remove();
-	}
-	if ($("#block_paygreen_infos").length > 0) {
-		/* The PayGreen logo has been removed from the Amazon Pay checkout page because it was a source of confusion. */
-		$("#block_paygreen_infos").remove();
-	}
-}
 
 function updateCarrierSelectionAndGift()
 {
@@ -50,7 +101,7 @@ function updateCarrierSelectionAndGift()
 		var gift = 0;
 		var giftMessage = '';
 		
-		var delivery_option_radio = $('.delivery_option_radio');
+		var delivery_option_radio = $('.delivery-options input[type=radio]');
 		var delivery_option_params = '&';
 		$.each(delivery_option_radio, function(i) {
 			if ($(this).prop('checked'))
@@ -75,7 +126,7 @@ function updateCarrierSelectionAndGift()
 			async: true,
 			cache: false,
 			dataType : "json",
-			data: 'ajax=true&method=updateCarrierAndGetPayments' + delivery_option_params + 'recyclable=' + recyclablePackage + '&gift=' + gift + '&gift_message=' + giftMessage + '&token=' + static_token ,
+			data: 'ajax=true&method=updateCarrierAndGetPayments' + delivery_option_params + 'recyclable=' + recyclablePackage + '&gift=' + gift + '&gift_message=' + giftMessage ,
 			success: function(jsonData)
 			{	
 				if (jsonData.hasError)
@@ -89,12 +140,9 @@ function updateCarrierSelectionAndGift()
 				}
 				else
 				{
-					updateCartSummary(jsonData.summary);
-					updateHookShoppingCart(jsonData.summary.HOOK_SHOPPING_CART);
-					updateHookShoppingCartExtra(jsonData.summary.HOOK_SHOPPING_CART_EXTRA);
+					updateCartSummary(jsonData.summary_block);
 					updateCarrierList(jsonData.carrier_data);
-					$('#amzOverlay, #opc_delivery_methods-overlay, #opc_payment_methods-overlay').fadeOut('slow');
-					refreshDeliveryOptions();
+					$('#amzOverlay, #opc_delivery_methods-overlay, #opc_payment_methods-overlay').fadeOut('slow');					
 				}
 			},
 			error: function(XMLHttpRequest, textStatus, errorThrown) {
@@ -107,27 +155,39 @@ function updateCarrierSelectionAndGift()
 	}
 }
 
+function updateCartSummary(json)
+{	
+	$('#amz_cart_widgets_summary').html(json);
+	$('#amz_cart_widgets_summary').fadeIn('slow');
+	bindInputs();
+}
+
+function updateCouponDiv(json)
+{
+	$('#amz_coupon').html(json);
+	$('#amz_coupon').fadeIn('slow');
+	bindInputs();
+}
+
 function updateCarrierList(json)
 {
 	var html = json.carrier_block;
 	
-	$('#carrier_area').replaceWith(html);	
-	$("#amz_carriers").fadeIn('slow');
+	$('#amz_carriers').html(html);
+	$('#amz_carriers, #amz_execute_order_div, #amz_connect_accounts_div, #amz_terms').fadeIn('slow');
 	bindInputs();
-	/* update hooks for carrier module */
-	$('#HOOK_BEFORECARRIER').html(json.HOOK_BEFORECARRIER);
 }
 
 function updateAddressSelection(amazonOrderReferenceId)
 {
 	var idAddress_delivery = 0;
 	var idAddress_invoice = idAddress_delivery;
-
+	
 	var additional_fields = '';
 	$("#addressMissings .additional_field").each(function() {
-		additional_fields += '&add[' + $(this).attr("name") + ']=' + $(this).val();		
-	});	
-	
+		additional_fields += '&add[' + $(this).attr("name") + ']=' + $(this).val();
+	});
+
 	$('#opc_account-overlay').fadeIn('slow');
 	$('#opc_delivery_methods-overlay').fadeIn('slow');
 	$('#opc_payment_methods-overlay').fadeIn('slow');
@@ -139,7 +199,7 @@ function updateAddressSelection(amazonOrderReferenceId)
 		async: true,
 		cache: false,
 		dataType : "json",
-		data: 'amazonOrderReferenceId=' + amazonOrderReferenceId + '&allow_refresh=1&ajax=true&method=updateAddressesSelected&id_address_delivery=' + idAddress_delivery + '&id_address_invoice=' + idAddress_invoice + '&token=' + static_token + additional_fields,
+		data: 'amazonOrderReferenceId=' + amazonOrderReferenceId + '&allow_refresh=1&ajax=true&method=updateAddressesSelected&id_address_delivery=' + idAddress_delivery + '&id_address_invoice=' + idAddress_invoice + additional_fields,
 		success: function(jsonData)
 		{
 			if (jsonData.hasError)
@@ -149,108 +209,26 @@ function updateAddressSelection(amazonOrderReferenceId)
 					if(error !== 'indexOf')
 						errors += $('<div />').html(jsonData.errors[error]).text() + "\n";
 				alert(errors);
-				
 				if (jsonData.fields_html) {
 					$("#addressMissings").empty();
 					$("#addressMissings").html(jsonData.fields_html);
 					$("#submitAddress").fadeIn();
 					$("#submitAddress").unbind('click').on('click', function() { updateAddressSelection(amazonOrderReferenceId); });
-				}				
-				$("#amz_execute_order").attr("disabled","disabled").addClass("disabled"); 
+				}
+				
+				disable_order_execute_button();
 				$('#amzOverlay, #opc_delivery_methods-overlay, #opc_payment_methods-overlay').fadeOut('slow');
 			}
 			else
 			{
-				$("#submitAddress").fadeOut('fast', function() { $("#addressMissings").empty(); checkCGV(); });
+				$("#submitAddress").fadeOut('fast', function() { $("#addressMissings").empty() });
 				if (jsonData.refresh)
 					location.reload();
-				$('#cart_summary .address_'+deliveryAddress).each(function() {
-					$(this)
-						.removeClass('address_'+deliveryAddress)
-						.addClass('address_'+idAddress_delivery);
-					$(this).attr('id', $(this).attr('id').replace(/_\d+$/, '_'+idAddress_delivery));
-					if ($(this).find('.cart_unit span').length > 0 && $(this).find('.cart_unit span').attr('id').length > 0)
-						$(this).find('.cart_unit span').attr('id', $(this).find('.cart_unit span').attr('id').replace(/_\d+$/, '_'+idAddress_delivery));
-
-					if ($(this).find('.cart_total span').length > 0 && $(this).find('.cart_total span').attr('id').length > 0)
-						$(this).find('.cart_total span').attr('id', $(this).find('.cart_total span').attr('id').replace(/_\d+$/, '_'+idAddress_delivery));
-
-					if ($(this).find('.cart_quantity_input').length > 0 && $(this).find('.cart_quantity_input').attr('name').length > 0)
-					{
-						var name = $(this).find('.cart_quantity_input').attr('name')+'_hidden';
-						$(this).find('.cart_quantity_input').attr('name', $(this).find('.cart_quantity_input').attr('name').replace(/_\d+$/, '_'+idAddress_delivery));
-						if ($(this).find('[name='+name+']').length > 0)
-							$(this).find('[name='+name+']').attr('name', name.replace(/_\d+_hidden$/, '_'+idAddress_delivery+'_hidden'));
-					}
-
-					if ($(this).find('.cart_quantity_delete').length > 0 && $(this).find('.cart_quantity_delete').attr('id').length > 0)
-					{
-						$(this).find('.cart_quantity_delete')
-							.attr('id', $(this).find('.cart_quantity_delete').attr('id').replace(/_\d+$/, '_'+idAddress_delivery))
-							.attr('href', $(this).find('.cart_quantity_delete').attr('href').replace(/id_address_delivery=\d+&/, 'id_address_delivery='+idAddress_delivery+'&'));
-					}
-					
-					if ($(this).find('.cart_quantity_down').length > 0 && $(this).find('.cart_quantity_down').attr('id').length > 0)
-					{
-						$(this).find('.cart_quantity_down')
-							.attr('id', $(this).find('.cart_quantity_down').attr('id').replace(/_\d+$/, '_'+idAddress_delivery))
-							.attr('href', $(this).find('.cart_quantity_down').attr('href').replace(/id_address_delivery=\d+&/, 'id_address_delivery='+idAddress_delivery+'&'));
-					}
-
-					if ($(this).find('.cart_quantity_up').length > 0 && $(this).find('.cart_quantity_up').attr('id').length > 0)
-					{
-						$(this).find('.cart_quantity_up')
-							.attr('id', $(this).find('.cart_quantity_up').attr('id').replace(/_\d+$/, '_'+idAddress_delivery))
-							.attr('href', $(this).find('.cart_quantity_up').attr('href').replace(/id_address_delivery=\d+&/, 'id_address_delivery='+idAddress_delivery+'&'));
-					}	
-				});
-
-
-				deliveryAddress = idAddress_delivery;
-				if (window.ajaxCart !== undefined)
-				{
-					$('#cart_block_list dd, #cart_block_list dt').each(function(){
-						if (typeof($(this).attr('id')) != 'undefined')
-							$(this).attr('id', $(this).attr('id').replace(/_\d+$/, '_' + idAddress_delivery));
-					});
-				}
 				
-				if (typeof updateAddressId === "function") {
-					first_item = $("#cart_summary .cart_item ");
-					if (first_item.length > 0) {
-						if (first_item.hasClass('address_' + jsonData.summary.delivery.id)) {
-						} else {
-							$(".cart_item").each(
-									function() {
-										if ($(this).attr("id").indexOf('product_') > -1) {
-											var ids = $(this).attr('id').split('_');
-											var id_product = ids[1];
-											var id_product_attribute = ids[2];
-											var old_id_address_delivery = ids[4];
-											var new_id_address_delivery = jsonData.summary.delivery.id;											
-											var line = $(this);
-											updateAddressId(id_product, id_product_attribute, old_id_address_delivery, new_id_address_delivery);
-										}
-									}
-								);
-						}
-					}
-				}
+				deliveryAddress = idAddress_delivery;
 				
 				updateCarrierList(jsonData.carrier_data);
-				if (typeof amazonCarrierErrorMessage !== 'undefined' || amazonCarrierErrorMessage !== null) {
-					if ($("#noCarrierWarning").length > 0) {
-						$("#noCarrierWarning").hide();
-						$("#noCarrierWarning").html(amazonCarrierErrorMessage);
-						$("#noCarrierWarning").show();
-					}
-				}
-				updateCartSummary(jsonData.summary);
-				updateHookShoppingCart(jsonData.HOOK_SHOPPING_CART);
-				updateHookShoppingCartExtra(jsonData.HOOK_SHOPPING_CART_EXTRA);
-				if ($('#gift-price').length == 1)
-					$('#gift-price').html(jsonData.gift_price);
-				checkCGV();
+				updateCartSummary(jsonData.summary_block);
 				$('#amzOverlay, #opc_account-overlay, #opc_delivery_methods-overlay, #opc_payment_methods-overlay').fadeOut('slow');
 			}
 		},
@@ -262,102 +240,9 @@ function updateAddressSelection(amazonOrderReferenceId)
 	});
 }
 
-$("#amz_execute_order").live('click', function() {
-	
-	$('#amzOverlay').fadeIn('slow');
-	
-	var connectRequest = '';
-	if ($("#connect_amz_account").length > 0) {
-		if ($("#connect_amz_account").is(':checked') || $("#connect_amz_account").attr("type") == 'hidden') {
-			connectRequest = '&connect_amz_account=' + $("#connect_amz_account").val();
-		}
-	}
-	
-	$.ajax({
-		type: 'POST',
-		headers: { "cache-control": "no-cache" },
-		url: REDIRECTAMZ + '?rand=' + new Date().getTime(),
-		async: true,
-		cache: false,
-		dataType : "json",
-		data: 'amazonOrderReferenceId=' + amazonOrderReferenceId + '&allow_refresh=1&ajax=true&method=executeOrder&confirm=1&token=' + static_token + connectRequest,
-		success: function(jsonData)
-		{
-			if (jsonData.hasError)
-			{
-				var errors = '';
-				for(var error in jsonData.errors)
-
-					if(error !== 'indexOf')
-						errors += $('<div />').html(jsonData.errors[error]).text() + "\n";
-				alert(errors);
-				
-				if (typeof jsonData.redirection !== 'undefined') {
-					if (jsonData.redirection.length > 0) {
-						window.location.href = jsonData.redirection;
-						return;
-					}
-				}
-				$('#amzOverlay, #opc_delivery_methods-overlay, #opc_payment_methods-overlay').fadeOut('slow');
-				$("form#voucher, .ajax_cart_block_remove_link, .cart_quantity_up, .cart_quantity_down, .cart_quantity_delete").remove();
-				
-				$("#opc_delivery_methods-overlay").css("height", $("#opc_delivery_methods").outerHeight()).css("width",  $("#opc_delivery_methods").outerWidth()).css("background", "none repeat scroll 0 0 rgba(99, 99, 99, 0.5)").css("position","absolute").css("z-index","1000").fadeIn();
-				$("#amz_execute_order").attr("disabled","disabled").addClass("disabled"); 
-				$('#gift, .delivery_option_radio, #recyclable').click(function(){
-				    return false;
-				});
-				reCreateWalletWidget();
-				reCreateAddressBookWidget();
-			}
-			else
-			{
-				window.location.href = jsonData.redirection;
-			}
-		},
-		error: function(XMLHttpRequest, textStatus, errorThrown) {
-			if (textStatus !== 'abort')
-				alert("TECHNICAL ERROR: unable to save adresses \n\nDetails:\nError thrown: " + XMLHttpRequest + "\n" + 'Text status: ' + textStatus);
-			$('#amzOverlay, #opc_account-overlay, #opc_delivery_methods-overlay, #opc_payment_methods-overlay').fadeOut('slow');
-		}
-	});	
-	
-	
-});
 
 function bindInputs()
 {
-	$('#message').blur(function() {
-		$('#opc_delivery_methods-overlay').fadeIn('slow');
-		$.ajax({
-			type: 'POST',
-			headers: { "cache-control": "no-cache" },
-			url: REDIRECTAMZ + '?rand=' + new Date().getTime(),
-			async: false,
-			cache: false,
-			dataType : "json",
-			data: 'ajax=true&method=updateMessage&message=' + encodeURIComponent($('#message').val()) + '&token=' + static_token ,
-			success: function(jsonData)
-			{
-				if (jsonData.hasError)
-				{
-					var errors = '';
-					for(var error in jsonData.errors)
-						if(error !== 'indexOf')
-							errors += $('<div />').html(jsonData.errors[error]).text() + "\n";
-					alert(errors);
-					$('#amzOverlay, #opc_delivery_methods-overlay, #opc_payment_methods-overlay').fadeOut('slow');
-				}
-			else
-				$('#amzOverlay, #opc_delivery_methods-overlay').fadeOut('slow');
-			},
-			error: function(XMLHttpRequest, textStatus, errorThrown) {
-				if (textStatus !== 'abort')
-					alert("TECHNICAL ERROR: unable to save message \n\nDetails:\nError thrown: " + XMLHttpRequest + "\n" + 'Text status: ' + textStatus);
-				$('#amzOverlay, #opc_delivery_methods-overlay').fadeOut('slow');
-			}
-		});
-	});
-	
 	$('#recyclable').click(function() {
 		updateCarrierSelectionAndGift();
 	});
@@ -379,58 +264,115 @@ function bindInputs()
 		updateCarrierSelectionAndGift();
 	});
 	
-	if ($("#noCarrierWarning").length > 0) 
-		$("#amz_execute_order").attr("disabled","disabled").addClass("disabled"); 
-	else {
-		if ($("#cgv").length > 0) {
-			$("#cgv").trigger('change');			
-		} else {
-			$("#amz_execute_order").removeAttr("disabled").removeClass("disabled");
-		}
-	}
-}
-
-$('#cgv').live('change', function() {
-	checkCGV();
-});
-
-function checkCGV() {
-	if ($("#cgv").length > 0) {
-		if ($("#cgv").attr("checked") && $("#noCarrierWarning").length == 0 && $.trim($('#addressMissings').html()).length == 0) {
-			$("#amz_execute_order").removeAttr("disabled").removeClass("disabled");
-		} else {
-			$("#amz_execute_order").attr("disabled","disabled").addClass("disabled");
-		}
-		updateTOSStatus();			
-	} else {
-		if ($("#noCarrierWarning").length == 0 && $.trim($('#addressMissings').html()).length == 0) {
-			$("#amz_execute_order").removeAttr("disabled").removeClass("disabled");
-		} else {
-			$("#amz_execute_order").attr("disabled","disabled").addClass("disabled");
-		}
-	}
-}
-
-function updateTOSStatus()
-{
-	var checked = '';
-	if ($('#cgv:checked').length !== 0)
-		checked = 1;
-	else
-		checked = 0;
+    $("#promo-input-btn").click(function() {
+    	if (!requestIsRunning) {
+    		requestIsRunning = true;
+	    	var coupon_value = $('#promo-input').val();
+	    	
+			$.ajax({
+				type: 'POST',
+				headers: { "cache-control": "no-cache" },
+				url: REDIRECTAMZ + '?rand=' + new Date().getTime(),
+				async: true,
+				cache: false,
+				dataType : "json",
+				data: 'ajax=true&method=addDiscount&coupon=' + coupon_value,
+				success: function(jsonData)
+				{
+					if (jsonData.hasError) {
+						var errors = '';
+						for(var error in jsonData.errors) {
+							if(error !== 'indexOf') {
+								errors += $('<div />').html(jsonData.errors[error]).text() + "\n";
+							}
+						}
+						alert(errors);
+					} else {
+						updateCouponDiv(jsonData.coupon_block);
+						updateCartSummary(jsonData.summary_block);						
+					}				
+					requestIsRunning = false;
+				}
+			});
+    	}
+    });
+    
+    $(".remove-voucher-a").click(function() {
+    	if (!requestIsRunning) {
+    		requestIsRunning = true;
+	    	var coupon_id = $(this).data("voucher-id");
+	    	
+			$.ajax({
+				type: 'POST',
+				headers: { "cache-control": "no-cache" },
+				url: REDIRECTAMZ + '?rand=' + new Date().getTime(),
+				async: true,
+				cache: false,
+				dataType : "json",
+				data: 'ajax=true&method=removeDiscount&coupon=' + coupon_id,
+				success: function(jsonData)
+				{
+					if (jsonData.hasError) {
+						var errors = '';
+						for(var error in jsonData.errors) {
+							if(error !== 'indexOf') {
+								errors += $('<div />').html(jsonData.errors[error]).text() + "\n";
+							}
+						}
+						alert(errors);
+					} else {
+						updateCouponDiv(jsonData.coupon_block);
+						updateCartSummary(jsonData.summary_block);
+					}
+					requestIsRunning = false;
+				}
+			});	
+    	}
+    });	
 	
-	$.ajax({
-		type: 'POST',
-		headers: { "cache-control": "no-cache" },
-		url: REDIRECTAMZ + '&rand=' + new Date().getTime(),
-		async: true,
-		cache: false,
-		dataType : "json",
-		data: 'ajax=true&method=updateTOSStatusAndGetPayments&checked=' + checked + '&token=' + static_token,
-		success: function(json)
-		{
+	if ($(".delivery-options-list .alert").length > 0) {
+		disable_order_execute_button();
+	} else {
+		if (!all_conditions_approved()) {
+			disable_order_execute_button();
+		} else {
+			enable_order_execute_button();
+		}
+	}
+
+	$('.conditions_to_approve_checkbox').bind('change', function() {		
+		if ($(".delivery-options-list .alert").length > 0) {
+			disable_order_execute_button();
+		} else {
+			if (!all_conditions_approved()) {
+				disable_order_execute_button();
+			} else {
+				enable_order_execute_button();
+			}
+		}
+	});	
+}
+
+function disable_order_execute_button() {
+	$("#amz_execute_order").attr("disabled","disabled").addClass("disabled");	
+}
+
+function enable_order_execute_button() {
+	$("#amz_execute_order").removeAttr("disabled").removeClass("disabled");	
+}
+
+function all_conditions_approved() {
+	var is_ok = true;
+	$(".conditions_to_approve_checkbox").each(function() {
+		if (!$(this).prop('checked')) {
+			is_ok = false;
 		}
 	});
+	if ($.trim($('#addressMissings').html()).length == 0) {		
+	} else {
+		is_ok = false;
+	}
+	return is_ok;
 }
 
 function disableAmzWidget(wrObj){

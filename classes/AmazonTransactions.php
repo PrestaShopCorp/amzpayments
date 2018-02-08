@@ -1,6 +1,6 @@
 <?php
 /**
- * 2013-2017 Amazon Advanced Payment APIs Modul
+ * 2013-2016 Amazon Advanced Payment APIs Modul
  *
  * for Support please visit www.patworx.de
  *
@@ -15,39 +15,51 @@
  * to license@prestashop.com so we can send you a copy immediately.
  *
  *  @author    patworx multimedia GmbH <service@patworx.de>
- *  @copyright 2013-2017 patworx multimedia GmbH
+ *  @copyright 2013-2016 patworx multimedia GmbH
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
 class AmazonTransactions
 {
 
+    public static function handleError($response)
+    {
+        try {
+            $responsearray = $response->toArray();
+            if (isset($responsearray['Error']['Code']) && isset($responsearray['Error']['Message'])) {
+                return 'ERROR: ' . $responsearray['Error']['Code'] . ': ' . $responsearray['Error']['Message'];
+            } elseif (isset($responsearray['Error']['Code'])) {
+                return 'ERROR: ' . $responsearray['Error']['Code'];
+            }
+        } catch (Exception $e) {
+            return 'Unknown error';
+        }
+    }
+    
     public static function getAuthorizeDetails(AmzPayments $amz_payments, $service, $auth_ref_id)
     {
-        $auth_details_request = new OffAmazonPaymentsService_Model_GetAuthorizationDetailsRequest();
+        $requestParameters = array();
+        $requestParameters['merchant_id'] = $amz_payments->merchant_id;
+        $requestParameters['amazon_authorization_id'] = $auth_ref_id;
         
-        $auth_details_request->setSellerId($amz_payments->merchant_id);
-        $auth_details_request->setAmazonAuthorizationId($auth_ref_id);
-        
-        try {
-            return $service->getAuthorizationDetails($auth_details_request);
-        } catch (OffAmazonPaymentsService_Exception $e) {
-            return false;
+        $response = $service->getAuthorizationDetails($requestParameters);
+        if ($service->success) {
+            return $response->toArray();
         }
+        return false;
     }
 
     public static function getRefundDetails(AmzPayments $amz_payments, $service, $refund_ref_id)
     {
-        $refund_details_request = new OffAmazonPaymentsService_Model_GetRefundDetailsRequest();
+        $requestParameters = array();
+        $requestParameters['merchant_id'] = $amz_payments->merchant_id;
+        $requestParameters['amazon_refund_id'] = $refund_ref_id;
         
-        $refund_details_request->setSellerId($amz_payments->merchant_id);
-        $refund_details_request->setAmazonRefundId($refund_ref_id);
-        
-        try {
-            return $service->getRefundDetails($refund_details_request);
-        } catch (OffAmazonPaymentsService_Exception $e) {
-            return false;
+        $response = $service->getRefundDetails($requestParameters);
+        if ($service->success) {
+            return $response->toArray();
         }
+        return false;
     }
 
     public static function authorize(AmzPayments $amz_payments, $service, $order_ref, $amount, $currency_code = 'EUR', $timeout = 1440, $comment = '')
@@ -55,71 +67,68 @@ class AmazonTransactions
         if ($currency_code == '0') {
             $currency_code = 'EUR';
         }
-        $currency_code = self::transformCurrencyCode($currency_code);
-        $authorize_request = new OffAmazonPaymentsService_Model_AuthorizeRequest();
-        $authorize_request->setAmazonOrderReferenceId($order_ref);
-        $authorize_request->setSellerId($amz_payments->merchant_id);
-        $authorize_request->setTransactionTimeout($timeout);
-        $authorize_request->setSoftDescriptor($comment);
+        $requestParameters = array();
+        $requestParameters['merchant_id'] = $amz_payments->merchant_id;
+        $requestParameters['amazon_order_reference_id'] = $order_ref;
+        $requestParameters['authorization_amount'] = $amount;
+        $requestParameters['currency_code'] = $currency_code;
+        $requestParameters['authorization_reference_id'] = self::getNextAuthRef($order_ref);
+        $requestParameters['seller_note'] = $comment != '' ? $comment : 'Authorizing payment';
+        
         if ($amz_payments->capture_mode == 'after_auth') {
-            $authorize_request->setCaptureNow(true);
-        }
-
-        if ($amz_payments->provocation == 'hard_decline' && $amz_payments->environment == 'SANDBOX') {
-            $authorize_request->setSellerAuthorizationNote('{"SandboxSimulation": {"State":"Declined", "ReasonCode":"AmazonRejected"}}');
+            $requestParameters['capture_now'] = true;
         }
         
+        $requestParameters['transaction_timeout'] = $timeout;
+        /*if ($amz_payments->provocation == 'hard_decline' && $amz_payments->environment == 'SANDBOX') {
+            $requestParameters['seller_authorization_note'] = '{"SandboxSimulation": {"State":"Declined", "ReasonCode":"AmazonRejected"}}';
+        }
         if ($amz_payments->provocation == 'soft_decline' && $amz_payments->environment == 'SANDBOX') {
             Context::getContext()->cookie->setHadErrorNowWallet = 1;
-            $authorize_request->setSellerAuthorizationNote('{"SandboxSimulation": {"State":"Declined", "ReasonCode":"InvalidPaymentMethod", "PaymentMethodUpdateTimeInMins":2}}');
-        }
+            $requestParameters['seller_authorization_note'] = '{"SandboxSimulation": {"State":"Declined", "ReasonCode":"InvalidPaymentMethod", "PaymentMethodUpdateTimeInMins":2}}';
+        }*/
+
+        $response = $service->authorize($requestParameters);
+        $responsearray = $response->toArray();
         
-        $authorize_request->setAuthorizationReferenceId(self::getNextAuthRef($order_ref));
-        $authorize_request->setAuthorizationAmount(new OffAmazonPaymentsService_Model_Price());
-        $authorize_request->getAuthorizationAmount()->setAmount($amount);
-        $authorize_request->getAuthorizationAmount()->setCurrencyCode($currency_code);
-        try {
-            $response = $service->authorize($authorize_request);
-            $details = $response->getAuthorizeResult()->getAuthorizationDetails();
-            
+        if ($service->success) {
+            $details = $responsearray['AuthorizeResult']['AuthorizationDetails'];
             $sql_arr = array(
                 'amz_tx_order_reference' => pSQL($order_ref),
                 'amz_tx_type' => 'auth',
                 'amz_tx_time' => pSQL(time()),
-                'amz_tx_expiration' => pSQL(strtotime($details->getExpirationTimestamp())),
+                'amz_tx_expiration' => pSQL(strtotime($details['ExpirationTimestamp'])),
                 'amz_tx_amount' => pSQL($amount),
-                'amz_tx_status' => pSQL($details->getAuthorizationStatus()->getState()),
-                'amz_tx_reference' => pSQL($details->getAuthorizationReferenceId()),
-                'amz_tx_amz_id' => pSQL($details->getAmazonAuthorizationId()),
+                'amz_tx_status' => pSQL($details['AuthorizationStatus']['State']),
+                'amz_tx_reference' => pSQL($details['AuthorizationReferenceId']),
+                'amz_tx_amz_id' => pSQL($details['AmazonAuthorizationId']),
                 'amz_tx_last_change' => pSQL(time()),
                 'amz_tx_last_update' => pSQL(time())
             );
-            
+
             Db::getInstance()->insert('amz_transactions', $sql_arr);
-        } catch (OffAmazonPaymentsService_Exception $e) {
-            echo 'ERROR: ' . $e->getMessage();
+        } else {
+            return self::handleError($response);
         }
-        return $response;
+        return $responsearray;
     }
 
     public static function refund(AmzPayments $amz_payments, $service, $capture_id, $amount, $currency_code = 'EUR')
     {
-        $currency_code = self::transformCurrencyCode($currency_code);
         $order_ref = self::getOrderRefFromAmzId($capture_id);
-        $refund = new OffAmazonPaymentsService_Model_Price();
-        $refund->setCurrencyCode($currency_code);
-        $refund->setAmount($amount);
         
-        $refund_request = new OffAmazonPaymentsService_Model_RefundRequest();
-        $refund_request->setSellerId($amz_payments->merchant_id);
-        $refund_request->setAmazonCaptureId($capture_id);
-        $refund_request->setRefundReferenceId(self::getNextRefundRef($order_ref));
-        $refund_request->setRefundAmount($refund);
+        $requestParameters = array();
+        $requestParameters['merchant_id'] = $amz_payments->merchant_id;
+        $requestParameters['amazon_capture_id'] = $capture_id;
+        $requestParameters['refund_reference_id'] = self::getNextRefundRef($order_ref);
+        $requestParameters['refund_amount'] = $amount;
+        $requestParameters['currency_code'] = $currency_code;
+
+        $response = $service->refund($requestParameters);
+        $responsearray = $response->toArray();
         
-        try {
-            $response = $service->refund($refund_request);
-            
-            $details = $response->getRefundResult()->getRefundDetails();
+        if ($service->success) {
+            $details = $responsearray['RefundResult']['RefundDetails'];
             
             $sql_arr = array(
                 'amz_tx_order_reference' => pSQL($order_ref),
@@ -127,76 +136,74 @@ class AmazonTransactions
                 'amz_tx_time' => pSQL(time()),
                 'amz_tx_expiration' => 0,
                 'amz_tx_amount' => pSQL($amount),
-                'amz_tx_status' => pSQL($details->getRefundStatus()->getState()),
-                'amz_tx_reference' => pSQL($details->getRefundReferenceId()),
-                'amz_tx_amz_id' => pSQL($details->getAmazonRefundId()),
+                'amz_tx_status' => pSQL($details['RefundStatus']['State']),
+                'amz_tx_reference' => pSQL($details['RefundReferenceId']),
+                'amz_tx_amz_id' => pSQL($details['AmazonRefundId']),
                 'amz_tx_last_change' => pSQL(time()),
-                'amz_tx_last_update' => pSQL(time())
+                'amz_tx_last_update' => pSQL(time()),
             );
             Db::getInstance()->insert('amz_transactions', $sql_arr);
-        } catch (OffAmazonPaymentsService_Exception $e) {
-            echo 'ERROR: ' . $e->getMessage();
+        } else {
+            return self::handleError($response);
         }
         return $response;
     }
 
-    public static function capture(AmzPayments $amz_payments, $service, $auth_id, $amount, $currency_code = 'EUR', $display_error_message = false)
+    public static function capture(AmzPayments $amz_payments, $service, $auth_id, $amount, $currency_code = 'EUR')
     {
-        $currency_code = self::transformCurrencyCode($currency_code);
         if ($auth_id) {
             $order_ref = self::getOrderRefFromAmzId($auth_id);
-            $capture_request = new OffAmazonPaymentsService_Model_CaptureRequest();
-            $capture_request->setAmazonAuthorizationId($auth_id);
-            $capture_request->setSellerId($amz_payments->merchant_id);
-            $capture_request->setCaptureReferenceId(self::getNextCaptureRef($order_ref));
-            $capture_request->setCaptureAmount(new OffAmazonPaymentsService_Model_Price());
-            $capture_request->getCaptureAmount()->setAmount($amount);
-            $capture_request->getCaptureAmount()->setCurrencyCode($currency_code);
+            
+            $requestParameters = array();
+            $requestParameters['merchant_id'] = $amz_payments->merchant_id;
+            $requestParameters['amazon_order_reference_id'] = $order_ref;
+            $requestParameters['amazon_authorization_id'] = $auth_id;
+            $requestParameters['capture_amount'] = $amount;
+            $requestParameters['currency_code'] = $currency_code;
+            $requestParameters['capture_reference_id'] = self::getNextCaptureRef($order_ref);
             if ($amz_payments->provocation == 'capture_decline' && $amz_payments->environment == 'SANDBOX') {
-                $capture_request->setSellerCaptureNote('{"SandboxSimulation":{"State":"Declined", "ReasonCode":"AmazonRejected"}}');
+                $requestParameters['seller_capture_note'] = '{"SandboxSimulation":{"State":"Declined", "ReasonCode":"AmazonRejected"}}';
             }
             
-            try {
-                $response = $service->capture($capture_request);
-                $details = $response->getCaptureResult()->getCaptureDetails();
-                
+            $response = $service->capture($requestParameters);
+            $responsearray = $response->toArray();
+            
+            if ($service->success) {
+                $details = $responsearray['CaptureResult']['CaptureDetails'];
                 $sql_arr = array(
                     'amz_tx_order_reference' => pSQL($order_ref),
                     'amz_tx_type' => 'capture',
                     'amz_tx_time' => pSQL(time()),
                     'amz_tx_expiration' => 0,
                     'amz_tx_amount' => pSQL($amount),
-                    'amz_tx_status' => pSQL($details->getCaptureStatus()->getState()),
-                    'amz_tx_reference' => pSQL($details->getCaptureReferenceId()),
-                    'amz_tx_amz_id' => pSQL($details->getAmazonCaptureId()),
+                    'amz_tx_status' => pSQL($details['CaptureStatus']['State']),
+                    'amz_tx_reference' => pSQL($details['CaptureReferenceId']),
+                    'amz_tx_amz_id' => pSQL($details['AmazonCaptureId']),
                     'amz_tx_last_change' => pSQL(time()),
                     'amz_tx_last_update' => pSQL(time())
                 );
                 Db::getInstance()->insert('amz_transactions', $sql_arr);
                 
                 self::setOrderStatusCapturedSuccesfully($order_ref);
-            } catch (OffAmazonPaymentsService_Exception $e) {
-                if ($display_error_message) {
-                    echo 'ERROR: ' . $e->getMessage();
-                }
-                return false;
+            } else {
+                return self::handleError($response);
             }
-            
-            return $response;
+            return $responsearray;
         }
     }
 
     public static function closeOrder(AmzPayments $amz_payments, $service, $orderRef)
     {
-        $orderRefRequest = new OffAmazonPaymentsService_Model_CloseOrderReferenceRequest();
-        $orderRefRequest->setSellerId($amz_payments->merchant_id);
-        $orderRefRequest->setAmazonOrderReferenceId($orderRef);
-        try {
-            $response = $service->closeOrderReference($orderRefRequest);
-        } catch (OffAmazonPaymentsService_Exception $e) {
-            echo 'ERROR: ' . $e->getMessage();
+        $requestParameter = array();
+        $requestParameter['merchant_id'] = $amz_payments->merchant_id;
+        $requestParameter['amazon_order_reference_id'] = $orderRef;
+        $response = $service->closeOrderReference($requestParameter);
+        if ($service->success) {
+            return $response->toArray();
+        } else {
+            return self::handleError($response);
         }
-        return $response;
+        return false;
     }
 
     public static function captureTotalFromAuth(AmzPayments $amz_payments, $service, $auth_id)
@@ -297,14 +304,11 @@ class AmazonTransactions
         ob_start();
         $response = self::authorize($amz_payments, $service, $order_ref, $amount, $currency_code, 0, $comment);
         ob_end_clean();
-        if (is_object($response)) {
-            if ($response->getAuthorizeResult()
-                ->getAuthorizationDetails()
-                ->getAuthorizationStatus()
-                ->getState() != 'Open') {
+        if (is_array($response)) {
+            if ($response['AuthorizeResult']['AuthorizationDetails']['AuthorizationStatus']['State'] != 'Open') {
                 return $response;
             }
-            self::setOrderStatusAuthorized($order_ref, true);
+            self::setOrderStatusAuthorized($order_ref);
         }
         return $response;
     }
@@ -312,7 +316,7 @@ class AmazonTransactions
     public static function setOrderStatusAuthorized($order_ref, $check = false)
     {
         $oid = self::getOrdersIdFromOrderRef($order_ref);
-        if ($oid) {
+        if ((int)$oid > 0) {
             $amz_payments = new AmzPayments();
             $new_status = $amz_payments->authorized_status_id;
             if ($check) {
@@ -324,7 +328,7 @@ class AmazonTransactions
             }
             self::setOrderStatus($oid, $new_status);
         } else {
-            if (! isset(Context::getContext()->cookie->amzSetStatusAuthorized)) {
+            if (!isset(Context::getContext()->cookie->amzSetStatusAuthorized)) {
                 Context::getContext()->cookie->amzSetStatusAuthorized = serialize(array());
             }
             $tmpData = Tools::unSerialize(Context::getContext()->cookie->amzSetStatusAuthorized);
@@ -336,12 +340,12 @@ class AmazonTransactions
     public static function setOrderStatusCaptured($order_ref)
     {
         $oid = self::getOrdersIdFromOrderRef($order_ref);
-        if ($oid) {
+        if ((int)$oid > 0) {
             $amz_payments = new AmzPayments();
             $new_status = $amz_payments->capture_success_status_id;
             self::setOrderStatus($oid, $new_status);
         } else {
-            if (! isset(Context::getContext()->cookie->amzSetStatusCaptured)) {
+            if (!isset(Context::getContext()->cookie->amzSetStatusCaptured)) {
                 Context::getContext()->cookie->amzSetStatusCaptured = serialize(array());
             }
             $tmpData = Tools::unSerialize(Context::getContext()->cookie->amzSetStatusCaptured);
@@ -353,7 +357,7 @@ class AmazonTransactions
     public static function setOrderStatusDeclined($order_ref, $check = true)
     {
         $oid = self::getOrdersIdFromOrderRef($order_ref);
-        if ($oid) {
+        if ((int)$oid > 0) {
             $amz_payments = new AmzPayments();
             $new_status = $amz_payments->decline_status_id;
             if ($check) {
@@ -370,12 +374,12 @@ class AmazonTransactions
     public static function setOrderStatusCapturedSuccesfully($order_ref)
     {
         $oid = self::getOrdersIdFromOrderRef($order_ref);
-        if ($oid) {
+        if ((int)$oid > 0) {
             $amz_payments = new AmzPayments();
             $new_status = $amz_payments->capture_success_status_id;
             self::setOrderStatus($oid, $new_status);
         } else {
-            if (! isset(Context::getContext()->cookie->amzSetStatusCaptured)) {
+            if (!isset(Context::getContext()->cookie->amzSetStatusCaptured)) {
                 Context::getContext()->cookie->amzSetStatusCaptured = serialize(array());
             }
             $tmpData = Tools::unSerialize(Context::getContext()->cookie->amzSetStatusCaptured);
@@ -416,13 +420,4 @@ class AmazonTransactions
         $r = Db::getInstance()->getRow($q);
         return $r['amz_tx_order_reference'];
     }
-    
-    public static function transformCurrencyCode($currency_iso)
-    {
-        if ($currency_iso == 'JPY') {
-            return 'YEN';
-        }
-        return $currency_iso;
-    }
-    
 }

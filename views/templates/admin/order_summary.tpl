@@ -4,7 +4,7 @@
 *
 *  @author patworx multimedia GmbH <service@patworx.de>
 *  In collaboration with alkim media
-*  @copyright  2013-2015 patworx multimedia GmbH
+*  @copyright  2013-2016 patworx multimedia GmbH
 *  @license    Released under the GNU General Public License
 *}
 
@@ -16,7 +16,7 @@
 			<strong>{l s='Authorised amount' mod='amzpayments'}</strong>
 		</td>
 		<td>
-			{$authorized_amount|escape:'htmlall':'UTF-8'}
+			{$authorized_amount|escape:'html':'UTF-8'}
 		</td>
 	</tr>
 	<tr>
@@ -24,7 +24,7 @@
 			<strong>{l s='Withdrawn amount' mod='amzpayments'}</strong>
 		</td>
 		<td>
-			{$captured_amount|escape:'htmlall':'UTF-8'}
+			{$captured_amount|escape:'html':'UTF-8'}
 		</td>
 	</tr>
 	<tr>
@@ -32,7 +32,7 @@
 			<strong>{l s='Refunded amount' mod='amzpayments'}</strong>
 		</td>
 		<td>
-			{$refunded_amount|escape:'htmlall':'UTF-8'}	
+			{$refunded_amount|escape:'html':'UTF-8'}	
 		</td>
 	</tr>
 </table>

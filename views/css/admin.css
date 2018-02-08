@@ -1,4 +1,85 @@
+@import url('//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css');
+
 @CHARSET "UTF-8";
+
+
+.amzconfig .carousel {
+    max-width: 480px;
+    width: 480px; 
+}
+.amzconfig .carousel .item {
+	text-align: center;
+} 
+.amzconfig .carousel .item img {
+	margin: 0 auto;
+}
+
+#amzconfigarea #fieldset_0,
+#amzconfigarea #fieldset_1_1,
+#amzconfigarea #fieldset_2_2,
+#amzconfigarea #fieldset_3_3,
+#amzconfigarea #fieldset_4_4,
+#amzconfigarea #fieldset_5_5,
+#amzconfigarea #fieldset_6_6,
+#amzconfigarea #fieldset_7_7,
+#amzconfigarea #fieldset_8_8,
+#promobanners,
+#amzconfigarea #advancedconfig,
+#videonotification, 
+#videoURLs,
+#returnedurl,
+.validationnotificationvideo,
+.validationnotificationvideo2,
+#videoaccesskeys,
+#amzVersionChecker,
+#jsonerror,
+#waitforverification,
+#missingerror {
+	display: none;
+}
+
+.grouping {
+	font-weight: bold;
+	padding-left: 11px;
+}
+
+#amzconfigarea .control-label {
+	padding-left: 45px;
+	text-align: left;
+}
+#TYPE_PAY_BUTTON_IMG,
+#TYPE_LPA_BUTTON_IMG,
+#AMZ_PROMO_HEADER_STYLE_IMG,
+#AMZ_PROMO_PRODUCT_STYLE_IMG,
+#AMZ_PROMO_FOOTER_STYLE_IMG {
+	padding-left: 45px;
+	margin-top: 10px;
+	display: inline-block;
+	max-width: 100%;
+}
+
+button[name=submitAmzpaymentsModuleConnect] {
+	margin-top: 10px;
+}
+#amzconnect input[readonly] {
+	width: 30%;
+	display: inline;
+}
+.ipnurl {
+	margin-top: 34px;
+}
+.ipnurl,
+.originandallowed {
+	margin-bottom: 35px;
+}
+
+#amzconfigarea .modal-lg {
+	width: 1100px;
+}
+#amzconfigarea .modal-lg img {
+	max-width: 100%;
+}
+
 #amzIntroduction ol {
     counter-reset: li; /* Initiate a counter */
     list-style: none; /* Remove default numbering */
@@ -64,4 +145,34 @@ a.registerButton:hover {
 }
 .amz_integration_video_yt {
 	margin-top: 15px;
+}
+#jsonMWS {
+	width: 50%;
+}
+.responsive-video iframe {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+}
+.responsive-video {
+	position: relative;
+	padding-bottom: 56.25%; /* Default for 1600x900 videos 16:9 ratio*/
+	padding-top: 0px;
+	height: 0;
+	overflow: hidden;
+}
+.amz_illustration {
+	max-width: 600px; 
+}
+.amz_illustration img {
+	width: 100%;
+	height: 100%;
+	max-width: 600px;
+	border-radius: 10px;
+}
+
+.has-warning {
+	
 }

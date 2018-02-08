@@ -4,7 +4,7 @@
 *
 *  @author patworx multimedia GmbH <service@patworx.de>
 *  In collaboration with alkim media
-*  @copyright  2013-2015 patworx multimedia GmbH
+*  @copyright  2013-2016 patworx multimedia GmbH
 *  @license    Released under the GNU General Public License
 *}
 
@@ -38,24 +38,24 @@
 		{foreach from=$open_auth item=r}
 			<tr>
 				<td class="amzAmountCell">
-					{$r.amount|escape:'htmlall':'UTF-8'}
+					{$r.amount|escape:'html':'UTF-8'}
 				</td>
 				<td>
-					{$r.date|escape:'htmlall':'UTF-8'}
+					{$r.date|escape:'html':'UTF-8'}
 				</td>
 				<td>
-					{$r.tx_id|escape:'htmlall':'UTF-8'}
+					{$r.tx_id|escape:'html':'UTF-8'}
 				</td>
 				<td>
-					{$r.tx_expiration|escape:'htmlall':'UTF-8'}
+					{$r.tx_expiration|escape:'html':'UTF-8'}
 				</td>
 				<td>
 					<div>
-						<a href="#" class="amzAjaxLink btn btn-default button amzButton" data-action="captureTotalFromAuth" data-authid="{$r.tx_id|escape:'htmlall':'UTF-8'}">{l s='Capture full amount' mod='amzpayments'}</a>
+						<a href="#" class="amzAjaxLink btn btn-default button amzButton" data-action="captureTotalFromAuth" data-authid="{$r.tx_id|escape:'html':'UTF-8'}">{l s='Capture full amount' mod='amzpayments'}</a>
 					</div>
 					<div>
-						<input type="text" class="amzAmountField" value="{$r.amount|escape:'htmlall':'UTF-8'}" />
-						<a href="#" class="amzAjaxLink btn btn-default button amzButton" data-action="captureAmountFromAuth" data-authid="{$r.tx_id|escape:'htmlall':'UTF-8'}">{l s='Capture partial amount' mod='amzpayments'}</a>
+						<input type="text" class="amzAmountField" value="{$r.amount|escape:'html':'UTF-8'}" />
+						<a href="#" class="amzAjaxLink btn btn-default button amzButton" data-action="captureAmountFromAuth" data-authid="{$r.tx_id|escape:'html':'UTF-8'}">{l s='Capture partial amount' mod='amzpayments'}</a>
 					</div>
 				</td>
 			</tr>			
@@ -86,19 +86,19 @@
 		<tbody>
         	<tr>
 				<td class="amzAmountCell">
-					{$amount_left_to_authorize|escape:'htmlall':'UTF-8'}
+					{$amount_left_to_authorize|escape:'html':'UTF-8'}
 				</td>
 				<td class="amzAmountCell">
-					{$amount_maximum|escape:'htmlall':'UTF-8'}
+					{$amount_maximum|escape:'html':'UTF-8'}
 				</td>
 				<td>
 				{if $amount_left_to_authorize_raw > 0}
-					<a href="#" class="amzAjaxLink btn btn-default button amzButton" data-action="authorizeAmount" data-amount="{$amount_left_to_authorize_raw|escape:'htmlall':'UTF-8'}" data-orderRef="{$order_ref|escape:'htmlall':'UTF-8'}">{l s='Authorise payment' mod='amzpayments'}</a>
+					<a href="#" class="amzAjaxLink btn btn-default button amzButton" data-action="authorizeAmount" data-amount="{$amount_left_to_authorize_raw|escape:'html':'UTF-8'}" data-orderRef="{$order_ref|escape:'html':'UTF-8'}">{l s='Authorise payment' mod='amzpayments'}</a>
 				{/if}
 					<div>
 						<nobr>
-							<input type="text" class="amzAmountField" value="{$amount_field|escape:'htmlall':'UTF-8'}" />
-							<a href="#" class="amzAjaxLink btn btn-default button amzButton" data-action="authorizeAmountFromField" data-orderRef="{$order_ref|escape:'htmlall':'UTF-8'}">
+							<input type="text" class="amzAmountField" value="{$amount_field|escape:'html':'UTF-8'}" />
+							<a href="#" class="amzAjaxLink btn btn-default button amzButton" data-action="authorizeAmountFromField" data-orderRef="{$order_ref|escape:'html':'UTF-8'}">
 								{if $amount_left_to_authorize_raw > 0}
 									{l s='Authorise payment' mod='amzpayments'}
 								{else}
@@ -151,37 +151,37 @@
 		{foreach from=$captures item=r}
 			<tr>
 				<td class="amzAmountCell">
-					{$r.amount|escape:'htmlall':'UTF-8'}
+					{$r.amount|escape:'html':'UTF-8'}
 				</td>
 				<td class="amzAmountCell">
-					{$r.amount_refunded|escape:'htmlall':'UTF-8'}
+					{$r.amount_refunded|escape:'html':'UTF-8'}
 				</td>
 				<td class="amzAmountCell">
-					{$r.amount_possible|escape:'htmlall':'UTF-8'}
+					{$r.amount_possible|escape:'html':'UTF-8'}
 				</td>
 				<td>
-					{$r.date|escape:'htmlall':'UTF-8'}
+					{$r.date|escape:'html':'UTF-8'}
 				</td>
 				<td>
-					<span class="{$r.status_class|escape:'htmlall':'UTF-8'}">{$r.status|escape:'htmlall':'UTF-8'}</span>
+					<span class="{$r.status_class|escape:'html':'UTF-8'}">{$r.status|escape:'html':'UTF-8'}</span>
 				</td>
 				<td>
-					{$r.last_change|escape:'htmlall':'UTF-8'}
+					{$r.last_change|escape:'html':'UTF-8'}
 				</td>
 				<td>
-					{$r.tx_id|escape:'htmlall':'UTF-8'}
+					{$r.tx_id|escape:'html':'UTF-8'}
 				</td>
 					
 				<td>
 				{if $r.total_refund_button}
 					<div>
-						<a href="#" class="amzAjaxLink btn btn-default button amzButton" data-action="refundAmount" data-amount="{$r.total_refund_button_value|escape:'htmlall':'UTF-8'}" data-captureid="{$r.tx_id|escape:'htmlall':'UTF-8'}">{l s='Issue complete refund' mod='amzpayments'}</a>
+						<a href="#" class="amzAjaxLink btn btn-default button amzButton" data-action="refundAmount" data-amount="{$r.total_refund_button_value|escape:'html':'UTF-8'}" data-captureid="{$r.tx_id|escape:'html':'UTF-8'}">{l s='Issue complete refund' mod='amzpayments'}</a>
 					</div>
 				{/if}					
 					<div>
 						<nobr>
-							<input type="text" class="amzAmountField" value="{if isset($field_value)}{$field_value|escape:'htmlall':'UTF-8'}{/if}" />
-							<a href="#" class="amzAjaxLink btn btn-default button amzButton" data-action="refundAmountFromField" data-captureid="{$r.tx_id|escape:'htmlall':'UTF-8'}">
+							<input type="text" class="amzAmountField" value="{if isset($field_value)}{$field_value|escape:'html':'UTF-8'}{/if}" />
+							<a href="#" class="amzAjaxLink btn btn-default button amzButton" data-action="refundAmountFromField" data-captureid="{$r.tx_id|escape:'html':'UTF-8'}">
 								{if $r.total_refund_button}
 									{l s='Issue partial refund' mod='amzpayments'}
 								{else}

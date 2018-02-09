@@ -17,6 +17,10 @@ var lastSummary;
 var requestIsRunning = false;
 
 $(document).ready(function(){
+	ajaxHandler = $('.amzAjaxHandler').val();   
+});
+
+$(document).ready(function(){
 	
 	if ($("#amzconnect").length > 0) {
 		

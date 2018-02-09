@@ -168,7 +168,7 @@ class AmzPayments extends PaymentModule
     {
         $this->name = 'amzpayments';
         $this->tab = 'payments_gateways';
-        $this->version = '3.1.0';
+        $this->version = '3.1.01';
         $this->author = 'patworx multimedia GmbH';
         $this->need_instance = 1;
         
@@ -1390,7 +1390,15 @@ class AmzPayments extends PaymentModule
         }
         
         if ($this->access_key != '' && $this->merchant_id != '') {
-            $check = getimagesize("https://payments.amazon.de/gp/widgets/button?sellerId=" . $this->merchant_id);
+            $button_url = 'https://payments.amazon.de/gp/widgets/button';
+            if (Tools::strtolower($this->region) == 'uk') {
+                $button_url = 'https://payments.amazon.co.uk/gp/widgets/button';
+            } elseif (Tools::strtolower($this->region) == 'us') {
+                $button_url = 'https://payments.amazon.com/gp/widgets/button';
+            } elseif (Tools::strtolower($this->region) == 'jp') {
+                $button_url = 'https://payments.amazon.co.jp/gp/widgets/button';
+            }
+            $check = getimagesize($button_url . "?sellerId=" . $this->merchant_id);
             if ($check[0] > 1) {
                 $this->context->smarty->assign('kyc_passed', 1);
             } else {

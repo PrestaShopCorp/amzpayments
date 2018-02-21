@@ -176,7 +176,7 @@ class AmzPayments extends PaymentModule
     {
         $this->name = 'amzpayments';
         $this->tab = 'payments_gateways';
-        $this->version = '2.1.01';
+        $this->version = '2.1.02';
         $this->author = 'patworx multimedia GmbH';
         $this->need_instance = 1;
         
@@ -579,7 +579,11 @@ class AmzPayments extends PaymentModule
         foreach ($language_ids as $id_lang) {
             $url = str_replace('http://', 'https://', $this->context->link->getModuleLink('amzpayments', 'process_login', array(), null, (int)$id_lang));
             if ($type == 2) {
-                $url .= '?toCheckout=1';
+                if (strpos($url, '?') > 0) {
+                    $url .= '&toCheckout=1';
+                } else {
+                    $url .= '?toCheckout=1';
+                }                
             }
             $urls[] = $url;
         }

@@ -84,6 +84,7 @@ class AmzpaymentsUsertoshopModuleFrontController extends ModuleFrontController
                             if (Tools::getValue('method') == 'redirectAuthentication') {
                                 Tools::redirect('index');
                             } else {
+                                self::$amz_payments->exceptionLog(false, 'user_to_shop controller: Error, method not submitted and no token');
                                 error_log('Error, method not submitted and no token');
                                 die('error');
                             }
@@ -100,6 +101,7 @@ class AmzpaymentsUsertoshopModuleFrontController extends ModuleFrontController
                             if (Tools::getValue('method') == 'redirectAuthentication') {
                                 Tools::redirect('index');
                             } else {
+                                self::$amz_payments->exceptionLog(false, 'user_to_shop controller: auth error LPA');
                                 error_log('auth error LPA');
                                 die('error');
                             }
@@ -262,6 +264,7 @@ class AmzpaymentsUsertoshopModuleFrontController extends ModuleFrontController
                                         }
                                     }
                                 } else {
+                                    self::$amz_payments->exceptionLog(false, 'user_to_shop controller: Error validating customers informations ' ."\r\n\r\n" . print_r($this->errors, true));
                                     error_log('Error validating customers informations');
                                     die('error');
                                 }

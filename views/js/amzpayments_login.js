@@ -122,7 +122,7 @@ function checkForAmazonListButton() {
 			bindCartButton('payWithAmazonListDiv');
 		}
 	}	
-	if (jQuery("#HOOK_ADVANCED_PAYMENT").length > 0) {
+	if (jQuery("#HOOK_ADVANCED_PAYMENT").length > 0) {		
 		if (jQuery("#payWithAmazonListDiv").length == 0) {
 			jQuery('<div class="col-xs-6 col-md-6" id="amzRowElement"><span id="payWithAmazonListDiv" class="' + (AMZ_CREATE_ACCOUNT_EXP == '1' ? 'amz_create_account' : null) + '"></span></div>').appendTo("#HOOK_ADVANCED_PAYMENT .row");
 			bindCartButton('payWithAmazonListDiv');
@@ -153,7 +153,6 @@ function bindCartButton(div_id) {
 	        },
 	        onSignIn: function(orderReference) {
 	            amazonOrderReferenceId = orderReference.getAmazonOrderReferenceId();
-	            jQuery(div_id).html('');	            
 	            if (jQuery('#' + div_id).hasClass('amz_create_account')) {
 	                $.ajax({
 	                    type: 'GET',
@@ -166,7 +165,7 @@ function bindCartButton(div_id) {
 	                            window.location = htmlcontent;
 	                        }					   
 	                    }
-	                });		            	
+	                });
 	            } else {
 		            jQuery.ajax({
 		                    type: 'GET',

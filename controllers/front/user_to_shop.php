@@ -87,7 +87,6 @@ class AmzpaymentsUser_To_ShopModuleFrontController extends ModuleFrontController
                                 Tools::redirect('index');
                             } else {
                                 self::$amz_payments->exceptionLog(false, 'user_to_shop controller: Error, method not submitted and no token');
-                                error_log('Error, method not submitted and no token');
                                 die('error');
                             }
                         }
@@ -234,6 +233,8 @@ class AmzpaymentsUser_To_ShopModuleFrontController extends ModuleFrontController
                                 $firstname_address = $firstname;
                                 $_POST['lastname'] = Tools::getValue('customer_lastname', $lastname_address);
                                 $_POST['firstname'] = Tools::getValue('customer_firstname', $firstname_address);
+                                $_POST['optin'] = Tools::getValue('optin', '0');
+                                $_POST['newsletter'] = Tools::getValue('newsletter', '0');
                                 // $addresses_types = array('address');
                                 
                                 $this->errors = array_unique(array_merge($this->errors, $customer->validateController()));

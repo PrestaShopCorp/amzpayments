@@ -489,6 +489,10 @@
 					<div id="email_state" class="grouping">{l s='Automatic email' mod='amzpayments'}</div>
 					<div id="amazon_notification" class="grouping">{l s='Payment status updates' mod='amzpayments'}</div>
 				</div>
+
+             	<button id="restorehooks" class="btn btn-warning btn-sm" style="margin:10px 10px 10px 0px;" type="button" aria-expanded="false" aria-controls="collapseExample" onclick="if (confirm('{l s='Do you confirm?' mod='amzpayments'}')) { location.href='{$hook_reset_link|escape:'htmlall':'UTF-8'}'; }">
+					<strong><i class="fa fa-undo" aria-hidden="true"></i>&nbsp;{l s='Set Amazon Pay as first payment method' mod='amzpayments'}</strong>
+				</button>
 					
 			</div>
 			<div class="text-right">

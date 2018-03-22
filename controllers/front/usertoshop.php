@@ -85,14 +85,17 @@ class AmzpaymentsUsertoshopModuleFrontController extends ModuleFrontController
                                 Tools::redirect('index');
                             } else {
                                 self::$amz_payments->exceptionLog(false, 'user_to_shop controller: Error, method not submitted and no token');
-                                error_log('Error, method not submitted and no token');
                                 die('error');
                             }
                         }
                         if (Tools::getValue('action') == 'fromCheckout') {
                             $accessTokenValue = AmzPayments::prepareCookieValueForAmazonPaymentsUse(Tools::getValue('access_token'));
                         } else {
-                            $accessTokenValue = Tools::getValue('access_token');
+                            if (Tools::getValue('access_token') == '' && isset($this->context->cookie->amz_access_token)) {
+                                $accessTokenValue = $this->context->cookie->amz_access_token;
+                            } else {
+                                $accessTokenValue = Tools::getValue('access_token');
+                            }
                         }
                         
                         $d = self::$amz_payments->requestTokenInfo($accessTokenValue);
@@ -102,7 +105,6 @@ class AmzpaymentsUsertoshopModuleFrontController extends ModuleFrontController
                                 Tools::redirect('index');
                             } else {
                                 self::$amz_payments->exceptionLog(false, 'user_to_shop controller: auth error LPA');
-                                error_log('auth error LPA');
                                 die('error');
                             }
                         }
@@ -125,7 +127,7 @@ class AmzpaymentsUsertoshopModuleFrontController extends ModuleFrontController
                             } elseif (! $authentication || ! $customer->id) {
                                 $this->errors[] = Tools::displayError('Authentication failed.');
                             } else {
-                                $this->context->updateCustomer($customer);
+                                $this->context->updateCustomer($authentication);
                                 
                                 Hook::exec('actionAuthentication', ['customer' => $this->context->customer]);
                                 
@@ -135,7 +137,6 @@ class AmzpaymentsUsertoshopModuleFrontController extends ModuleFrontController
                                 if (Tools::getValue('action') == 'fromCheckout' && isset($this->context->cookie->amz_connect_order)) {
                                     AmzPayments::switchOrderToCustomer($this->context->customer->id, $this->context->cookie->amz_connect_order, true);
                                 }
-                                
                                 if (Tools::getValue('action') == 'checkout') {
                                     $goto = $this->context->link->getModuleLink('amzpayments', 'amzpayments');
                                 } elseif (Tools::getValue('action') == 'fromCheckout') {
@@ -206,6 +207,8 @@ class AmzpaymentsUsertoshopModuleFrontController extends ModuleFrontController
                                 $firstname_address = $firstname;
                                 $_POST['lastname'] = Tools::getValue('customer_lastname', $lastname_address);
                                 $_POST['firstname'] = Tools::getValue('customer_firstname', $firstname_address);
+                                $_POST['optin'] = Tools::getValue('optin', '0');
+                                $_POST['newsletter'] = Tools::getValue('newsletter', '0');
                                 // $addresses_types = array('address');
                                 
                                 $this->errors = array_unique(array_merge($this->errors, $customer->validateController()));
@@ -244,14 +247,8 @@ class AmzpaymentsUsertoshopModuleFrontController extends ModuleFrontController
                                                 $goto = $this->context->link->getModuleLink('amzpayments', 'amzpayments');
                                             } elseif (Tools::getValue('action') == 'fromCheckout') {
                                                 $goto = 'index.php?controller=history';
-                                            } elseif ($this->context->cart->nbProducts()) {
-                                                $goto = 'index.php?controller=cart';
                                             } else {
-                                                if (Configuration::get('PS_SSL_ENABLED')) {
-                                                    $goto = _PS_BASE_URL_SSL_ . __PS_BASE_URI__;
-                                                } else {
-                                                    $goto = _PS_BASE_URL_ . __PS_BASE_URI__;
-                                                }
+                                                $goto = $this->context->link->getModuleLink('amzpayments', 'select_address');
                                             }
                                             
                                             if (Tools::getValue('method') == 'redirectAuthentication') {
@@ -265,7 +262,6 @@ class AmzpaymentsUsertoshopModuleFrontController extends ModuleFrontController
                                     }
                                 } else {
                                     self::$amz_payments->exceptionLog(false, 'user_to_shop controller: Error validating customers informations ' ."\r\n\r\n" . print_r($this->errors, true));
-                                    error_log('Error validating customers informations');
                                     die('error');
                                 }
                             }

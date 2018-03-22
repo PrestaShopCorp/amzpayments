@@ -275,3 +275,16 @@ p.payment_module a.amzPayments::after {
 		padding-left: 190px;
 	} 
 }
+p.amzpay_reset {
+	font-size: .8em;
+	text-align: right;
+}
+
+
+#addressMissings .additional_field {
+	border: 2px solid orange;
+}
+.addressWalletSubmit {
+	text-align: right;
+	margin-top: 15px;
+}

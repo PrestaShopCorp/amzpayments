@@ -97,6 +97,8 @@ $_MODULE['<{amzpayments}prestashop>amzpayments_12e5e0597b2980f55f11e5d775aabf8c'
 $_MODULE['<{amzpayments}prestashop>amzpayments_dd9c5a48aa769b5db4e5fba108c39691'] = 'Your payment was rejected by Amazon - please contact us';
 $_MODULE['<{amzpayments}prestashop>amzpayments_5aa818b1473c50ce1b40bf66663182c6'] = 'Your selected payment method is currently not available. Please select another one.';
 $_MODULE['<{amzpayments}prestashop>amzpayments_d9d5eafae1a4bbddd5b81c4d6ca255d1'] = 'Your selected payment method has been declined. Please chose another one or use a different Amazon account.';
+$_MODULE['<{amzpayments}prestashop>amzpayments_3c1faed661d6b55c61cd4a05fd1b687e'] = 'Show Amazon Pay button on product page';
+$_MODULE['<{amzpayments}prestashop>amzpayments_15ad3e8d2603d8c92314a60a114fa038'] = 'Default: No';
 $_MODULE['<{amzpayments}prestashop>configuration_56b55033f747893cf02a5797707ee383'] = 'Make Amazon customers your customers';
 $_MODULE['<{amzpayments}prestashop>configuration_a7b8feea65558548dff1c84f2f8801ab'] = 'That\'s how it works:';
 $_MODULE['<{amzpayments}prestashop>configuration_5b1a8c5b0fd7e134325ee37f10abed53'] = 'Register for Amazon Pay and complete your account setup by upload your verification documents on Seller Central.*';
@@ -405,3 +407,26 @@ $_MODULE['<{amzpayments}prestashop>select_address_daa6b483e9f6ca081ec7e0b4a352f9
 $_MODULE['<{amzpayments}prestashop>_tooltip_0f5b2c5d07a33dc481cb9ecc8f7bb232'] = 'Are you an Amazon customer? Pay now with address and payment details stored in your Amazon account.';
 $_MODULE['<{amzpayments}prestashop>displaytopcolumn_2e2117b7c81aa9ea6931641ea2c6499f'] = 'Your order at ';
 $_MODULE['<{amzpayments}prestashop>displaytopcolumn_75fbf512d744977d62599cc3f0ae2bb4'] = 'is complete.';
+
+$_MODULE['<{amzpayments}prestashop>amzpayments_5e487720755d975e21ba1b65790467e2'] = 'Optimized checkout enables one page checkout with Amazon Pay. Please ensure all third party modules are compatible before activating this option.';
+$_MODULE['<{amzpayments}prestashop>amzpayments_59aad85b376259844b471a758908a3c1'] = 'Order process type';
+$_MODULE['<{amzpayments}prestashop>amzpayments_6e539d2ea7d82ed0e31c450e64ff8c04'] = 'Optimized';
+$_MODULE['<{amzpayments}prestashop>amzpayments_eb6d8ae6f20283755b339c0dc273988b'] = 'Standard';
+$_MODULE['<{amzpayments}prestashop>amzpayments_ed20689b0d8d53ec534166a88b67f259'] = 'Pay with Amazon';
+$_MODULE['<{amzpayments}prestashop>payment_e2b7dec8fa4b498156dfee6e4c84b156'] = 'This payment method is not available.';
+$_MODULE['<{amzpayments}prestashop>payment_5aa818b1473c50ce1b40bf66663182c6'] = 'Your selected payment method is currently not available. Please select another one.';
+$_MODULE['<{amzpayments}prestashop>payment_a2af94a3e3857e4903cf97df11fd9440'] = 'Your selected payment method has been declined. Please chose another one.';
+$_MODULE['<{amzpayments}prestashop>configuration_13c051309993039f29fadf07172c6f63'] = 'Do you confirm?';
+$_MODULE['<{amzpayments}prestashop>configuration_11147f7b7be2edc7d0eece039692df11'] = 'Set Amazon Pay as first payment method';
+$_MODULE['<{amzpayments}prestashop>addresswallet_36b6db0867fcb4e19142bf7f925ab71f'] = 'Select your address and payment method';
+$_MODULE['<{amzpayments}prestashop>addresswallet_a3c4f039e538cf633e2acb804c236d70'] = 'Select your delivery address and your payment method from your Amazon account, to go through the checkout quickly and easily.';
+$_MODULE['<{amzpayments}prestashop>addresswallet_a0bfb8e59e6c13fc8d990781f77694fe'] = 'Continue';
+$_MODULE['<{amzpayments}prestashop>addresswallet_daa6b483e9f6ca081ec7e0b4a352f9e9'] = 'Save changes';
+$_MODULE['<{amzpayments}prestashop>payment_optype_std_64a985a7c1cdd62470ecddd37d04ebc9'] = 'Buy now with Amazon Pay';
+$_MODULE['<{amzpayments}prestashop>paymentreset_3f350de08883a6ac8983d5400e4fd43b'] = 'You have chosen Amazon Pay – please click here for an alternate payment method';
+$_MODULE['<{amzpayments}prestashop>select_address_3e9e333adde6e70086bd29441c8c45eb'] = 'Select your address';
+$_MODULE['<{amzpayments}prestashop>select_address_7d5fd5da702c79b9fcb4fa1b7c63ee7f'] = 'Thank you for using Login with Amazon in our Shop.';
+$_MODULE['<{amzpayments}prestashop>select_address_50842b129a33396a62b7dc81a73a7c1a'] = 'Please select a default address for your account creation. You will be able to choose a different shipping address during checkout.';
+$_MODULE['<{amzpayments}prestashop>select_address_a0bfb8e59e6c13fc8d990781f77694fe'] = 'Continue';
+$_MODULE['<{amzpayments}prestashop>select_address_daa6b483e9f6ca081ec7e0b4a352f9e9'] = 'Save changes';
+$_MODULE['<{amzpayments}prestashop>select_address_7de64f538bdd7057ea1bbf5b46572d67'] = 'Please fill in the missing fields to save your address.';

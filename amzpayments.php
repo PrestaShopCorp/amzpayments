@@ -168,7 +168,7 @@ class AmzPayments extends PaymentModule
     {
         $this->name = 'amzpayments';
         $this->tab = 'payments_gateways';
-        $this->version = '3.1.02';
+        $this->version = '3.1.03';
         $this->author = 'patworx multimedia GmbH';
         $this->need_instance = 1;
         
@@ -300,6 +300,7 @@ class AmzPayments extends PaymentModule
 				`id` int(11) NOT NULL AUTO_INCREMENT,
                 `id_address` int(11) NOT NULL,
 				`amazon_order_reference_id` varchar(255) NOT NULL,
+				`amazon_hash` varchar(255) NOT NULL,
 				PRIMARY KEY (`id`)
 		) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
 				');
@@ -380,8 +381,8 @@ class AmzPayments extends PaymentModule
         foreach ($languages as $language) {
             Db::getInstance()->insert('order_state_lang', array(
                 'id_order_state' => $id_order_state,
-                'id_lang' => $language['id_lang'],
-                'name' => $this->l('Amazon Payments - Authorized'),
+                'id_lang' => (int)$language['id_lang'],
+                'name' => pSQL($this->l('Amazon Payments - Authorized')),
                 'template' => '',
             ));
         }
@@ -409,8 +410,8 @@ class AmzPayments extends PaymentModule
         foreach ($languages as $language) {
             Db::getInstance()->insert('order_state_lang', array(
                 'id_order_state' => $id_order_state,
-                'id_lang' => $language['id_lang'],
-                'name' => $this->l('Amazon Payments - Payment received'),
+                'id_lang' => (int)$language['id_lang'],
+                'name' => pSQL($this->l('Amazon Payments - Payment received')),
                 'template' => '',
             ));
         }

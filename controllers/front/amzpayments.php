@@ -70,6 +70,14 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
         
         $this->service = self::$amz_payments->getService();
         
+        if (self::$amz_payments->order_process_type == 'standard' && Tools::getValue('method') != 'setsession') {
+            $params = array();
+            if (Tools::getValue('amazon_id')) {
+                $params['session'] = Tools::getValue('amazon_id');
+            }
+            Tools::redirect($this->context->link->getModuleLink('amzpayments', 'addresswallet', $params));
+        }
+        
         $this->nbProducts = $this->context->cart->nbProducts();
         
         if (Configuration::get('PS_CATALOG_MODE')) {
@@ -96,7 +104,6 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                 $d = self::$amz_payments->requestTokenInfo(AmzPayments::prepareCookieValueForAmazonPaymentsUse($this->context->cookie->amz_access_token));
                                                                 
                                 if ($d->aud != self::$amz_payments->client_id) {
-                                    error_log('auth error LPA');
                                     die('error');
                                 }
                                 
@@ -355,7 +362,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                 foreach (AmazonPaymentsAddressHelper::$validation_errors as $errMsg) {
                                     $this->errors[] = $errMsg;
                                 }
-                                self::$amz_payments->exceptionLog(false, "Customer login, missing address Data: \r\n" . print_r($this->errors, true));
+                                self::$amz_payments->exceptionLog(false, "Customer login, missing address Data: \r\n" . print_r($this->errors, true) . "\r\n\r\n" . self::$amz_payments->debugAddressObject($address_delivery));
                             }
                             
                             if (!count($this->errors)) {

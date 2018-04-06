@@ -212,6 +212,7 @@ function updateAddressSelection(amazonOrderReferenceId)
 				if (jsonData.fields_html) {
 					$("#addressMissings").empty();
 					$("#addressMissings").html(jsonData.fields_html);
+					$("#addressMissings").fadeIn();
 					$("#submitAddress").fadeIn();
 					$("#submitAddress").unbind('click').on('click', function() { updateAddressSelection(amazonOrderReferenceId); });
 				}
@@ -221,6 +222,7 @@ function updateAddressSelection(amazonOrderReferenceId)
 			}
 			else
 			{
+				$("#addressMissings").fadeOut();
 				$("#submitAddress").fadeOut('fast', function() { $("#addressMissings").empty() });
 				if (jsonData.refresh)
 					location.reload();

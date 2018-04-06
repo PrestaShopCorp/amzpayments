@@ -8,6 +8,6 @@
 *  @license    Released under the GNU General Public License
 *}
 <div id="payWithAmazonMainDiv"{if $hide_button} style="display:none;"{/if}>
-	<div id="payWithAmazonDiv"></div>
+	<div id="payWithAmazonDiv" class="{if $create_account}amz_create_account{/if}"></div>
 </div>
 {literal}<script> bindCartButton('payWithAmazonDiv'); </script>{/literal}

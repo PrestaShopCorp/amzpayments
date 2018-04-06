@@ -110,13 +110,13 @@ function initAmazon(){
 function checkForAmazonListButton() {
 	if (jQuery("#pay_with_amazon_list_button").length > 0) {
 		if (jQuery.trim(jQuery("#pay_with_amazon_list_button").html()) == '') {
-			jQuery("#pay_with_amazon_list_button").append('<span id="payWithAmazonListDiv"></span>');
+			jQuery("#pay_with_amazon_list_button").append('<span id="payWithAmazonListDiv" class="' + (AMZ_CREATE_ACCOUNT_EXP == '1' ? 'amz_create_account' : null) + '"></span>');
 			bindCartButton('payWithAmazonListDiv');
 		}
 	}	
 	if (jQuery("#HOOK_ADVANCED_PAYMENT").length > 0) {
 		if (jQuery("#payWithAmazonListDiv").length == 0) {
-			jQuery("#HOOK_ADVANCED_PAYMENT").append('<span id="payWithAmazonListDiv"></span>');
+			jQuery("#HOOK_ADVANCED_PAYMENT").append('<span id="payWithAmazonListDiv" class="' + (AMZ_CREATE_ACCOUNT_EXP == '1' ? 'amz_create_account' : null) + '"></span>');
 			bindCartButton('payWithAmazonListDiv');
 		}
 	}
@@ -139,16 +139,31 @@ function bindCartButton(div_id) {
 	            authRequest = amazon.Login.authorize (loginOptions, (useRedirect ? LOGINREDIRECTAMZ_CHECKOUT : null));
 	        },
 	        onSignIn: function(orderReference) {
-	            amazonOrderReferenceId = orderReference.getAmazonOrderReferenceId();		            
+	            amazonOrderReferenceId = orderReference.getAmazonOrderReferenceId();
 	            jQuery(div_id).html('');
-	            jQuery.ajax({
+	            if (jQuery('#' + div_id).hasClass('amz_create_account')) {
+	                $.ajax({
 	                    type: 'GET',
-	                    url: REDIRECTAMZ,
-	                    data: 'ajax=true&method=setsession&access_token=' + authRequest.access_token + '&amazon_id=' + amazonOrderReferenceId,
+	                    url: SETUSERAJAX,
+	                    data: 'ajax=true&method=setusertoshop&access_token=' + authRequest.access_token + '&amazon_id=' + amazonOrderReferenceId + '&action=checkout',
 	                    success: function(htmlcontent){
-	                    	window.location = REDIRECTAMZ + amazonOrderReferenceId;
+	                        if (htmlcontent == 'error') {
+	                            alert('An error occured - please try again or contact our support');
+	                        } else {
+	                            window.location = htmlcontent;
+	                        }					   
 	                    }
-	            });
+	                });	            	
+	            } else {
+		            jQuery.ajax({
+		                    type: 'GET',
+		                    url: REDIRECTAMZ,
+		                    data: 'ajax=true&method=setsession&access_token=' + authRequest.access_token + '&amazon_id=' + amazonOrderReferenceId,
+		                    success: function(htmlcontent){
+		                    	window.location = REDIRECTAMZ + amazonOrderReferenceId;
+		                    }
+		            });
+	            }
 	        },
 	        onError: function(error) {
 	            console.log(error); 

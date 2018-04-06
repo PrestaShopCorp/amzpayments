@@ -45,6 +45,8 @@ $(document).ready(function(){
 		$("#payment_states").detach().prependTo($("#AMZ_ORDER_STATUS_ID").closest('.form-group'));
 		$("#email_state").detach().prependTo($("#SEND_MAILS_ON_DECLINE_on").closest('.form-group'));
 		$("#amazon_notification").detach().prependTo($("#IPN_STATUS_on").closest('.form-group'));
+		
+		$("#restorehooks").detach().appendTo($("#AMZ_ORDER_PROCESS_TYPE").closest('div'));
 				
 		$("button[name=submitAmzpaymentsModuleConnect]").on('click', function() {
 			$("#missingerror, #jsonerror").hide();

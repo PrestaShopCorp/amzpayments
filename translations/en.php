@@ -52,6 +52,7 @@ $_MODULE['<{amzpayments}prestashop>amzpayments_ae4c4cf30cd90f81043dbb2c11737abc'
 $_MODULE['<{amzpayments}prestashop>amzpayments_ec3028a12402ab7f43962a6f3a667b6e'] = 'Debug mode';
 $_MODULE['<{amzpayments}prestashop>amzpayments_f5a735281f39303fc086967c17240930'] = 'Enabling this option hides the Amazon Pay and Login with Amazon buttons without deactivating the plugin. (Default: No)';
 $_MODULE['<{amzpayments}prestashop>amzpayments_c08ff5513b2075eb1412b877ee9217d6'] = 'Hide the button Amazon Pay in the Mini-Cart';
+$_MODULE['<{amzpayments}prestashop>amzpayments_c17f8ed4a5c2fbb603f865ee55224e3d'] = 'Hide Button Login with Amazon in Frontend on Menu bar';
 $_MODULE['<{amzpayments}prestashop>amzpayments_b0a259caf5859656158f5dba394dd66a'] = 'Configuration mode';
 $_MODULE['<{amzpayments}prestashop>amzpayments_09e25737d231f0632c11b0d9ca7cb111'] = 'Standard Configuration (fits most shops)';
 $_MODULE['<{amzpayments}prestashop>amzpayments_c70ec5b31b31ecef0efd3ea40e33909f'] = 'Advanced Configuration';
@@ -90,6 +91,10 @@ $_MODULE['<{amzpayments}prestashop>amzpayments_8ca375c6592b647c03a3cc82b7fe7a4d'
 $_MODULE['<{amzpayments}prestashop>amzpayments_c04ebe325508c235b55c9de33ae618ae'] = 'Amazon Pay mode';
 $_MODULE['<{amzpayments}prestashop>amzpayments_0150ba1f660d87e6d3958d9c0b493754'] = 'Sandbox (test)';
 $_MODULE['<{amzpayments}prestashop>amzpayments_2cbe49fb4e1f526708cad0f313d9530b'] = 'Production (live)';
+$_MODULE['<{amzpayments}prestashop>amzpayments_5e487720755d975e21ba1b65790467e2'] = 'Optimized checkout enables one page checkout with Amazon Pay. Please ensure all third party modules are compatible before activating this option.';
+$_MODULE['<{amzpayments}prestashop>amzpayments_59aad85b376259844b471a758908a3c1'] = 'Order process type';
+$_MODULE['<{amzpayments}prestashop>amzpayments_6e539d2ea7d82ed0e31c450e64ff8c04'] = 'Optimized';
+$_MODULE['<{amzpayments}prestashop>amzpayments_eb6d8ae6f20283755b339c0dc273988b'] = 'Standard';
 $_MODULE['<{amzpayments}prestashop>amzpayments_270f198a451934a1dbc775934c2ee97a'] = 'Amazon Pay banners and acceptance marks';
 $_MODULE['<{amzpayments}prestashop>amzpayments_745139c1b4cf740dda8b161adab5af13'] = 'Amazon Pay banner in your website header';
 $_MODULE['<{amzpayments}prestashop>amzpayments_ae284f900f9d6e21ba69144cfc91e41b'] = 'Style';
@@ -113,6 +118,7 @@ $_MODULE['<{amzpayments}prestashop>amzpayments_2be7c266f3a1f39791f18e3ee4731fa5'
 $_MODULE['<{amzpayments}prestashop>amzpayments_31a2f49179703a2e9762d620044dde00'] = 'Button color';
 $_MODULE['<{amzpayments}prestashop>amzpayments_da3d3cfa54113652c31233de9d533637'] = 'Button type';
 $_MODULE['<{amzpayments}prestashop>amzpayments_25e29d9c17462795383c7c21c965ad99'] = 'Login with Amazon';
+$_MODULE['<{amzpayments}prestashop>amzpayments_ed20689b0d8d53ec534166a88b67f259'] = 'Pay with Amazon';
 $_MODULE['<{amzpayments}prestashop>amzpayments_f8928b5290746aa6041f3caa35d3e182'] = 'Authorisation';
 $_MODULE['<{amzpayments}prestashop>amzpayments_a240fa27925a635b08dc28c9e4f9216d'] = 'Order';
 $_MODULE['<{amzpayments}prestashop>amzpayments_ab85d9edc966536822a98a25f7d8640a'] = 'Withdrawal';
@@ -123,7 +129,12 @@ $_MODULE['<{amzpayments}prestashop>amzpayments_7de64f538bdd7057ea1bbf5b46572d67'
 $_MODULE['<{amzpayments}prestashop>amzpayments_b61e6091002c179e64a0ae5893f188e9'] = 'It seems that the GSM number you provided is incorrect. Please provide a french GSM number, starting with 06 or 07, on 10 consecutive digits.';
 $_MODULE['<{amzpayments}prestashop>amzpayments_5aa818b1473c50ce1b40bf66663182c6'] = 'Your selected payment method is currently not available. Please select another one.';
 $_MODULE['<{amzpayments}prestashop>amzpayments_a2af94a3e3857e4903cf97df11fd9440'] = 'Your selected payment method was rejected. Please choose an alternative method.';
+$_MODULE['<{amzpayments}prestashop>amzpayments_3a9a60d1f57307e0bfe6af43346d16d1'] = 'We are unable to ship to this address. Please select a different address.';
+$_MODULE['<{amzpayments}prestashop>payment_e2b7dec8fa4b498156dfee6e4c84b156'] = 'This payment method is not available.';
+$_MODULE['<{amzpayments}prestashop>payment_5aa818b1473c50ce1b40bf66663182c6'] = 'Your selected payment method is currently not available. Please select another one.';
+$_MODULE['<{amzpayments}prestashop>payment_a2af94a3e3857e4903cf97df11fd9440'] = 'Your selected payment method has been declined. Please chose another one.';
 $_MODULE['<{amzpayments}prestashop>select_address_7de64f538bdd7057ea1bbf5b46572d67'] = 'Please fill in the missing fields to save your address.';
+$_MODULE['<{amzpayments}prestashop>select_address_3a9a60d1f57307e0bfe6af43346d16d1'] = 'We are unable to ship to this address. Please select a different address.';
 $_MODULE['<{amzpayments}prestashop>configuration_d4ac586eb2ff19ecdfc3f10a4f5d3a36'] = 'If you need help, please [1]contact our support[/1]';
 $_MODULE['<{amzpayments}prestashop>configuration_0f98b7f230f3c91292f0de4c99e263f2'] = 'Registration';
 $_MODULE['<{amzpayments}prestashop>configuration_c2cc7082a89c1ad6631a2f66af5f00c0'] = 'Connection';
@@ -153,12 +164,12 @@ $_MODULE['<{amzpayments}prestashop>configuration_f95688699f0eb1007087c093f193666
 $_MODULE['<{amzpayments}prestashop>configuration_b058c7936860a647f3fd0eae0dff5979'] = 'Watch our full integration video here';
 $_MODULE['<{amzpayments}prestashop>configuration_ed5270940f7c3e5821155fe656a9bd78'] = 'Import your access keys';
 $_MODULE['<{amzpayments}prestashop>configuration_cd54e5c761ccb90b91867ba3be2d6a2e'] = 'The access keys are needed to secure the communication between your site and the Amazon servers';
+$_MODULE['<{amzpayments}prestashop>configuration_239171169b6415fc88b1821eb5b4e507'] = 'See how to do it';
+$_MODULE['<{amzpayments}prestashop>configuration_a4b9568fc14086fa08882e1a14bcb5e7'] = 'Watch it';
 $_MODULE['<{amzpayments}prestashop>configuration_03e8d6bf34f474de2ef07b36343bcb59'] = 'Sign in to your account on Seller Central, in a new browser window';
 $_MODULE['<{amzpayments}prestashop>configuration_7512d7b7242fa76cb90f653539080e4a'] = 'Click [1]Integration[/1], and then click [2]MWS Access Key[/2].';
 $_MODULE['<{amzpayments}prestashop>configuration_296f8fa8f0b2f3bc4c0b980d23637cf3'] = 'Click the [1]Copy your keys[/1] button in the top right corner to generate the keys.';
 $_MODULE['<{amzpayments}prestashop>configuration_3180631e9fb349031e8a8a43fca1d38a'] = 'Highlight the text [1]with the curly brackets[/1] in the popup and copy it to the clipboard.';
-$_MODULE['<{amzpayments}prestashop>configuration_239171169b6415fc88b1821eb5b4e507'] = 'See how to do it';
-$_MODULE['<{amzpayments}prestashop>configuration_a4b9568fc14086fa08882e1a14bcb5e7'] = 'Watch it';
 $_MODULE['<{amzpayments}prestashop>configuration_b77d381d8910d94807bca1c6094ea215'] = 'Paste your keys into the box below';
 $_MODULE['<{amzpayments}prestashop>configuration_e7c72a06b2a882266b0148fe6451bc54'] = 'Select your region and click [1]Save[/1]';
 $_MODULE['<{amzpayments}prestashop>configuration_4dc2cd1c07d8b13d9ad8b985cc4623cc'] = 'Please wait a few seconds while the access keys are verified.';
@@ -169,10 +180,10 @@ $_MODULE['<{amzpayments}prestashop>configuration_cbd7d11be1d39f5691928580e8cadaf
 $_MODULE['<{amzpayments}prestashop>configuration_7b8ba9e137a2612d6562f1f242bbf0de'] = 'Add your Instant Payments Notification (IPN) URL to your account in Seller Central';
 $_MODULE['<{amzpayments}prestashop>configuration_47cb9c5ede68256278c57d563c1df215'] = 'The IPN URL enables your store to receive payment notifications from Amazon Pay';
 $_MODULE['<{amzpayments}prestashop>configuration_c1a77e055f85eb950cd2d052ec8b48b9'] = 'Your Instant Payment Notification (IPN) URL:';
+$_MODULE['<{amzpayments}prestashop>configuration_c2722d3c32348b7adce5bfed9f61449a'] = 'See instructions';
 $_MODULE['<{amzpayments}prestashop>configuration_ec57ef7359362988bf9fad790959d49a'] = 'Copy your IPN URL to the clipboard';
 $_MODULE['<{amzpayments}prestashop>configuration_936ccdb97115e9f35a11d35e3d5b5cad'] = 'Click here';
 $_MODULE['<{amzpayments}prestashop>configuration_6553158f63d2312ee3b3334af066bad0'] = 'Paste the URL into the [1]Merchant URL[/1] field';
-$_MODULE['<{amzpayments}prestashop>configuration_c2722d3c32348b7adce5bfed9f61449a'] = 'See instructions';
 $_MODULE['<{amzpayments}prestashop>configuration_ed1ef5f8a0138e0a4965b9ef00626cd9'] = 'Add your Allowed JavaScript Origins and Return URLs to your account in Seller Central';
 $_MODULE['<{amzpayments}prestashop>configuration_f82018792ad5426aa329cc2603d65d92'] = 'Please enter these URLs in your Amazon Pay account so that Login with Amazon SDK for JavaScript can be authorized to run on your website';
 $_MODULE['<{amzpayments}prestashop>configuration_58b01895bc2e40a3a368219d1da28647'] = 'Allowed JavaScript Origins:';
@@ -188,7 +199,6 @@ $_MODULE['<{amzpayments}prestashop>configuration_c6113ea0aae1dfd6c1d5d3d8c862adf
 $_MODULE['<{amzpayments}prestashop>configuration_1741492a94a028449c414a6e59d0ce07'] = 'Notifications are also stored in your account in Seller Central. To view them in Seller Central, click [1]Performance[/1], and then click [2]Performance Notifications[/2].';
 $_MODULE['<{amzpayments}prestashop>configuration_337c8baa4bba5b0de686c5382c8797b6'] = 'Check your Amazon Payments account notifications';
 $_MODULE['<{amzpayments}prestashop>configuration_dc3fd488f03d423a04da27ce66274c1b'] = 'Warning!';
-$_MODULE['<{amzpayments}prestashop>configuration_41492f0e85928cf901730467ec5000bf'] = 'You don’t have any active SSL certificate installed. [1]Contact Amazon Pay merchant support[/1] and let them help you with this issue.';
 $_MODULE['<{amzpayments}prestashop>configuration_b9706138f0b69249322030554a9dcb4e'] = 'You don’t have any active SSL certificate installed. To use Amazon Pay on your website you need a SSL certificate installed.';
 $_MODULE['<{amzpayments}prestashop>configuration_028df3a671f839be9dd239cef9e4c137'] = 'Your Amazon Pay account has not been validated. Please check your performance notifications to know what information has to be provided.';
 $_MODULE['<{amzpayments}prestashop>configuration_8ca5ded755765f877398152c0f5b6b35'] = 'Really reset to default values?';
@@ -199,6 +209,8 @@ $_MODULE['<{amzpayments}prestashop>configuration_0ba890d82c0677c9e88bc916201091d
 $_MODULE['<{amzpayments}prestashop>configuration_38fc8a7deae613f0c601056b656e1346'] = 'Payment transaction status';
 $_MODULE['<{amzpayments}prestashop>configuration_4564539ca269d77fd7748e9cafbba8e1'] = 'Automatic email';
 $_MODULE['<{amzpayments}prestashop>configuration_c216609c5554c1232b908a10570de05b'] = 'Payment status updates';
+$_MODULE['<{amzpayments}prestashop>configuration_13c051309993039f29fadf07172c6f63'] = 'Do you confirm?';
+$_MODULE['<{amzpayments}prestashop>configuration_11147f7b7be2edc7d0eece039692df11'] = 'Set Amazon Pay as first payment method';
 $_MODULE['<{amzpayments}prestashop>configuration_c9cc8cce247e49bae79f15173ce97354'] = 'Save';
 $_MODULE['<{amzpayments}prestashop>configuration_174ca35d99905e2ceb512c6789b1bed7'] = 'You can integrate the \"Login with Amazon\"-Button at any part of your template. Just use the following HTML-Code, but be aware to always (!) use a unique value for the attribute \"id\":';
 $_MODULE['<{amzpayments}prestashop>configuration_6381578df727e9c51ee4941e1f18909f'] = 'Don\'t have an Amazon Pay account?';
@@ -255,6 +267,10 @@ $_MODULE['<{amzpayments}prestashop>address_field_ea318a4ad37f0c2d2c368e6c958ed55
 $_MODULE['<{amzpayments}prestashop>address_field_fe66abce284ec8589e7d791185b5c442'] = 'Home phone';
 $_MODULE['<{amzpayments}prestashop>address_field_41c2fff4867cc204120f001e7af20f7a'] = 'Mobile phone';
 $_MODULE['<{amzpayments}prestashop>address_field_46a2a41cc6e552044816a2d04634545d'] = 'State';
+$_MODULE['<{amzpayments}prestashop>addresswallet_36b6db0867fcb4e19142bf7f925ab71f'] = 'Select your address and payment method';
+$_MODULE['<{amzpayments}prestashop>addresswallet_a3c4f039e538cf633e2acb804c236d70'] = 'Select your delivery address and your payment method from your Amazon account, to go through the checkout quickly and easily.';
+$_MODULE['<{amzpayments}prestashop>addresswallet_a0bfb8e59e6c13fc8d990781f77694fe'] = 'Continue';
+$_MODULE['<{amzpayments}prestashop>addresswallet_daa6b483e9f6ca081ec7e0b4a352f9e9'] = 'Save changes';
 $_MODULE['<{amzpayments}prestashop>amzpayments_c9cc8cce247e49bae79f15173ce97354'] = 'Save';
 $_MODULE['<{amzpayments}prestashop>amzpayments_fa31ce6046882558f0637d428a96abeb'] = 'Create customer account.';
 $_MODULE['<{amzpayments}prestashop>amzpayments_9a1ff3881b92951d9663aaef38e8b637'] = 'You don\'t need to do anything. We create the account with the data of your current order.';
@@ -318,3 +334,5 @@ $_MODULE['<{amzpayments}prestashop>displaytopcolumn_2e2117b7c81aa9ea6931641ea2c6
 $_MODULE['<{amzpayments}prestashop>displaytopcolumn_75fbf512d744977d62599cc3f0ae2bb4'] = 'is complete.';
 $_MODULE['<{amzpayments}prestashop>payment_ed20689b0d8d53ec534166a88b67f259'] = 'Pay with Amazon';
 $_MODULE['<{amzpayments}prestashop>payment_8811becbf523354e20e2017242326f70'] = '(Comfortable and save payment with your amazon-account)';
+$_MODULE['<{amzpayments}prestashop>payment_optype_std_64a985a7c1cdd62470ecddd37d04ebc9'] = 'Buy now with Amazon Pay';
+$_MODULE['<{amzpayments}prestashop>paymentreset_3f350de08883a6ac8983d5400e4fd43b'] = 'You have chosen Amazon Pay – please click here for an alternate payment method';

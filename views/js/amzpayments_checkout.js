@@ -153,6 +153,7 @@ function updateAddressSelection(amazonOrderReferenceId)
 				if (jsonData.fields_html) {
 					$("#addressMissings").empty();
 					$("#addressMissings").html(jsonData.fields_html);
+					$("#addressMissings").fadeIn();
 					$("#submitAddress").fadeIn();
 					$("#submitAddress").unbind('click').on('click', function() { updateAddressSelection(amazonOrderReferenceId); });
 				}				
@@ -162,49 +163,52 @@ function updateAddressSelection(amazonOrderReferenceId)
 			else
 			{
 				$("#submitAddress").fadeOut('fast', function() { $("#addressMissings").empty(); checkCGV(); });
+				$("#addressMissings").fadeOut();
 				if (jsonData.refresh)
 					location.reload();
-				$('#cart_summary .address_'+deliveryAddress).each(function() {
-					$(this)
-						.removeClass('address_'+deliveryAddress)
-						.addClass('address_'+idAddress_delivery);
-					$(this).attr('id', $(this).attr('id').replace(/_\d+$/, '_'+idAddress_delivery));
-					if ($(this).find('.cart_unit span').length > 0 && $(this).find('.cart_unit span').attr('id').length > 0)
-						$(this).find('.cart_unit span').attr('id', $(this).find('.cart_unit span').attr('id').replace(/_\d+$/, '_'+idAddress_delivery));
-
-					if ($(this).find('.cart_total span').length > 0 && $(this).find('.cart_total span').attr('id').length > 0)
-						$(this).find('.cart_total span').attr('id', $(this).find('.cart_total span').attr('id').replace(/_\d+$/, '_'+idAddress_delivery));
-
-					if ($(this).find('.cart_quantity_input').length > 0 && $(this).find('.cart_quantity_input').attr('name').length > 0)
-					{
-						var name = $(this).find('.cart_quantity_input').attr('name')+'_hidden';
-						$(this).find('.cart_quantity_input').attr('name', $(this).find('.cart_quantity_input').attr('name').replace(/_\d+$/, '_'+idAddress_delivery));
-						if ($(this).find('[name='+name+']').length > 0)
-							$(this).find('[name='+name+']').attr('name', name.replace(/_\d+_hidden$/, '_'+idAddress_delivery+'_hidden'));
-					}
-
-					if ($(this).find('.cart_quantity_delete').length > 0 && $(this).find('.cart_quantity_delete').attr('id').length > 0)
-					{
-						$(this).find('.cart_quantity_delete')
-							.attr('id', $(this).find('.cart_quantity_delete').attr('id').replace(/_\d+$/, '_'+idAddress_delivery))
-							.attr('href', $(this).find('.cart_quantity_delete').attr('href').replace(/id_address_delivery=\d+&/, 'id_address_delivery='+idAddress_delivery+'&'));
-					}
-					
-					if ($(this).find('.cart_quantity_down').length > 0 && $(this).find('.cart_quantity_down').attr('id').length > 0)
-					{
-						$(this).find('.cart_quantity_down')
-							.attr('id', $(this).find('.cart_quantity_down').attr('id').replace(/_\d+$/, '_'+idAddress_delivery))
-							.attr('href', $(this).find('.cart_quantity_down').attr('href').replace(/id_address_delivery=\d+&/, 'id_address_delivery='+idAddress_delivery+'&'));
-					}
-
-					if ($(this).find('.cart_quantity_up').length > 0 && $(this).find('.cart_quantity_up').attr('id').length > 0)
-					{
-						$(this).find('.cart_quantity_up')
-							.attr('id', $(this).find('.cart_quantity_up').attr('id').replace(/_\d+$/, '_'+idAddress_delivery))
-							.attr('href', $(this).find('.cart_quantity_up').attr('href').replace(/id_address_delivery=\d+&/, 'id_address_delivery='+idAddress_delivery+'&'));
-					}	
-				});
-
+				
+				try {
+					$('#cart_summary .address_'+deliveryAddress).each(function() {
+						$(this)
+							.removeClass('address_'+deliveryAddress)
+							.addClass('address_'+idAddress_delivery);
+						$(this).attr('id', $(this).attr('id').replace(/_\d+$/, '_'+idAddress_delivery));
+						if ($(this).find('.cart_unit span').length > 0 && $(this).find('.cart_unit span').attr('id') !== undefined && $(this).find('.cart_unit span').attr('id').length > 0)
+							$(this).find('.cart_unit span').attr('id', $(this).find('.cart_unit span').attr('id').replace(/_\d+$/, '_'+idAddress_delivery));
+	
+						if ($(this).find('.cart_total span').length > 0&& $(this).find('.cart_total span').attr('id') !== undefined && $(this).find('.cart_total span').attr('id').length > 0)
+							$(this).find('.cart_total span').attr('id', $(this).find('.cart_total span').attr('id').replace(/_\d+$/, '_'+idAddress_delivery));
+	
+						if ($(this).find('.cart_quantity_input').length > 0 && $(this).find('.cart_quantity_input').attr('id') !== undefined && $(this).find('.cart_quantity_input').attr('name').length > 0)
+						{
+							var name = $(this).find('.cart_quantity_input').attr('name')+'_hidden';
+							$(this).find('.cart_quantity_input').attr('name', $(this).find('.cart_quantity_input').attr('name').replace(/_\d+$/, '_'+idAddress_delivery));
+							if ($(this).find('[name='+name+']').length > 0)
+								$(this).find('[name='+name+']').attr('name', name.replace(/_\d+_hidden$/, '_'+idAddress_delivery+'_hidden'));
+						}
+	
+						if ($(this).find('.cart_quantity_delete').length > 0 && $(this).find('.cart_quantity_delete').attr('id') !== undefined && $(this).find('.cart_quantity_delete').attr('id').length > 0)
+						{
+							$(this).find('.cart_quantity_delete')
+								.attr('id', $(this).find('.cart_quantity_delete').attr('id').replace(/_\d+$/, '_'+idAddress_delivery))
+								.attr('href', $(this).find('.cart_quantity_delete').attr('href').replace(/id_address_delivery=\d+&/, 'id_address_delivery='+idAddress_delivery+'&'));
+						}
+						
+						if ($(this).find('.cart_quantity_down').length > 0 && $(this).find('.cart_quantity_down').attr('id') !== undefined && $(this).find('.cart_quantity_down').attr('id').length > 0)
+						{
+							$(this).find('.cart_quantity_down')
+								.attr('id', $(this).find('.cart_quantity_down').attr('id').replace(/_\d+$/, '_'+idAddress_delivery))
+								.attr('href', $(this).find('.cart_quantity_down').attr('href').replace(/id_address_delivery=\d+&/, 'id_address_delivery='+idAddress_delivery+'&'));
+						}
+	
+						if ($(this).find('.cart_quantity_up').length > 0 && $(this).find('.cart_quantity_up').attr('id') !== undefined && $(this).find('.cart_quantity_up').attr('id').length > 0)
+						{
+							$(this).find('.cart_quantity_up')
+								.attr('id', $(this).find('.cart_quantity_up').attr('id').replace(/_\d+$/, '_'+idAddress_delivery))
+								.attr('href', $(this).find('.cart_quantity_up').attr('href').replace(/id_address_delivery=\d+&/, 'id_address_delivery='+idAddress_delivery+'&'));
+						}	
+					});
+				} catch(err) { }
 
 				deliveryAddress = idAddress_delivery;
 				if (window.ajaxCart !== undefined)

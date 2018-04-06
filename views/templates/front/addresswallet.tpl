@@ -7,28 +7,36 @@
 *  @copyright  2013-2015 patworx multimedia GmbH
 *  @license    Released under the GNU General Public License
 *}
-{capture name=path}{l s='Select your address' mod='amzpayments'}{/capture}
+{capture name=path}{l s='Select your address and payment method' mod='amzpayments'}{/capture}
 {nocache}
 <script>
 {literal}
 {/literal}
 </script>
 
-<h1>{l s='Thank you for using Login with Amazon in our Shop.' mod='amzpayments'}</h1>
+{include file="$tpl_dir./errors.tpl"}
 
-<p>
-	{l s='Please select a default address for your account creation. You will be able to choose a different shipping address during checkout.' mod='amzpayments'}
-</p>
+<h4>{l s='Select your delivery address and your payment method from your Amazon account, to go through the checkout quickly and easily.' mod='amzpayments'}</h4>
 
 <div class="row">
-	<div class="col-xs-12 col-sm-6" id="addressBookWidgetDivBs">
+	<div class="col-xs-12 col-sm-6">
+		<div class="row">
+			<div class="col-xs-12" id="addressBookWidgetDivBs">
+			</div>
+			<div class="col-xs-12" id="addressMissings">		
+			</div>
+		</div>
 	</div>
-	<div class="col-xs-12 col-sm-6" id="addressMissings">		
+	<div class="col-xs-12 col-sm-6">
+		<div class="row">
+			<div class="col-xs-12" id="walletWidgetDivBs">
+			</div>
+		</div>
 	</div>
 </div>
 
 <div class="row">
-	<div class="col-xs-12">
+	<div class="col-xs-12 text-right">
 		<button type="button" id="submitAddress" name="submitAddress" class="button btn btn-default button-medium" style="display:none;" data-continue="{l s='Continue' mod='amzpayments'}" data-change="{l s='Save changes' mod='amzpayments'}">
 			<span>
 				{l s='Continue' mod='amzpayments'}
@@ -56,6 +64,18 @@ jQuery(document).ready(function($) {
 			console.log(error.getErrorMessage());
 		}
 	}).bind("addressBookWidgetDivBs");
+	new OffAmazonPayments.Widgets.Wallet({
+		sellerId: '{/literal}{$sellerID|escape:'htmlall':'UTF-8'}{literal}',
+		{/literal}{if $amz_session != ''}{literal}amazonOrderReferenceId: '{/literal}{$amz_session|escape:'htmlall':'UTF-8'}{literal}', {/literal}{/if}{literal}
+		design: {
+			designMode: 'responsive'
+		},
+		onPaymentSelect: function(orderReference) {
+		},
+		onError: function(error) {
+			console.log(error.getErrorMessage());
+		}
+	}).bind("walletWidgetDivBs");	
 });
 
 
@@ -64,12 +84,12 @@ function updateAddressSelection(amazonOrderReferenceId)
 	$("#submitAddress").fadeOut();
 	var idAddress_delivery = 0;
 	var idAddress_invoice = idAddress_delivery;
+	var returnback = {/literal}'{$step|escape:'javascript':'UTF-8'|urlencode}'{literal};
 	
 	var additional_fields = '';
 	$("#addressMissings .additional_field").each(function() {
 		additional_fields += '&add[' + $(this).attr("name") + ']=' + $(this).val();		
-	});
-	
+	});	
 	
 	$.ajax({
 		type: 'POST',
@@ -78,7 +98,7 @@ function updateAddressSelection(amazonOrderReferenceId)
 		async: true,
 		cache: false,
 		dataType : "json",
-		data: 'amazonOrderReferenceId=' + amazonOrderReferenceId + '&allow_refresh=1&ajax=true&method=updateAddressesSelected&id_address_delivery=' + idAddress_delivery + '&id_address_invoice=' + idAddress_invoice + '&token=' + static_token + additional_fields,
+		data: 'src=addresswallet&returnback=' + returnback + '&amazonOrderReferenceId=' + amazonOrderReferenceId + '&allow_refresh=1&ajax=true&method=updateAddressesSelected&id_address_delivery=' + idAddress_delivery + '&id_address_invoice=' + idAddress_invoice + '&token=' + static_token + additional_fields,
 		success: function(jsonData)
 		{
 			if (jsonData.hasError)

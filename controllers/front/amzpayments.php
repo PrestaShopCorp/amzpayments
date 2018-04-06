@@ -65,6 +65,15 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
         }
 
         self::$amz_payments = new AmzPayments();
+        
+        if (self::$amz_payments->order_process_type == 'standard') {
+            $params = array();
+            if (Tools::getValue('amazon_id')) {
+                $params['session'] = Tools::getValue('amazon_id');
+            }
+            Tools::redirect($this->context->link->getModuleLink('amzpayments', 'addresswallet', $params));
+        }
+        
         $this->isLogged = (bool) $this->context->customer->id && Customer::customerIdExistsStatic((int) $this->context->cookie->id_customer);
 
         parent::init();
@@ -145,7 +154,6 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                 $d = self::$amz_payments->requestTokenInfo(AmzPayments::prepareCookieValueForAmazonPaymentsUse($this->context->cookie->amz_access_token));
 
                                 if ($d->aud != self::$amz_payments->client_id) {
-                                    error_log('auth error LPA');
                                     die('error');
                                 }
 
@@ -484,7 +492,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                 foreach (AmazonPaymentsAddressHelper::$validation_errors as $errMsg) {
                                     $this->errors[] = $errMsg;
                                 }
-                                self::$amz_payments->exceptionLog(false, "Customer login, missing address Data: \r\n" . print_r($this->errors, true));
+                                self::$amz_payments->exceptionLog(false, "Customer login, missing address Data: \r\n" . print_r($this->errors, true) . "\r\n\r\n" . self::$amz_payments->debugAddressObject($address_delivery));
                             }
 
                             if (! count($this->errors)) {
@@ -784,7 +792,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                         AmazonPaymentsAddressHelper::saveAddressAmazonReference($address_delivery, Tools::getValue('amazonOrderReferenceId'), $physical_destination);
                                         $this->context->cart->id_address_delivery = $address_delivery->id;
                                     } catch (Exception $e) {
-                                        $this->exceptionLog($e);
+                                        $this->exceptionLog($e, "\r\n\r\n" . self::$amz_payments->debugAddressObject($address_delivery));
                                     }
                                 }
 
@@ -1010,7 +1018,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                         try {
                                             $address_delivery->save();
                                         } catch (Exception $e) {
-                                            $this->exceptionLog($e);
+                                            $this->exceptionLog($e, "\r\n\r\n" . self::$amz_payments->debugAddressObject($address_delivery));
                                         }
                                     }
                                     if (! AmzPayments::addressAlreadyExists($address_invoice, $customer)) {
@@ -1018,7 +1026,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                         try {
                                             $address_invoice->save();
                                         } catch (Exception $e) {
-                                            $this->exceptionLog($e);
+                                            $this->exceptionLog($e, "\r\n\r\n" . self::$amz_payments->debugAddressObject($address_invoice));
                                         }
                                     }
                                 } else {
@@ -1028,7 +1036,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                             try {
                                                 $address_delivery->save();
                                             } catch (Exception $e) {
-                                                $this->exceptionLog($e);
+                                                $this->exceptionLog($e, "\r\n\r\n" . self::$amz_payments->debugAddressObject($address_delivery));
                                             }
                                         }
                                         if (! AmzPayments::addressAlreadyExists($address_invoice, $registered_customer)) {
@@ -1036,7 +1044,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                             try {
                                                 $address_invoice->save();
                                             } catch (Exception $e) {
-                                                $this->exceptionLog($e);
+                                                $this->exceptionLog($e, "\r\n\r\n" . self::$amz_payments->debugAddressObject($address_invoice));
                                             }
                                         }
                                     }

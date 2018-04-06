@@ -240,6 +240,44 @@ p.payment_module a.amzPayments::after {
 		width: 100%;
 		padding: 37px;
 		padding-left: 190px;
-	}
-	
+	}	
+}
+
+p.payment_module a.amzPaymentsPayNow {
+	border: 1px solid #ff9900;
+	background-color: rgba(255, 153, 0, .1);
+}
+.show_alternative_payment_methods {
+	cursor: pointer;	
+}
+p.payment_module a.amzPaymentsPayNow:link, p.payment_module a.amzPaymentsPayNow:visited {
+	color: #000;
+}
+p.payment_module a.amzPaymentsPayNow span {
+	display: inline-block;
+	box-sizing: border-box;
+	text-decoration: none;
+	white-space: nowrap;
+	border-radius: 4px;
+	color: #000;
+	padding: 10px;
+	background: #ffd65e; /* Old browsers */
+	background: -moz-linear-gradient(top, #ffd65e 0%, #febf04 100%); /* FF3.6-15 */
+	background: -webkit-linear-gradient(top, #ffd65e 0%,#febf04 100%); /* Chrome10-25,Safari5.1-6 */
+	background: linear-gradient(to bottom, #ffd65e 0%,#febf04 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffd65e', endColorstr='#febf04',GradientType=0 ); /* IE6-9 */	
+}
+p.payment_module a.amzPaymentsPayNow span:hover {
+	background: #ffd65e; /* Old browsers */
+	background: -moz-linear-gradient(top, #febf04 0%, #ffd65e 100%); /* FF3.6-15 */
+	background: -webkit-linear-gradient(top, #febf04 0%,#ffd65e 100%); /* Chrome10-25,Safari5.1-6 */
+	background: linear-gradient(to bottom, #febf04 0%,#ffd65e 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#febf04', endColorstr='#ffd65e',GradientType=0 ); /* IE6-9 */	
+}
+p.amzpay_reset {
+	font-size: .8em;
+}
+
+#addressMissings .additional_field {
+	border: 2px solid orange;
 }

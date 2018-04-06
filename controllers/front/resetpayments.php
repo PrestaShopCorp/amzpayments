@@ -19,7 +19,7 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
-class AmzpaymentsProcess_LoginModuleFrontController extends ModuleFrontController
+class AmzpaymentsResetpaymentsModuleFrontController extends ModuleFrontController
 {
     
     public $ssl = true;
@@ -29,16 +29,6 @@ class AmzpaymentsProcess_LoginModuleFrontController extends ModuleFrontControlle
     public $display_column_left = false;
     
     public $display_column_right = false;
-    
-    public $service;
-    
-    protected $ajax_refresh = false;
-    
-    protected $css_files_assigned = array();
-    
-    protected $js_files_assigned = array();
-    
-    protected static $amz_payments = '';
     
     public function __construct()
     {
@@ -55,31 +45,24 @@ class AmzpaymentsProcess_LoginModuleFrontController extends ModuleFrontControlle
     
     public function init()
     {
-        self::$amz_payments = new AmzPayments();
-        $this->isLogged = (bool) $this->context->customer->id && Customer::customerIdExistsStatic((int) $this->context->cookie->id_customer);
-        
-        parent::init();
-        
-        /* Disable some cache related bugs on the cart/order */
-        header('Cache-Control: no-cache, must-revalidate');
-        header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
-        
-        $this->display_column_left = false;
-        $this->display_column_right = false;
-        
-        // Service initialisieren
-        $this->service = self::$amz_payments->getService();
-    }
-    
-    public function initContent()
-    {
-        parent::initContent();
-        
-        unset($this->context->cookie->amazon_id);
-        
-        $this->context->smarty->assign('toCheckout', Tools::getValue('toCheckout'));
-        $this->context->smarty->assign('fromCheckout', Tools::getValue('fromCheckout'));
-        
-        $this->setTemplate('process_login.tpl');
+        if (isset($this->context->cookie->amazon_id)) {
+            unset($this->context->cookie->amazon_id);
+        }
+        if (isset($this->context->cookie->amz_access_token)) {
+            unset($this->context->cookie->amz_access_token);
+        }
+        if (isset($this->context->cookie->amz_access_token_set_time)) {
+            unset($this->context->cookie->amz_access_token_set_time);
+        }
+        if (isset($this->context->cart->id_address_delivery)) {
+            $this->context->cart->id_address_delivery = 0;
+        }
+        if (isset($this->context->cart->id_address_invoice)) {
+            $this->context->cart->id_address_invoice = 0;
+        }
+        if (isset($this->context->cookie->has_set_valid_amazon_address)) {
+            unset($this->context->cookie->has_set_valid_amazon_address);
+        }
+        Tools::redirect(_PS_BASE_URL_SSL_ . __PS_BASE_URI__ . 'index.php?controller=order');
     }
 }

@@ -25,11 +25,22 @@ $(document).ready(function(){
 	if ($("#amzconnect").length > 0) {
 		
 		connect_area = '#fieldset_0 .form-wrapper';
+		if ($(connect_area).length < 1) { connect_area = '#fieldset_0 .form-group'; }
+		
 		config_area = '#fieldset_1_1';
+		if ($(config_area).length < 1) { config_area = '#fieldset_1'; }
+		
 		advanced_config_area = '#fieldset_2_2, #fieldset_3_3, #fieldset_4_4, #fieldset_5_5';
+		if ($(advanced_config_area).length < 1) { advanced_config_area = '#fieldset_2, #fieldset_3, #fieldset_4, #fieldset_5'; }
+		
 		mode_area = '#fieldset_6_6';
+		if ($(mode_area).length < 1) { mode_area = '#fieldset_6'; }
+		
 		banners_area = '#fieldset_7_7';
+		if ($(banners_area).length < 1) { banners_area = '#fieldset_7'; }
+		
 		buttons_area = '#fieldset_8_8';
+		if ($(buttons_area).length < 1) { buttons_area = '#fieldset_8'; }
 		
 		$(connect_area).detach().appendTo('#amzconnect #amzconnectform').show();
 		$(config_area).detach().prependTo('#amzconfiguration').show();
@@ -45,6 +56,8 @@ $(document).ready(function(){
 		$("#payment_states").detach().prependTo($("#AMZ_ORDER_STATUS_ID").closest('.form-group'));
 		$("#email_state").detach().prependTo($("#SEND_MAILS_ON_DECLINE_on").closest('.form-group'));
 		$("#amazon_notification").detach().prependTo($("#IPN_STATUS_on").closest('.form-group'));
+		
+		$("#restorehooks").detach().appendTo($("#AMZ_ORDER_PROCESS_TYPE").closest('div'));
 				
 		$("button[name=submitAmzpaymentsModuleConnect]").on('click', function() {
 			$("#missingerror, #jsonerror").hide();

@@ -66,7 +66,7 @@ jQuery(document).ready(function($) {
 	}).bind("addressBookWidgetDivBs");
 	new OffAmazonPayments.Widgets.Wallet({
 		sellerId: '{/literal}{$sellerID|escape:'htmlall':'UTF-8'}{literal}',
-		{/literal}{if $amz_session != ''}{literal}amazonOrderReferenceId: '{/literal}{$amz_session|escape:'htmlall':'UTF-8'}{literal}', {/literal}{/if}{literal}
+		{/literal}{if isset($amz_session) && $amz_session != ''}{literal}amazonOrderReferenceId: '{/literal}{$amz_session|escape:'htmlall':'UTF-8'}{literal}', {/literal}{/if}{literal}
 		design: {
 			designMode: 'responsive'
 		},

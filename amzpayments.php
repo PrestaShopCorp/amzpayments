@@ -182,7 +182,7 @@ class AmzPayments extends PaymentModule
     {
         $this->name = 'amzpayments';
         $this->tab = 'payments_gateways';
-        $this->version = '2.2.0';
+        $this->version = '2.2.01';
         $this->author = 'patworx multimedia GmbH';
         $this->need_instance = 1;
         
@@ -390,11 +390,7 @@ class AmzPayments extends PaymentModule
         Configuration::updateValue('AMZ_PROMO_FOOTER_STYLE', false);
         Configuration::updateValue('CAPTURE_MODE', 'after_auth');
         Configuration::updateValue('LPA_MODE', 'login_pay');
-        if ($this->getDefaultModuleRegion() == 'DE') {
-            Configuration::updateValue('AMZ_ORDER_PROCESS_TYPE', 'optimized');
-        } else {
-            Configuration::updateValue('AMZ_ORDER_PROCESS_TYPE', 'standard');
-        }
+        Configuration::updateValue('AMZ_ORDER_PROCESS_TYPE', 'optimized');
     }
     
     protected function installOrderStates()

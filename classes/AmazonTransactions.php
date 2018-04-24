@@ -64,16 +64,6 @@ class AmazonTransactions
         if ($amz_payments->capture_mode == 'after_auth') {
             $authorize_request->setCaptureNow(true);
         }
-        /*
-        if ($amz_payments->provocation == 'hard_decline' && $amz_payments->environment == 'SANDBOX') {
-            $authorize_request->setSellerAuthorizationNote('{"SandboxSimulation": {"State":"Declined", "ReasonCode":"AmazonRejected"}}');
-        }
-        
-        if ($amz_payments->provocation == 'soft_decline' && $amz_payments->environment == 'SANDBOX') {
-            Context::getContext()->cookie->setHadErrorNowWallet = 1;
-            $authorize_request->setSellerAuthorizationNote('{"SandboxSimulation": {"State":"Declined", "ReasonCode":"InvalidPaymentMethod", "PaymentMethodUpdateTimeInMins":2}}');
-        }
-        */
         
         $authorize_request->setAuthorizationReferenceId(self::getNextAuthRef($order_ref));
         $authorize_request->setAuthorizationAmount(new OffAmazonPaymentsService_Model_Price());
@@ -98,6 +88,8 @@ class AmazonTransactions
             
             Db::getInstance()->insert('amz_transactions', $sql_arr);
         } catch (OffAmazonPaymentsService_Exception $e) {
+            $amz_paymentsObj = new AmzPayments();
+            $amz_paymentsObj->exceptionLog($e);
             echo 'ERROR: ' . $e->getMessage();
         }
         return $response;
@@ -136,6 +128,8 @@ class AmazonTransactions
             );
             Db::getInstance()->insert('amz_transactions', $sql_arr);
         } catch (OffAmazonPaymentsService_Exception $e) {
+            $amz_paymentsObj = new AmzPayments();
+            $amz_paymentsObj->exceptionLog($e);
             echo 'ERROR: ' . $e->getMessage();
         }
         return $response;
@@ -177,6 +171,8 @@ class AmazonTransactions
                 
                 self::setOrderStatusCapturedSuccesfully($order_ref);
             } catch (OffAmazonPaymentsService_Exception $e) {
+                $amz_paymentsObj = new AmzPayments();
+                $amz_paymentsObj->exceptionLog($e);
                 if ($display_error_message) {
                     echo 'ERROR: ' . $e->getMessage();
                 }
@@ -195,6 +191,8 @@ class AmazonTransactions
         try {
             $response = $service->closeOrderReference($orderRefRequest);
         } catch (OffAmazonPaymentsService_Exception $e) {
+            $amz_paymentsObj = new AmzPayments();
+            $amz_paymentsObj->exceptionLog($e);
             echo 'ERROR: ' . $e->getMessage();
         }
         return $response;

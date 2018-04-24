@@ -50,12 +50,16 @@
 jQuery(document).ready(function($) {
 	new OffAmazonPayments.Widgets.AddressBook({
 		sellerId: '{/literal}{$sellerID|escape:'htmlall':'UTF-8'}{literal}',
+		{/literal}{if isset($amz_session) && $amz_session != ''}{literal}amazonOrderReferenceId: '{/literal}{$amz_session|escape:'htmlall':'UTF-8'}{literal}', {/literal}{/if}{literal}
 		onOrderReferenceCreate: function(orderReference) {			
 			 amazonOrderReferenceId = orderReference.getAmazonOrderReferenceId();
 		},
 		onAddressSelect: function(orderReference) {
 			updateAddressSelection(amazonOrderReferenceId);
 		},
+		{/literal}{if isset($widgetreadonly)}{literal}		
+		displayMode: "Read",
+		{/literal}{/if}{literal}
 		design: {
 			designMode: 'responsive'
 		},

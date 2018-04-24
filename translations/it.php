@@ -86,6 +86,8 @@ $_MODULE['<{amzpayments}prestashop>amzpayments_4b19de37f0204163761bcf4435178d56'
 $_MODULE['<{amzpayments}prestashop>amzpayments_387baf0199e7c9cc944fae94e96448fa'] = 'Varie';
 $_MODULE['<{amzpayments}prestashop>amzpayments_9233b06e263b73ee7d54d16ce806c9b6'] = 'I metodi di spedizione esclusi vengono rimossi dall’elenco di opzioni disponibili quando utilizzi Amazon Pay. ';
 $_MODULE['<{amzpayments}prestashop>amzpayments_0ec127d9128034c9a7d984e0c65a4695'] = 'Escludi metodi di spedizione';
+$_MODULE['<{amzpayments}prestashop>amzpayments_4261cabf4d3eeefd16da5a582dbebd4e'] = 'Svuotare la cache automaticamente dopo il salvataggio';
+$_MODULE['<{amzpayments}prestashop>amzpayments_3392b1700cb8affec0ce6fba2fff833d'] = 'Si raccomanda di svuotare la cache dopo un aggiornamento o un cambio di configurazione.';
 $_MODULE['<{amzpayments}prestashop>amzpayments_0040cd656eea2a80244e39f396a9e319'] = 'Modello bootstrap';
 $_MODULE['<{amzpayments}prestashop>amzpayments_8ca375c6592b647c03a3cc82b7fe7a4d'] = 'Attiva questa opzione se usi un tema nel tuo Prestashop, basato su bootstrap (default).';
 $_MODULE['<{amzpayments}prestashop>amzpayments_c04ebe325508c235b55c9de33ae618ae'] = 'Modalità Amazon Pay';
@@ -135,6 +137,7 @@ $_MODULE['<{amzpayments}prestashop>payment_5aa818b1473c50ce1b40bf66663182c6'] = 
 $_MODULE['<{amzpayments}prestashop>payment_a2af94a3e3857e4903cf97df11fd9440'] = 'Il metodo di pagamento selezionato è stato rifiutato. Scegli un metodo diverso.';
 $_MODULE['<{amzpayments}prestashop>select_address_7de64f538bdd7057ea1bbf5b46572d67'] = 'Per favore completa i campi mancanti per salvare il tuo indirizzo';
 $_MODULE['<{amzpayments}prestashop>select_address_3a9a60d1f57307e0bfe6af43346d16d1'] = 'Non possiamo spedire all’indirizzo selezionato. Seleziona per favore un altro indirizz.';
+$_MODULE['<{amzpayments}prestashop>configuration_fa834776c3045f5610c85a9faffe5f65'] = 'Importante: Se stai usando la cache lato server (ad esempio in combinazione con nginx), ricordati di svuotarla dopo aver salvato la configurazione.';
 $_MODULE['<{amzpayments}prestashop>configuration_d4ac586eb2ff19ecdfc3f10a4f5d3a36'] = 'Se necessiti aiuto, [1]contatta il nostro supporto[/1] per favore';
 $_MODULE['<{amzpayments}prestashop>configuration_0f98b7f230f3c91292f0de4c99e263f2'] = 'Registrazione';
 $_MODULE['<{amzpayments}prestashop>configuration_c2cc7082a89c1ad6631a2f66af5f00c0'] = 'Collegamento';

@@ -15,5 +15,10 @@ $(document).ready(function() {
 	if ($("#order .addresses p.address_add").length > 0) {
 		$("#order .addresses p.address_add").hide();
 	}
-	
+	if ($("#opc_account label[for=id_address_delivery]").length > 0) {
+		$("#opc_account label[for=id_address_delivery]").closest(".row").hide();	
+	}	
+	if ($("#opc_account .addresses p.address_add").length > 0) {
+		$("#opc_account .addresses p.address_add").hide();
+	}
 });

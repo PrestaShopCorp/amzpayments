@@ -30,7 +30,7 @@ class AmazonPaymentsLogHelper
             'PrestaShop URL SSL' => _PS_BASE_URL_SSL_,
             'SSL State' => Configuration::get('PS_SSL_ENABLED') ? '1' : '0',
             'Plugin Version' => $amzpayments->version,
-            'Configuration options' => $amzpayments->getConfigFormValues(),
+            'Configuration options' => $amzpayments->getConfigFormValuesForDebug(),
             'SimplePathData' => $amzpayments->getSimplePathData(),
         );
                 

@@ -76,6 +76,7 @@ class AmzpaymentsProcess_LoginModuleFrontController extends ModuleFrontControlle
         parent::initContent();
         
         unset($this->context->cookie->amazon_id);
+        unset($this->context->cookie->setHadErrorNowWallet);
         
         $this->context->smarty->assign('toCheckout', Tools::getValue('toCheckout'));
         $this->context->smarty->assign('fromCheckout', Tools::getValue('fromCheckout'));

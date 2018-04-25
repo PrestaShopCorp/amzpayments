@@ -336,6 +336,6 @@ $_MODULE['<{amzpayments}prestashop>confirmation_64430ad2835be8ad60c59e7d44e4b0b1
 $_MODULE['<{amzpayments}prestashop>displaytopcolumn_2e2117b7c81aa9ea6931641ea2c6499f'] = 'Votre commande de ';
 $_MODULE['<{amzpayments}prestashop>displaytopcolumn_75fbf512d744977d62599cc3f0ae2bb4'] = 'est effective.';
 $_MODULE['<{amzpayments}prestashop>payment_ed20689b0d8d53ec534166a88b67f259'] = 'Payez avec Amazon';
-$_MODULE['<{amzpayments}prestashop>payment_8811becbf523354e20e2017242326f70'] = '(Paiement sécurisé et pratique avec votre compte Amazon)';
+$_MODULE['<{amzpayments}prestashop>payment_8811becbf523354e20e2017242326f70'] = '(Payer en toute sécurité et rapidement en utilisant votre compte Amazon)';
 $_MODULE['<{amzpayments}prestashop>payment_optype_std_64a985a7c1cdd62470ecddd37d04ebc9'] = 'Acheter maintenant avec Amazon Pay';
 $_MODULE['<{amzpayments}prestashop>paymentreset_3f350de08883a6ac8983d5400e4fd43b'] = 'Vous avez choisi Amazon Pay - cliquez ici si vous souhaitez une autre méthode de paiement';

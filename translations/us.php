@@ -336,6 +336,6 @@ $_MODULE['<{amzpayments}prestashop>confirmation_64430ad2835be8ad60c59e7d44e4b0b1
 $_MODULE['<{amzpayments}prestashop>displaytopcolumn_2e2117b7c81aa9ea6931641ea2c6499f'] = 'Your order at ';
 $_MODULE['<{amzpayments}prestashop>displaytopcolumn_75fbf512d744977d62599cc3f0ae2bb4'] = 'is complete.';
 $_MODULE['<{amzpayments}prestashop>payment_ed20689b0d8d53ec534166a88b67f259'] = 'Pay with Amazon';
-$_MODULE['<{amzpayments}prestashop>payment_8811becbf523354e20e2017242326f70'] = '(Comfortable and save payment with your amazon-account)';
+$_MODULE['<{amzpayments}prestashop>payment_8811becbf523354e20e2017242326f70'] = '(Pay safely and quickly using your Amazon account)';
 $_MODULE['<{amzpayments}prestashop>payment_optype_std_64a985a7c1cdd62470ecddd37d04ebc9'] = 'Buy now with Amazon Pay';
 $_MODULE['<{amzpayments}prestashop>paymentreset_3f350de08883a6ac8983d5400e4fd43b'] = 'You have chosen Amazon Pay – please click here for an alternate payment method';

@@ -109,6 +109,9 @@ class AmzpaymentsPaymentModuleFrontController extends ModuleFrontController
                 $set_order_reference_details_request->getOrderReferenceAttributes()
                 ->getSellerOrderAttributes()
                 ->setStoreName(Configuration::get('PS_SHOP_NAME'));
+                $set_order_reference_details_request->getOrderReferenceAttributes()
+                ->getSellerOrderAttributes()
+                ->setCustomInformation('Prestashop,Patworx,' . self::$amz_payments->version);
                 
                 $this->service->setOrderReferenceDetails($set_order_reference_details_request);
             }
@@ -125,7 +128,7 @@ class AmzpaymentsPaymentModuleFrontController extends ModuleFrontController
             } catch (OffAmazonPaymentsService_Exception $e) {
                 $this->exceptionLog($e);
                 $this->context->cookie->amazonpay_errors_message = self::$amz_payments->l('Your selected payment method is currently not available. Please select another one.');
-                Tools::redirect($this->context->link->getModuleLink('amzpayments', 'addresswallet'));
+                Tools::redirect($this->context->link->getModuleLink('amzpayments', 'addresswallet', array('amz' => $order_reference_id)));
             }
             
             $confirm_order_reference_request = new OffAmazonPaymentsService_Model_ConfirmOrderReferenceRequest();
@@ -137,7 +140,7 @@ class AmzpaymentsPaymentModuleFrontController extends ModuleFrontController
             } catch (OffAmazonPaymentsService_Exception $e) {
                 $this->exceptionLog($e);
                 $this->context->cookie->amazonpay_errors_message = self::$amz_payments->l('Your selected payment method is currently not available. Please select another one.');
-                Tools::redirect($this->context->link->getModuleLink('amzpayments', 'addresswallet'));
+                Tools::redirect($this->context->link->getModuleLink('amzpayments', 'addresswallet', array('amz' => $order_reference_id)));
             }
                 
             $get_order_reference_details_request = new OffAmazonPaymentsService_Model_GetOrderReferenceDetailsRequest();
@@ -187,7 +190,8 @@ class AmzpaymentsPaymentModuleFrontController extends ModuleFrontController
                     $this->service->confirmOrderReference($confirm_order_ref_req_model);
                 } catch (OffAmazonPaymentsService_Exception $e) {
                     $this->exceptionLog($e);
-                    echo 'ERROR: ' . $e->getMessage();
+                    $this->context->cookie->amazonpay_errors_message = self::$amz_payments->l('Your selected payment method has been declined. Please chose another one.');
+                    Tools::redirect($this->context->link->getModuleLink('amzpayments', 'addresswallet', array('amz' => $order_reference_id)));
                 }
                 unset($this->context->cookie->setHadErrorNowWallet);
             }
@@ -202,10 +206,24 @@ class AmzpaymentsPaymentModuleFrontController extends ModuleFrontController
                     if ($reason == 'InvalidPaymentMethod') {
                         $this->context->cookie->setHadErrorNowWallet = 1;
                         $this->context->cookie->amazonpay_errors_message = self::$amz_payments->l('Your selected payment method is currently not available. Please select another one.');
-                        Tools::redirect($this->context->link->getModuleLink('amzpayments', 'addresswallet'));
-                    } else {
+                        Tools::redirect($this->context->link->getModuleLink('amzpayments', 'addresswallet', array('amz' => $order_reference_id)));
+                    } elseif ($reason == 'TransactionTimedOut') {
+                        unset($this->context->cookie->setHadErrorNowWallet);
+                        $this->context->cookie->amazonpay_errors_message = self::$amz_payments->l('Your selected payment method is currently not available. Please select another one.');
+                        Tools::redirect($this->context->link->getPageLink('order'));
+                    } elseif ($reason == 'AmazonRejected') {
                         $this->context->cookie->amazonpay_errors_message = self::$amz_payments->l('Your selected payment method has been declined. Please chose another one.');
-                        Tools::redirect($this->context->link->getModuleLink('amzpayments', 'addresswallet'));
+                        $this->context->cookie->amz_logout = true;
+                        unset($this->context->cookie->amz_access_token);
+                        unset($this->context->cookie->amz_access_token_set_time);
+                        unset($this->context->cookie->amazon_id);
+                        unset($this->context->cookie->has_set_valid_amazon_address);
+                        unset($this->context->cookie->setHadErrorNowWallet);
+                        Tools::redirect($this->context->link->getPageLink('order'));
+                    } else {
+                        $this->context->cookie->setHadErrorNowWallet = 1;
+                        $this->context->cookie->amazonpay_errors_message = self::$amz_payments->l('Your selected payment method has been declined. Please chose another one.');
+                        Tools::redirect($this->context->link->getModuleLink('amzpayments', 'addresswallet', array('amz' => $order_reference_id)));
                     }
                 }
                 

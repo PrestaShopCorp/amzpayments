@@ -110,6 +110,8 @@ class AmzPayments extends PaymentModule
     
     public $template_variant_bs = 1;
     
+    public $clear_cache = 1;
+    
     public $hide_login_btns = 0;
     
     public $hide_minicart_button = 1;
@@ -167,6 +169,7 @@ class AmzPayments extends PaymentModule
         'preselect_create_account' => 'PRESELECT_CREATE_ACCOUNT',
         'force_account_creation' => 'FORCE_ACCOUNT_CREATION',
         'template_variant_bs' => 'TEMPLATE_VARIANT_BS',
+        'clear_cache' => 'AMZ_CLEAR_CACHE',
         'hide_login_btns' => 'AMZ_HIDE_LOGIN_BTNS',
         'hide_login_on_menu' => 'AMZ_HIDE_LOGIN_ON_MENU',
         'hide_minicart_button' => 'AMZ_HIDE_MINICART_BUTTON',
@@ -182,7 +185,7 @@ class AmzPayments extends PaymentModule
     {
         $this->name = 'amzpayments';
         $this->tab = 'payments_gateways';
-        $this->version = '2.2.01';
+        $this->version = '2.2.1';
         $this->author = 'patworx multimedia GmbH';
         $this->need_instance = 1;
         
@@ -377,6 +380,7 @@ class AmzPayments extends PaymentModule
         Configuration::updateValue('REGION', $this->getDefaultModuleRegion());
         Configuration::updateValue('BUTTON_SIZE', 'medium');
         Configuration::updateValue('BUTTON_SIZE_LPA', 'medium');
+        Configuration::updateValue('AMZ_CLEAR_CACHE', true);
         Configuration::updateValue('TEMPLATE_VARIANT_BS', true);
         Configuration::updateValue('IPN_STATUS', true);
         Configuration::updateValue('AMZ_HIDE_LOGIN_BTNS', false);
@@ -591,7 +595,7 @@ class AmzPayments extends PaymentModule
     
     protected function getPossibleRegionEntries()
     {
-        return 'DE, UK, US, FR, IT, ES, JP';
+        return 'DE, AT, UK, US, FR, IT, ES, JP';
     }
     
     protected function getCronURL()
@@ -627,6 +631,12 @@ class AmzPayments extends PaymentModule
         }
     }
     
+    protected function getDomainForWhitelist()
+    {
+        $main_url = str_replace(array('http://', 'https://'), '', $this->context->link->getModuleLink('amzpayments', 'ipn', array()));
+        return 'https://' . Tools::substr($main_url, 0, Tools::strpos($main_url, '/'));
+    }
+    
     public function getConfigFormValues()
     {
         $return = array();
@@ -635,6 +645,13 @@ class AmzPayments extends PaymentModule
         }
         $return = $this->addDisabledCarrierOptions($return);
         return $return;
+    }
+    
+    public function getConfigFormValuesForDebug()
+    {
+        $vars = $this->getConfigFormValues();
+        unset($vars['SECRET_KEY']);
+        return $vars;
     }
     
     public function getConfigForm()
@@ -681,6 +698,10 @@ class AmzPayments extends PaymentModule
                                 array(
                                     'id_region' => 'JP',
                                     'name' => $this->l('Japan')
+                                ),
+                                array(
+                                    'id_region' => 'AT',
+                                    'name' => $this->l('Austria')
                                 ),
                             ),
                             'id' => 'id_region',
@@ -1165,6 +1186,25 @@ class AmzPayments extends PaymentModule
                         )
                     ),
                     array(
+                        'type' => 'switch',
+                        'label' => $this->l('Clear cache automatically after saving'),
+                        'name' => 'AMZ_CLEAR_CACHE',
+                        'hint' => $this->l('Clearing cache is recommended after an update or a change in configuration.'),
+                        'is_bool' => true,
+                        'values' => array(
+                            array(
+                                'id' => 'active_on_clear_cache',
+                                'value' => true,
+                                'label' => $this->l('Enabled')
+                            ),
+                            array(
+                                'id' => 'active_off_clear_cache',
+                                'value' => '0',
+                                'label' => $this->l('Disabled')
+                            )
+                        )
+                    ),
+                    array(
                         'col' => 3,
                         'type' => 'select',
                         'prefix' => '<i class="icon icon-tag"></i>',
@@ -1484,9 +1524,11 @@ class AmzPayments extends PaymentModule
     
     public function getContent()
     {
+        $this->context->smarty->assign('display_cache_hint', false);
         if (Tools::getValue('resetDefault') == 'true') {
             $this->resetDefaultSettings();
             $this->context->smarty->assign('after_reset', '1');
+            $this->context->smarty->assign('display_cache_hint', true);
         }
         if (Tools::getValue('getLog') == 'true') {
             AmazonPaymentsLogHelper::generateAndSendLogfile($this);
@@ -1504,7 +1546,14 @@ class AmzPayments extends PaymentModule
                 $this->context->smarty->assign(array('postErrors' => $this->_postErrors));
             }
             if (count($this->_postSuccess)) {
+                $this->context->smarty->assign('display_cache_hint', true);
                 $this->context->smarty->assign(array('postSuccess' => $this->_postSuccess));
+                if (Configuration::get('AMZ_CLEAR_CACHE')) {
+                    Tools::clearSmartyCache();
+                    Tools::clearXMLCache();
+                    Media::clearCache();
+                    Tools::generateIndex();
+                }
             }
         }
         
@@ -1534,7 +1583,7 @@ class AmzPayments extends PaymentModule
         $this->context->smarty->assign('current_version', $this->version);
         $this->context->smarty->assign('allowed_return_url_1', $this->getAllowedReturnUrls(1));
         $this->context->smarty->assign('allowed_return_url_2', $this->getAllowedReturnUrls(2));
-        $this->context->smarty->assign('allowed_js_origins', $this->getBaseLink(null, true));
+        $this->context->smarty->assign('allowed_js_origins', $this->getDomainForWhitelist());
         $this->context->smarty->assign('base_url', $this->getBaseLink());
         $this->context->smarty->assign('language_code', $this->context->language->iso_code);
         $this->context->smarty->assign('log_url', $this->context->link->getAdminLink('AdminModules', false) . '&configure=' . $this->name . '&tab_module=' . $this->tab . '&module_name=' . $this->name . '&token=' . Tools::getAdminTokenLite('AdminModules') . '&getLog=true');
@@ -1633,7 +1682,7 @@ class AmzPayments extends PaymentModule
             'locale' =>  $this->getLocalCodeForSimplePath(),
             'loginRedirectURLs_1' => $this->getAllowedReturnUrls(1),
             'loginRedirectURLs_2' => $this->getAllowedReturnUrls(2),
-            'allowedLoginDomains' => $this->getBaseLink(null, true),
+            'allowedLoginDomains' => $this->getDomainForWhitelist(),
             'storeDescription' => Configuration::get('PS_SHOP_NAME'),
             'language' => $this->getLanguageCodeForSimplePath(),
             'returnMethod' => 'GET',
@@ -1681,7 +1730,7 @@ class AmzPayments extends PaymentModule
     
     public function getRegionalCodeForURL()
     {
-        if (in_array(Tools::strtolower($this->region), array('de', 'fr', 'it', 'es'))) {
+        if (in_array(Tools::strtolower($this->region), array('de', 'at', 'fr', 'it', 'es'))) {
             return 'de';
         } elseif (Tools::strtolower($this->region) == 'uk') {
             return 'uk';
@@ -1709,6 +1758,8 @@ class AmzPayments extends PaymentModule
             return 'ml_es_ap_np_ba_spli_xx_xx_xx_pre';
         } elseif (Tools::strtolower($this->region) == 'it') {
             return 'ml_it_ap_np_ba_spli_xx_xx_xx_pre';
+        } elseif (Tools::strtolower($this->region) == 'at') {
+            return 'ml_at_ap_np_ba_spli_xx_xx_xx_pre';
         }
         return 'ml_de_ap_np_ba_spli_xx_xx_xx_pre';
     }
@@ -1731,7 +1782,7 @@ class AmzPayments extends PaymentModule
     public function getButtonURL()
     {
         if ($this->environment == 'SANDBOX') {
-            if (in_array(Tools::strtolower($this->region), array('de', 'fr', 'it', 'es'))) {
+            if (in_array(Tools::strtolower($this->region), array('de', 'at', 'fr', 'it', 'es'))) {
                 return 'https://payments-sandbox.amazon.de/gp/widgets/button';
             } elseif (Tools::strtolower($this->region) == 'uk') {
                 return 'https://payments-sandbox.amazon.co.uk/gp/widgets/button';
@@ -1741,7 +1792,7 @@ class AmzPayments extends PaymentModule
                 return 'https://payments-sandbox.amazon.co.jp/gp/widgets/button';
             }
         } else {
-            if (in_array(Tools::strtolower($this->region), array('de', 'fr', 'it', 'es'))) {
+            if (in_array(Tools::strtolower($this->region), array('de', 'at', 'fr', 'it', 'es'))) {
                 return 'https://payments.amazon.de/gp/widgets/button';
             } elseif (Tools::strtolower($this->region) == 'uk') {
                 return 'https://payments.amazon.co.uk/gp/widgets/button';
@@ -1756,7 +1807,7 @@ class AmzPayments extends PaymentModule
     public function getLpaApiUrl()
     {
         if ($this->environment == 'SANDBOX') {
-            if (in_array(Tools::strtolower($this->region), array('de', 'fr', 'it', 'es'))) {
+            if (in_array(Tools::strtolower($this->region), array('de', 'at', 'fr', 'it', 'es'))) {
                 return 'https://api.sandbox.amazon.de';
             } elseif (Tools::strtolower($this->region) == 'uk') {
                 return 'https://api.sandbox.amazon.co.uk';
@@ -1766,7 +1817,7 @@ class AmzPayments extends PaymentModule
                 return 'https://api-sandbox.amazon.co.jp';
             }
         } else {
-            if (in_array(Tools::strtolower($this->region), array('de', 'fr', 'it', 'es'))) {
+            if (in_array(Tools::strtolower($this->region), array('de', 'at', 'fr', 'it', 'es'))) {
                 return 'https://api.amazon.de';
             } elseif (Tools::strtolower($this->region) == 'uk') {
                 return 'https://api.amazon.co.uk';
@@ -1972,6 +2023,8 @@ class AmzPayments extends PaymentModule
         
         if (Tools::strtolower($this->region) == 'de' && Tools::strtoupper($currency->iso_code) == 'EUR') {
             return true;
+        } elseif (Tools::strtolower($this->region) == 'at' && Tools::strtoupper($currency->iso_code) == 'EUR') {
+            return true;
         } elseif (Tools::strtolower($this->region) == 'fr' && Tools::strtoupper($currency->iso_code) == 'EUR') {
             return true;
         } elseif (Tools::strtolower($this->region) == 'it' && Tools::strtoupper($currency->iso_code) == 'EUR') {
@@ -2153,7 +2206,8 @@ class AmzPayments extends PaymentModule
         }
         
         $logout_str = '';
-        if ($this->context->controller->php_self == 'guest-tracking') {
+        if ($this->context->controller->php_self == 'guest-tracking' || isset($this->context->cookie->amz_logout)) {
+            unset($this->context->cookie->amz_logout);
             $logout_str .= '<script type="text/javascript"> amazonLogout(); </script>';
         }
         
@@ -3019,6 +3073,10 @@ class AmzPayments extends PaymentModule
                 'light' => array('header' => 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Banners/DE/DELightGrey900x60.jpg', 'product' => 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Banners/DE/DELightGrey300x60.jpg', 'footer' => 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Banners/DE/DELightGrey230x60.jpg'),
                 'dark' => array('header' => 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Banners/DE/DEDarkGrey900x60.jpg', 'product' => 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Banners/DE/DEDarkGrey300x60.jpg', 'footer' => 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Banners/DE/DEDarkGrey230x60.jpg')
             ),
+            'at' => array(
+                'light' => array('header' => 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Banners/DE/DELightGrey900x60.jpg', 'product' => 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Banners/DE/DELightGrey300x60.jpg', 'footer' => 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Banners/DE/DELightGrey230x60.jpg'),
+                'dark' => array('header' => 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Banners/DE/DEDarkGrey900x60.jpg', 'product' => 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Banners/DE/DEDarkGrey300x60.jpg', 'footer' => 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Banners/DE/DEDarkGrey230x60.jpg')
+            ),
             'es' => array(
                 'light' => array('header' => 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Banners/ES/ESLightGrey900x60.jpg', 'product' => 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Banners/ES/ESLightGrey300x60.jpg', 'footer' => 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Banners/ES/ESLightGrey230x60.jpg'),
                 'dark' => array('header' => 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Banners/ES/ESDarkGrey900x60.jpg', 'product' => 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Banners/ES/ESDarkGrey300x60.jpg', 'footer' => 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Banners/ES/ESDarkGrey230x60.jpg')
@@ -3039,6 +3097,8 @@ class AmzPayments extends PaymentModule
         switch ($this->context->language->iso_code) {
             case 'de':
                 return $banners['de'];
+            case 'at':
+                return $banners['at'];
             case 'us':
             case 'en':
                 return $banners['uk'];

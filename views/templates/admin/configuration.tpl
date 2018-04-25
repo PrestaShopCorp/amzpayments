@@ -28,6 +28,12 @@
 	</div>
 {/if}
 
+{if $display_cache_hint}
+	<div class="alert alert-warning" role="alert">
+		{l s='Please note: if you use server side caching (for example in combination with nginx), remember to empty it after saving the configuration.' mod='amzpayments'}				
+	</div>				
+{/if}
+
 <form method="POST" action="https://payments-eu.amazon.com/register" target="_blank" id="amazonRegForm"> 
 	<input type="hidden" value="{$simple_path.ref|escape:'htmlall':'UTF-8'}" name="ref" />
 	<input type="hidden" value="{$simple_path.locale|escape:'htmlall':'UTF-8'}" name="locale" />  

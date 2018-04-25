@@ -1,0 +1,5 @@
+
+Sehr geehrter Kunde,
+
+Leider wurde die Zahlung zu Ihrer Bestellung {$ORDER_NR} vom {$ORDER_DATE} in unserem Onlineshop von Amazon Pay zurückgewiesen. Bitte kontaktieren Sie uns.
+

@@ -19,6 +19,7 @@
 final class OffAmazonPaymentsService_Regions
 {
     const DE = "de";
+    const AT = "at";
     const UK = "uk";
     const US = "us";
     const NA = "na";

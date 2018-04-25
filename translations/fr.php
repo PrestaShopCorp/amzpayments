@@ -86,6 +86,8 @@ $_MODULE['<{amzpayments}prestashop>amzpayments_4b19de37f0204163761bcf4435178d56'
 $_MODULE['<{amzpayments}prestashop>amzpayments_387baf0199e7c9cc944fae94e96448fa'] = 'Divers';
 $_MODULE['<{amzpayments}prestashop>amzpayments_9233b06e263b73ee7d54d16ce806c9b6'] = 'Les méthodes d’expédition exclues sont supprimées de la liste des options disponibles lors de l’utilisation d’Amazon Pay. ';
 $_MODULE['<{amzpayments}prestashop>amzpayments_0ec127d9128034c9a7d984e0c65a4695'] = 'Exclure des méthodes d’expédition';
+$_MODULE['<{amzpayments}prestashop>amzpayments_4261cabf4d3eeefd16da5a582dbebd4e'] = 'Vider le cache automatiquement à la sauvegarde';
+$_MODULE['<{amzpayments}prestashop>amzpayments_3392b1700cb8affec0ce6fba2fff833d'] = 'Vider le cache est recommandée après une actualisation ou changement de la configuration.';
 $_MODULE['<{amzpayments}prestashop>amzpayments_0040cd656eea2a80244e39f396a9e319'] = 'Modèle Bootstrap';
 $_MODULE['<{amzpayments}prestashop>amzpayments_8ca375c6592b647c03a3cc82b7fe7a4d'] = 'Activez cette option si vous utilisez un thème dans votre Prestashop, basé sur Bootstrap (défaut).';
 $_MODULE['<{amzpayments}prestashop>amzpayments_c04ebe325508c235b55c9de33ae618ae'] = 'Mode Amazon Pay';
@@ -135,6 +137,7 @@ $_MODULE['<{amzpayments}prestashop>payment_5aa818b1473c50ce1b40bf66663182c6'] = 
 $_MODULE['<{amzpayments}prestashop>payment_a2af94a3e3857e4903cf97df11fd9440'] = 'Le moyen de paiement sélectionné a été refusé. Veuillez choisir un autre moyen de paiement.';
 $_MODULE['<{amzpayments}prestashop>select_address_7de64f538bdd7057ea1bbf5b46572d67'] = 'Merci de remplir les champs manquants afin de sauvegarder votre adresse';
 $_MODULE['<{amzpayments}prestashop>select_address_3a9a60d1f57307e0bfe6af43346d16d1'] = 'Nous ne pouvons pas livrer à l’adresse sélectionnée. Veuillez s’il vous plait en choisir une autre.';
+$_MODULE['<{amzpayments}prestashop>configuration_fa834776c3045f5610c85a9faffe5f65'] = 'Veuillez noter que si vous utilisez la mise en cache côté serveur (par exemple en combinaison avec nginx), il faudra la vider après avoir enregistré la configuration.';
 $_MODULE['<{amzpayments}prestashop>configuration_d4ac586eb2ff19ecdfc3f10a4f5d3a36'] = 'Si vous avez besoin d’aide, [1]contactez notre support[/1]';
 $_MODULE['<{amzpayments}prestashop>configuration_0f98b7f230f3c91292f0de4c99e263f2'] = 'Inscription';
 $_MODULE['<{amzpayments}prestashop>configuration_c2cc7082a89c1ad6631a2f66af5f00c0'] = 'Connexion';
@@ -189,7 +192,7 @@ $_MODULE['<{amzpayments}prestashop>configuration_f82018792ad5426aa329cc2603d65d9
 $_MODULE['<{amzpayments}prestashop>configuration_58b01895bc2e40a3a368219d1da28647'] = 'Origines JavaScript autorisées:';
 $_MODULE['<{amzpayments}prestashop>configuration_f74c06c90e54eeb3ded436c3b6c9e59a'] = 'Copiez l’URL dans le Presse-papiers:';
 $_MODULE['<{amzpayments}prestashop>configuration_901e3e0bb8483a87d063147f5200db6a'] = 'Collez l’URL dans le champ [1]Origines JavaScript autorisées[/1]:';
-$_MODULE['<{amzpayments}prestashop>configuration_22d1bc2c741d34943f15181c2e28eedf'] = '%s. URL de renvoi autoriées';
+$_MODULE['<{amzpayments}prestashop>configuration_22d1bc2c741d34943f15181c2e28eedf'] = '%s. URL de renvoi autorisées';
 $_MODULE['<{amzpayments}prestashop>configuration_8ca1ea6f20571a0bca7bf554014dcea6'] = 'Collez le lien URL dans le champ [1]URL de renvoi autorisées[/1].';
 $_MODULE['<{amzpayments}prestashop>configuration_8e93d62695e066bd8632ee048a7ed3b2'] = 'Assurez-vous que votre compte Amazon Payments a été vérifié ';
 $_MODULE['<{amzpayments}prestashop>configuration_98621e2154a1a626306f04b1a964f756'] = 'Votre compte a été validé.';
@@ -333,6 +336,6 @@ $_MODULE['<{amzpayments}prestashop>confirmation_64430ad2835be8ad60c59e7d44e4b0b1
 $_MODULE['<{amzpayments}prestashop>displaytopcolumn_2e2117b7c81aa9ea6931641ea2c6499f'] = 'Votre commande de ';
 $_MODULE['<{amzpayments}prestashop>displaytopcolumn_75fbf512d744977d62599cc3f0ae2bb4'] = 'est effective.';
 $_MODULE['<{amzpayments}prestashop>payment_ed20689b0d8d53ec534166a88b67f259'] = 'Payez avec Amazon';
-$_MODULE['<{amzpayments}prestashop>payment_8811becbf523354e20e2017242326f70'] = '(Paiement sécurisé et pratique avec votre compte Amazon)';
+$_MODULE['<{amzpayments}prestashop>payment_8811becbf523354e20e2017242326f70'] = '(Payer en toute sécurité et rapidement en utilisant votre compte Amazon)';
 $_MODULE['<{amzpayments}prestashop>payment_optype_std_64a985a7c1cdd62470ecddd37d04ebc9'] = 'Acheter maintenant avec Amazon Pay';
 $_MODULE['<{amzpayments}prestashop>paymentreset_3f350de08883a6ac8983d5400e4fd43b'] = 'Vous avez choisi Amazon Pay - cliquez ici si vous souhaitez une autre méthode de paiement';

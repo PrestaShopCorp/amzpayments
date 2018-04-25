@@ -13,3 +13,4 @@
 		{l s='You have chosen Amazon Pay - please click here for an alternate payment method' mod='amzpayments'}
 	</a>
 </p>
+{literal}<style>#container_express_checkout, #payment_paypal_express_checkout {display:none;}</style>{/literal}

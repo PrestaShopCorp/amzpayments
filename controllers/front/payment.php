@@ -96,6 +96,7 @@ class AmzpaymentsPaymentModuleFrontController extends ModuleFrontController
             $requestParameters['currency_code'] = $currency_code;
             $requestParameters['seller_order_id'] = self::$amz_payments->createUniqueOrderId((int) $this->context->cart->id);
             $requestParameters['store_name'] = Configuration::get('PS_SHOP_NAME');
+            $requestParameters['custom_information'] = 'Prestashop,Patworx,' . self::$amz_payments->version;
             
             $response = $service->SetOrderReferenceDetails($requestParameters);
             
@@ -114,7 +115,7 @@ class AmzpaymentsPaymentModuleFrontController extends ModuleFrontController
             
             if (!isset($responsearray['getorderreference'])) {
                 $this->context->cookie->amazonpay_errors_message = self::$amz_payments->l('Your selected payment method is currently not available. Please select another one.');
-                Tools::redirect($this->context->link->getModuleLink('amzpayments', 'addresswallet'));
+                Tools::redirect($this->context->link->getModuleLink('amzpayments', 'addresswallet', array('amz' => $order_reference_id)));
             }
             
             $sql_arr = array(
@@ -143,11 +144,30 @@ class AmzpaymentsPaymentModuleFrontController extends ModuleFrontController
                 if ($status == 'Declined') {
                     $reason = $details['AuthorizationStatus']['ReasonCode'];
                     if ($reason == 'InvalidPaymentMethod') {
+                        $this->context->cookie->setHadErrorNowWallet = 1;
                         $this->context->cookie->amazonpay_errors_message = self::$amz_payments->l('Your selected payment method is currently not available. Please select another one.');
-                        Tools::redirect($this->context->link->getModuleLink('amzpayments', 'addresswallet'));
-                    } else {
+                        Tools::redirect($this->context->link->getModuleLink('amzpayments', 'addresswallet', array('amz' => $order_reference_id)));
+                    } elseif ($reason == 'TransactionTimedOut') {
+                        unset($this->context->cookie->amz_access_token);
+                        unset($this->context->cookie->amz_access_token_set_time);
+                        unset($this->context->cookie->amazon_id);
+                        unset($this->context->cookie->has_set_valid_amazon_address);
+                        unset($this->context->cookie->setHadErrorNowWallet);
+                        $this->context->cookie->amazonpay_errors_message = self::$amz_payments->l('Your selected payment method is currently not available. Please select another one.');
+                        Tools::redirect($this->context->link->getPageLink('order'));
+                    } elseif ($reason == 'AmazonRejected') {
                         $this->context->cookie->amazonpay_errors_message = self::$amz_payments->l('Your selected payment method has been declined. Please chose another one.');
-                        Tools::redirect($this->context->link->getModuleLink('amzpayments', 'addresswallet'));
+                        $this->context->cookie->amz_logout = true;
+                        unset($this->context->cookie->amz_access_token);
+                        unset($this->context->cookie->amz_access_token_set_time);
+                        unset($this->context->cookie->amazon_id);
+                        unset($this->context->cookie->has_set_valid_amazon_address);
+                        unset($this->context->cookie->setHadErrorNowWallet);
+                        Tools::redirect($this->context->link->getPageLink('order'));
+                    } else {
+                        $this->context->cookie->setHadErrorNowWallet = 1;
+                        $this->context->cookie->amazonpay_errors_message = self::$amz_payments->l('Your selected payment method has been declined. Please chose another one.');
+                        Tools::redirect($this->context->link->getModuleLink('amzpayments', 'addresswallet', array('amz' => $order_reference_id)));
                     }
                 }
                 $amazon_authorization_id = $details['AmazonAuthorizationId'];
@@ -204,6 +224,7 @@ class AmzpaymentsPaymentModuleFrontController extends ModuleFrontController
             }
             unset($this->context->cookie->amzSetStatusCaptured);
         }
+        unset($this->context->cookie->setHadErrorNowWallet);
         unset($this->context->cookie->amazon_id);
         Tools::redirect('index.php?controller=order-confirmation&id_cart='.(int)$this->context->cart->id.'&id_module='.(int)$this->module->id.'&id_order='.$this->module->currentOrder.'&key='.$customer->secure_key);
     }

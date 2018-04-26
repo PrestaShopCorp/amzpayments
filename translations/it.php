@@ -52,6 +52,8 @@ $_MODULE['<{amzpayments}prestashop>amzpayments_28c6194859e3104cfb02445b83efadc5'
 $_MODULE['<{amzpayments}prestashop>amzpayments_05033bc4d960e0f74efacd29dbfb91fd'] = 'subito dopo l’autorizzazione';
 $_MODULE['<{amzpayments}prestashop>amzpayments_f38911eda842056931cbcf497a2f8fe5'] = 'Stato ordine per acquisizione pagamento';
 $_MODULE['<{amzpayments}prestashop>amzpayments_9d57203f843f48a4cbc5da56cd9eba9a'] = 'Stato ordine dopo acquisizione completata';
+$_MODULE['<{amzpayments}prestashop>amzpayments_4261cabf4d3eeefd16da5a582dbebd4e'] = 'Svuotare la cache automaticamente dopo il salvataggio';
+$_MODULE['<{amzpayments}prestashop>amzpayments_3392b1700cb8affec0ce6fba2fff833d'] = 'Si raccomanda di svuotare la cache dopo un aggiornamento o un cambio di configurazione.';
 $_MODULE['<{amzpayments}prestashop>amzpayments_6deb26d36a88344bcd7f71914a086055'] = 'Template Bootstrap';
 $_MODULE['<{amzpayments}prestashop>amzpayments_da7bc25895336d39dfb2603378728d86'] = 'Provoca errori (solo Sandbox)';
 $_MODULE['<{amzpayments}prestashop>amzpayments_bafd7322c6e97d25b6299b5d6fe8920b'] = 'No';
@@ -102,6 +104,7 @@ $_MODULE['<{amzpayments}prestashop>amzpayments_a2af94a3e3857e4903cf97df11fd9440'
 $_MODULE['<{amzpayments}prestashop>amzpayments_3c1faed661d6b55c61cd4a05fd1b687e'] = 'Mostra il bottone Amazon Pay nella pagina del prodotto';
 $_MODULE['<{amzpayments}prestashop>amzpayments_15ad3e8d2603d8c92314a60a114fa038'] = 'Default: No';
 $_MODULE['<{amzpayments}prestashop>configuration_9e6d5afc084382d3eb41d205b0653215'] = 'È in corso la verifica della disponibilità di nuove versioni del modulo';
+$_MODULE['<{amzpayments}prestashop>configuration_fa834776c3045f5610c85a9faffe5f65'] = 'Importante: Se stai usando la cache lato server (ad esempio in combinazione con nginx), ricordati di svuotarla dopo aver salvato la configurazione.';
 $_MODULE['<{amzpayments}prestashop>configuration_19d04b594594d21dacab32ccf4feb5b6'] = 'Versione in uso:';
 $_MODULE['<{amzpayments}prestashop>configuration_6579d7f0af067b0aae4c40ab1b0334c2'] = 'Nuova versione:';
 $_MODULE['<{amzpayments}prestashop>configuration_dd8dd5f5ae81213cce452d234ab8d16b'] = 'Stai utilizzando la versione più aggiornata';

@@ -84,6 +84,12 @@ class AmzpaymentsAddresswalletModuleFrontController extends ModuleFrontControlle
         if (Tools::getValue('session') != '') {
             $this->context->cookie->amazon_id = Tools::getValue('session');
         }
+        if (Tools::getValue('amz')) {
+            $this->context->smarty->assign('amz_session', Tools::getValue('amz'));
+        }
+        if (isset($this->context->cookie->setHadErrorNowWallet) && $this->context->cookie->setHadErrorNowWallet == '1') {
+            $this->context->smarty->assign('widgetreadonly', true);
+        }
         $this->context->cart->id_address_delivery = null;
         $this->context->cart->id_address_invoice = null;
         parent::initContent();

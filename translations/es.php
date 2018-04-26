@@ -53,6 +53,8 @@ $_MODULE['<{amzpayments}prestashop>amzpayments_f38911eda842056931cbcf497a2f8fe5'
 $_MODULE['<{amzpayments}prestashop>amzpayments_9d57203f843f48a4cbc5da56cd9eba9a'] = 'Estado del pedido después de captar el pago correctamente';
 $_MODULE['<{amzpayments}prestashop>amzpayments_1a357f75f77b4eaa734c35cc15fa4ca7'] = 'Estado rechazado';
 $_MODULE['<{amzpayments}prestashop>amzpayments_da7bc25895336d39dfb2603378728d86'] = 'Provocar errores (sólo Sandbox)';
+$_MODULE['<{amzpayments}prestashop>amzpayments_4261cabf4d3eeefd16da5a582dbebd4e'] = 'Borrar la caché automáticamente después de guardar los cambios';
+$_MODULE['<{amzpayments}prestashop>amzpayments_3392b1700cb8affec0ce6fba2fff833d'] = 'Se recomienda borrar la caché después de realizar una actualización o modificación de configuración.';
 $_MODULE['<{amzpayments}prestashop>amzpayments_6deb26d36a88344bcd7f71914a086055'] = 'Template Bootstrap';
 $_MODULE['<{amzpayments}prestashop>amzpayments_bafd7322c6e97d25b6299b5d6fe8920b'] = 'No';
 $_MODULE['<{amzpayments}prestashop>amzpayments_63d098bd60c469852c135349eb50c6ad'] = 'Rechazo definitivo';
@@ -165,6 +167,7 @@ $_MODULE['<{amzpayments}prestashop>confirmation_0db71da7150c27142eef9d22b843b4a9
 $_MODULE['<{amzpayments}prestashop>confirmation_64430ad2835be8ad60c59e7d44e4b0b1'] = 'nuestro Atención al cliente.';
 $_MODULE['<{amzpayments}prestashop>payment_ed20689b0d8d53ec534166a88b67f259'] = 'Pagar con Amazon';
 $_MODULE['<{amzpayments}prestashop>payment_8811becbf523354e20e2017242326f70'] = '(Pagos cómodos y seguros con tu cuenta de Amazon)';
+$_MODULE['<{amzpayments}prestashop>configuration_fa834776c3045f5610c85a9faffe5f65'] = 'Por favor, ten en cuenta que si estas usando el almacenamiento de caché del lado del servidor (server-side caching, por ejemplo, en combinación con nginx); recuerda borrarlo después de guardar la configuración.';
 $_MODULE['<{amzpayments}prestashop>configuration_56b55033f747893cf02a5797707ee383'] = 'Convierte a los clientes de Amazon en tus propios clientes de forma rápida y fácil';
 $_MODULE['<{amzpayments}prestashop>configuration_a7b8feea65558548dff1c84f2f8801ab'] = 'Así es como funciona:';
 $_MODULE['<{amzpayments}prestashop>configuration_5b1a8c5b0fd7e134325ee37f10abed53'] = 'Registra tu cuenta de Amazon Pay. Después de registrarte tendrás que iniciar sesión en Seller Central para completar la creación de tu cuenta.*';

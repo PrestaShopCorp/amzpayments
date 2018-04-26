@@ -53,6 +53,8 @@ $_MODULE['<{amzpayments}prestashop>amzpayments_f38911eda842056931cbcf497a2f8fe5'
 $_MODULE['<{amzpayments}prestashop>amzpayments_9d57203f843f48a4cbc5da56cd9eba9a'] = 'Etat de la commande après une saisie réussie';
 $_MODULE['<{amzpayments}prestashop>amzpayments_1a357f75f77b4eaa734c35cc15fa4ca7'] = 'Commande refusée';
 $_MODULE['<{amzpayments}prestashop>amzpayments_6deb26d36a88344bcd7f71914a086055'] = 'Template Bootstrap';
+$_MODULE['<{amzpayments}prestashop>amzpayments_4261cabf4d3eeefd16da5a582dbebd4e'] = 'Vider le cache automatiquement à la sauvegarde';
+$_MODULE['<{amzpayments}prestashop>amzpayments_3392b1700cb8affec0ce6fba2fff833d'] = 'Vider le cache est recommandée après une actualisation ou changement de la configuration.';
 $_MODULE['<{amzpayments}prestashop>amzpayments_da7bc25895336d39dfb2603378728d86'] = 'Provoquer des erreurs (Sandbox uniquement)';
 $_MODULE['<{amzpayments}prestashop>amzpayments_bafd7322c6e97d25b6299b5d6fe8920b'] = 'Non';
 $_MODULE['<{amzpayments}prestashop>amzpayments_63d098bd60c469852c135349eb50c6ad'] = 'Refus long';
@@ -165,6 +167,7 @@ $_MODULE['<{amzpayments}prestashop>confirmation_0db71da7150c27142eef9d22b843b4a9
 $_MODULE['<{amzpayments}prestashop>confirmation_64430ad2835be8ad60c59e7d44e4b0b1'] = 'service client.';
 $_MODULE['<{amzpayments}prestashop>payment_ed20689b0d8d53ec534166a88b67f259'] = 'Payez avec Amazon';
 $_MODULE['<{amzpayments}prestashop>payment_8811becbf523354e20e2017242326f70'] = '(Paiement sécurisé et pratique avec votre compte Amazon)';
+$_MODULE['<{amzpayments}prestashop>configuration_fa834776c3045f5610c85a9faffe5f65'] = 'Veuillez noter que si vous utilisez la mise en cache côté serveur (par exemple en combinaison avec nginx), il faudra la vider après avoir enregistré la configuration.';
 $_MODULE['<{amzpayments}prestashop>configuration_56b55033f747893cf02a5797707ee383'] = 'Faites des clients Amazon vos clients, simplement et rapidement ';
 $_MODULE['<{amzpayments}prestashop>configuration_a7b8feea65558548dff1c84f2f8801ab'] = 'Voici le detail:';
 $_MODULE['<{amzpayments}prestashop>configuration_5b1a8c5b0fd7e134325ee37f10abed53'] = 'Complétez notre formulaire d\'enregistrement en ligne et terminez la configuration de votre compte en téléchargeant vos documents de vérification sur Seller Central.*';
@@ -330,7 +333,7 @@ $_MODULE['<{amzpayments}prestashop>configuration_f82018792ad5426aa329cc2603d65d9
 $_MODULE['<{amzpayments}prestashop>configuration_58b01895bc2e40a3a368219d1da28647'] = 'Origines JavaScript autorisées:';
 $_MODULE['<{amzpayments}prestashop>configuration_f74c06c90e54eeb3ded436c3b6c9e59a'] = 'Copiez l’URL dans le Presse-papiers:';
 $_MODULE['<{amzpayments}prestashop>configuration_901e3e0bb8483a87d063147f5200db6a'] = 'Collez l’URL dans le champ [1]Origines JavaScript autorisées[/1]:';
-$_MODULE['<{amzpayments}prestashop>configuration_22d1bc2c741d34943f15181c2e28eedf'] = '%s. URL de renvoi autoriées';
+$_MODULE['<{amzpayments}prestashop>configuration_22d1bc2c741d34943f15181c2e28eedf'] = '%s. URL de renvoi autorisées';
 $_MODULE['<{amzpayments}prestashop>configuration_8ca1ea6f20571a0bca7bf554014dcea6'] = 'Collez le lien URL dans le champ [1]URL de renvoi autorisées[/1].';
 $_MODULE['<{amzpayments}prestashop>configuration_8e93d62695e066bd8632ee048a7ed3b2'] = 'Assurez-vous que votre compte Amazon Payments a été vérifié ';
 $_MODULE['<{amzpayments}prestashop>configuration_98621e2154a1a626306f04b1a964f756'] = 'Votre compte a été validé.';

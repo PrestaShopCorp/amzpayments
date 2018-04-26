@@ -27,6 +27,11 @@
 		{l s='If you need help, please [1]contact our support[/1]' tags=['<a onclick="jQuery(\'#amztabs a[href=#amzcontactus]\').tab(\'show\');">'] mod='amzpayments'}
 	</div>
 {/if}
+{if $display_cache_hint}
+	<div class="alert alert-warning" role="alert">
+		{l s='Please note: if you use server side caching (for example in combination with nginx), remember to empty it after saving the configuration.' mod='amzpayments'}				
+	</div>				
+{/if}
 
 <form method="POST" action="https://payments-eu.amazon.com/register" target="_blank" id="amazonRegForm"> 
 	<input type="hidden" value="{$simple_path.ref|escape:'htmlall':'UTF-8'}" name="ref" />

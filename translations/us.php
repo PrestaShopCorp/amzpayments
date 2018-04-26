@@ -99,6 +99,7 @@ $_MODULE['<{amzpayments}prestashop>amzpayments_5aa818b1473c50ce1b40bf66663182c6'
 $_MODULE['<{amzpayments}prestashop>amzpayments_d9d5eafae1a4bbddd5b81c4d6ca255d1'] = 'Your selected payment method has been declined. Please chose another one or use a different Amazon account.';
 $_MODULE['<{amzpayments}prestashop>amzpayments_3c1faed661d6b55c61cd4a05fd1b687e'] = 'Show Amazon Pay button on product page';
 $_MODULE['<{amzpayments}prestashop>amzpayments_15ad3e8d2603d8c92314a60a114fa038'] = 'Default: No';
+$_MODULE['<{amzpayments}prestashop>configuration_fa834776c3045f5610c85a9faffe5f65'] = 'Please note: if you use server side caching (for example in combination with nginx), remember to empty it after saving the configuration.';
 $_MODULE['<{amzpayments}prestashop>configuration_56b55033f747893cf02a5797707ee383'] = 'Make Amazon customers your customers';
 $_MODULE['<{amzpayments}prestashop>configuration_a7b8feea65558548dff1c84f2f8801ab'] = 'That\'s how it works:';
 $_MODULE['<{amzpayments}prestashop>configuration_5b1a8c5b0fd7e134325ee37f10abed53'] = 'Register for Amazon Pay and complete your account setup by upload your verification documents on Seller Central.*';
@@ -194,6 +195,8 @@ $_MODULE['<{amzpayments}prestashop>amzpayments_9a6393c36c052c03efe4a8c0f0fcc487'
 $_MODULE['<{amzpayments}prestashop>amzpayments_dfa76a928ca510e1bd3c837d78358489'] = 'Colour of the Amazon Checkout button';
 $_MODULE['<{amzpayments}prestashop>amzpayments_caf3a042a037c064b7513ed640c22f77'] = 'Grey';
 $_MODULE['<{amzpayments}prestashop>amzpayments_6deb26d36a88344bcd7f71914a086055'] = 'Template Bootstrap';
+$_MODULE['<{amzpayments}prestashop>amzpayments_4261cabf4d3eeefd16da5a582dbebd4e'] = 'Clear cache automatically after saving';
+$_MODULE['<{amzpayments}prestashop>amzpayments_3392b1700cb8affec0ce6fba2fff833d'] = 'Clearing cache is recommended after an update or a change in configuration.';
 $_MODULE['<{amzpayments}prestashop>amzpayments_a2af94a3e3857e4903cf97df11fd9440'] = 'Your selected payment method was rejected. Please choose an alternative method.';
 $_MODULE['<{amzpayments}prestashop>amzpayments_fa31ce6046882558f0637d428a96abeb'] = 'Create customer account.';
 $_MODULE['<{amzpayments}prestashop>amzpayments_9a1ff3881b92951d9663aaef38e8b637'] = 'You don\'t need to do anything. We create the account with the data of your current order.';

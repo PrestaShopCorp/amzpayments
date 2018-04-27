@@ -24,14 +24,18 @@ class AmazonTransactions
 
     public static function handleError($response)
     {
+        $amz_paymentsObj = new AmzPayments();
         try {
             $responsearray = $response->toArray();
             if (isset($responsearray['Error']['Code']) && isset($responsearray['Error']['Message'])) {
+                $amz_paymentsObj->exceptionLog($responsearray, 'ERROR: ' . $responsearray['Error']['Code'] . ': ' . $responsearray['Error']['Message']);
                 return 'ERROR: ' . $responsearray['Error']['Code'] . ': ' . $responsearray['Error']['Message'];
             } elseif (isset($responsearray['Error']['Code'])) {
+                $amz_paymentsObj->exceptionLog($responsearray, 'ERROR: ' . $responsearray['Error']['Code']);
                 return 'ERROR: ' . $responsearray['Error']['Code'];
             }
         } catch (Exception $e) {
+            $amz_paymentsObj->exceptionLog($e);
             return 'Unknown error';
         }
     }
@@ -80,13 +84,6 @@ class AmazonTransactions
         }
         
         $requestParameters['transaction_timeout'] = $timeout;
-        /*if ($amz_payments->provocation == 'hard_decline' && $amz_payments->environment == 'SANDBOX') {
-            $requestParameters['seller_authorization_note'] = '{"SandboxSimulation": {"State":"Declined", "ReasonCode":"AmazonRejected"}}';
-        }
-        if ($amz_payments->provocation == 'soft_decline' && $amz_payments->environment == 'SANDBOX') {
-            Context::getContext()->cookie->setHadErrorNowWallet = 1;
-            $requestParameters['seller_authorization_note'] = '{"SandboxSimulation": {"State":"Declined", "ReasonCode":"InvalidPaymentMethod", "PaymentMethodUpdateTimeInMins":2}}';
-        }*/
 
         $response = $service->authorize($requestParameters);
         $responsearray = $response->toArray();

@@ -99,6 +99,7 @@ $_MODULE['<{amzpayments}prestashop>amzpayments_5aa818b1473c50ce1b40bf66663182c6'
 $_MODULE['<{amzpayments}prestashop>amzpayments_a2af94a3e3857e4903cf97df11fd9440'] = 'Ihre gewählte Zahlungsmethode wurde abgelehnt. Bitte wählen Sie eine alternative Methode.';
 $_MODULE['<{amzpayments}prestashop>amzpayments_3c1faed661d6b55c61cd4a05fd1b687e'] = 'Amazon Pay Button auf Produktseite zeigen';
 $_MODULE['<{amzpayments}prestashop>amzpayments_15ad3e8d2603d8c92314a60a114fa038'] = 'Standard: Nein';
+$_MODULE['<{amzpayments}prestashop>configuration_fa834776c3045f5610c85a9faffe5f65'] = 'Bitte beachten Sie: sollten Sie serverseitiges Caching (z.B. in Verbindung mit nginx) nutzen, denken Sie daran diesen nach dem Speichern der Konfiguration zu leeren.';
 $_MODULE['<{amzpayments}prestashop>configuration_56b55033f747893cf02a5797707ee383'] = 'Machen Sie Amazon-Kunden zu Ihren Kunden';
 $_MODULE['<{amzpayments}prestashop>configuration_a7b8feea65558548dff1c84f2f8801ab'] = 'So funktioniert\'s';
 $_MODULE['<{amzpayments}prestashop>configuration_5b1a8c5b0fd7e134325ee37f10abed53'] = 'Registrieren Sie sich für Amazon Pay*. Loggen Sie sich nach der Registrierung in Seller Central ein, um die Accounteinrichtung abzuschließen.*';
@@ -190,6 +191,8 @@ $_MODULE['<{amzpayments}prestashop>embedded_payment_option_b060b34f618bd9d3e0bde
 $_MODULE['<{amzpayments}prestashop>payment_ed20689b0d8d53ec534166a88b67f259'] = 'Amazon Pay';
 $_MODULE['<{amzpayments}prestashop>payment_8811becbf523354e20e2017242326f70'] = '(Komfortabel mit Ihrem Amazon-Account bezahlen)';
 $_MODULE['<{amzpayments}prestashop>amzpayments_8667cecb1de0a963f560deab1b02523d'] = 'Login mit Amazon Komponenten im Frontend verbergen';
+$_MODULE['<{amzpayments}prestashop>amzpayments_4261cabf4d3eeefd16da5a582dbebd4e'] = 'Cache nach dem Speichern automatisch leeren';
+$_MODULE['<{amzpayments}prestashop>amzpayments_3392b1700cb8affec0ce6fba2fff833d'] = 'Den Cache leeren ist empfohlen nach einem Update oder Änderung der Konfiguration.';
 $_MODULE['<{amzpayments}prestashop>amzpayments_6deb26d36a88344bcd7f71914a086055'] = 'Template Bootstrap';
 $_MODULE['<{amzpayments}prestashop>amzpayments_7de64f538bdd7057ea1bbf5b46572d67'] = 'Bitte geben Sie die fehlenden Adressdaten ein';
 $_MODULE['<{amzpayments}prestashop>select_address_7de64f538bdd7057ea1bbf5b46572d67'] = 'Bitte geben Sie die fehlenden Adressdaten ein';

@@ -177,7 +177,7 @@ class AmzPayments extends PaymentModule
     {
         $this->name = 'amzpayments';
         $this->tab = 'payments_gateways';
-        $this->version = '3.2.1';
+        $this->version = '3.2.2';
         $this->author = 'patworx multimedia GmbH';
         $this->need_instance = 1;
         
@@ -2190,6 +2190,12 @@ class AmzPayments extends PaymentModule
                 $ext_js = 'https://static-na.payments-amazon.com/OffAmazonPayments/us/sandbox/js/Widgets.js ';
             } else {
                 $ext_js = 'https://static-na.payments-amazon.com/OffAmazonPayments/us/js/Widgets.js ';
+            }
+        } elseif ($this->getRegionalCodeForURL() == 'jp') {
+            if ($this->environment == 'SANDBOX') {
+                $ext_js = 'https://static-fe.payments-amazon.com/OffAmazonPayments/jp/sandbox/lpa/js/Widgets.js';
+            } else {
+                $ext_js = 'https://static-fe.payments-amazon.com/OffAmazonPayments/jp/lpa/js/Widgets.js';
             }
         } else {
             if ($this->environment == 'SANDBOX') {

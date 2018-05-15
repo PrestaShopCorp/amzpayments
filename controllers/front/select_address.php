@@ -83,7 +83,7 @@ class AmzpaymentsSelect_AddressModuleFrontController extends ModuleFrontControll
                             $requestParameters['currency_code'] = $currency_code;
                             try {
                                 $response = $this->service->SetOrderReferenceDetails($requestParameters);
-                            } catch (Exception $e) {                                
+                            } catch (Exception $e) {
                             }
                         }
                         $requestParameters = array();

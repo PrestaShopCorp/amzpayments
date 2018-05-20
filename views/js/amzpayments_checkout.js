@@ -223,15 +223,17 @@ function updateAddressSelection(amazonOrderReferenceId)
 			else
 			{
 				$("#addressMissings").fadeOut();
-				$("#submitAddress").fadeOut('fast', function() { $("#addressMissings").empty() });
-				if (jsonData.refresh)
-					location.reload();
-				
-				deliveryAddress = idAddress_delivery;
-				
-				updateCarrierList(jsonData.carrier_data);
-				updateCartSummary(jsonData.summary_block);
-				$('#amzOverlay, #opc_account-overlay, #opc_delivery_methods-overlay, #opc_payment_methods-overlay').fadeOut('slow');
+				$("#submitAddress").fadeOut('fast', function() {
+					$("#addressMissings").empty();
+					if (jsonData.refresh)
+						location.reload();
+					
+					deliveryAddress = idAddress_delivery;
+					
+					updateCarrierList(jsonData.carrier_data);
+					updateCartSummary(jsonData.summary_block);
+					$('#amzOverlay, #opc_account-overlay, #opc_delivery_methods-overlay, #opc_payment_methods-overlay').fadeOut('slow');					
+				});
 			}
 		},
 		error: function(XMLHttpRequest, textStatus, errorThrown) {

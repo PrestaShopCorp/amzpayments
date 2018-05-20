@@ -410,7 +410,6 @@ $_MODULE['<{amzpayments}prestashop>select_address_daa6b483e9f6ca081ec7e0b4a352f9
 $_MODULE['<{amzpayments}prestashop>_tooltip_0f5b2c5d07a33dc481cb9ecc8f7bb232'] = 'Are you an Amazon customer? Pay now with address and payment details stored in your Amazon account.';
 $_MODULE['<{amzpayments}prestashop>displaytopcolumn_2e2117b7c81aa9ea6931641ea2c6499f'] = 'Your order at ';
 $_MODULE['<{amzpayments}prestashop>displaytopcolumn_75fbf512d744977d62599cc3f0ae2bb4'] = 'is complete.';
-
 $_MODULE['<{amzpayments}prestashop>amzpayments_5e487720755d975e21ba1b65790467e2'] = 'Optimized checkout enables one page checkout with Amazon Pay. Please ensure all third party modules are compatible before activating this option.';
 $_MODULE['<{amzpayments}prestashop>amzpayments_59aad85b376259844b471a758908a3c1'] = 'Order process type';
 $_MODULE['<{amzpayments}prestashop>amzpayments_6e539d2ea7d82ed0e31c450e64ff8c04'] = 'Optimized';

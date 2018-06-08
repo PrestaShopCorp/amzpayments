@@ -138,7 +138,7 @@ class AmzPayments extends PaymentModule
         'lpa_mode' => 'LPA_MODE',
         'order_process_type' => 'AMZ_ORDER_PROCESS_TYPE',
         'button_visibility' => 'BUTTON_VISIBILITY',
-        'environment' => 'ENVIRONMENT',
+        'environment' => 'AMZ_ENVIRONMENT',
         'authorization_mode' => 'AUTHORIZATION_MODE',
         'order_status_id' => 'AMZ_ORDER_STATUS_ID',
         'authorized_status_id' => 'AUTHORIZED_STATUS_ID',
@@ -177,7 +177,7 @@ class AmzPayments extends PaymentModule
     {
         $this->name = 'amzpayments';
         $this->tab = 'payments_gateways';
-        $this->version = '3.2.2';
+        $this->version = '3.2.3';
         $this->author = 'patworx multimedia GmbH';
         $this->need_instance = 1;
         
@@ -351,7 +351,7 @@ class AmzPayments extends PaymentModule
         Configuration::updateValue('BUTTON_VISIBILITY', true);
         Configuration::updateValue('POPUP', true);
         Configuration::updateValue('ALLOW_GUEST', true);
-        Configuration::updateValue('ENVIRONMENT', 'LIVE');
+        Configuration::updateValue('AMZ_ENVIRONMENT', 'LIVE');
         Configuration::updateValue('REGION', $this->getDefaultModuleRegion());
         Configuration::updateValue('BUTTON_SIZE', 'medium');
         Configuration::updateValue('BUTTON_SIZE_LPA', 'medium');
@@ -367,7 +367,7 @@ class AmzPayments extends PaymentModule
         Configuration::updateValue('AMZ_PRODUCT_PAGE_CHECKOUT', false);
         Configuration::updateValue('CAPTURE_MODE', 'after_auth');
         Configuration::updateValue('LPA_MODE', 'login_pay');
-        Configuration::updateValue('AMZ_ORDER_PROCESS_TYPE', 'optimized');        
+        Configuration::updateValue('AMZ_ORDER_PROCESS_TYPE', 'optimized');
     }
     
     protected function installOrderStates()
@@ -451,7 +451,7 @@ class AmzPayments extends PaymentModule
             !Configuration::deleteByName('SECRET_KEY') ||
             !Configuration::deleteByName('REGION') ||
             !Configuration::deleteByName('BUTTON_VISIBILITY') ||
-            !Configuration::deleteByName('ENVIRONMENT') ||
+            !Configuration::deleteByName('AMZ_ENVIRONMENT') ||
             !Configuration::deleteByName('AMZ_DECLINE_STATUS_ID') ||
             !Configuration::deleteByName('AUTHORIZATION_MODE') ||
             !Configuration::deleteByName('CAPTURE_MODE') ||
@@ -487,7 +487,7 @@ class AmzPayments extends PaymentModule
                 $service = $this->getService(array(
                     'merchant_id' => Tools::getValue('AMZ_MERCHANT_ID'),
                     'access_key' => Tools::getValue('ACCESS_KEY'),
-                    'sandbox' => Tools::getValue('ENVIRONMENT') == 'SANDBOX',
+                    'sandbox' => Tools::getValue('AMZ_ENVIRONMENT') == 'SANDBOX',
                     'region' => Tools::getValue('REGION'),
                     'secret_key' => Tools::getValue('SECRET_KEY')
                 ));
@@ -606,7 +606,9 @@ class AmzPayments extends PaymentModule
                     $url .= '?toCheckout=1';
                 }
             }
-            $urls[] = $url;
+            if (!in_array($url, $urls)) {
+                $urls[] = $url;
+            }
         }
         if ($joined) {
             return join($joined, $urls);
@@ -1189,7 +1191,7 @@ class AmzPayments extends PaymentModule
                         'col' => 3,
                         'type' => 'select',
                         'prefix' => '<i class="icon icon-tag"></i>',
-                        'name' => 'ENVIRONMENT',
+                        'name' => 'AMZ_ENVIRONMENT',
                         'label' => $this->l('Mode'),
                         'options' => array(
                             'query' => array(

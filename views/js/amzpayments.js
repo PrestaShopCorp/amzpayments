@@ -120,7 +120,7 @@ function checkForAmazonListButton() {
 			bindCartButton('payWithAmazonListDiv');
 		}
 	}
-	if (jQuery("input[data-module-name=amzpayments]").length > 0) {
+	if (jQuery("input[data-module-name=amzpayments]").length > 0 && jQuery("#pay_with_amazon_list_button").length > 0) {
 		if (jQuery("input[data-module-name=amzpayments]").prop("checked")) {
 			jQuery("#payment-confirmation button[type=submit]").attr("disabled", "disabled");
 		}

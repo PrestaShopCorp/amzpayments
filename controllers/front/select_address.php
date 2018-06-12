@@ -209,6 +209,7 @@ class AmzpaymentsSelect_AddressModuleFrontController extends ModuleFrontControll
                         
                         if (! count($this->errors)) {
                             if (self::$amz_payments->order_process_type == 'standard') {
+                                $old_delivery_address_id = $this->context->cart->id_address_delivery;
                                 $this->context->cart->id_address_delivery = $address_delivery->id;
                                 if (isset($responsearray['getorderreference']['GetOrderReferenceDetailsResult']['OrderReferenceDetails']['BillingAddress'])) {
                                     $billing_address_array = $responsearray['getorderreference']['GetOrderReferenceDetailsResult']['OrderReferenceDetails']['BillingAddress'];
@@ -311,6 +312,8 @@ class AmzpaymentsSelect_AddressModuleFrontController extends ModuleFrontControll
                                     $this->context->cart->id_address_invoice = $address_delivery->id;
                                     $address_invoice = $address_delivery;
                                 }
+                                $this->context->cart->setNoMultishipping();
+                                $this->context->cart->updateAddressId($old_delivery_address_id, $address_delivery->id);
                                 $this->context->cart->save();
                             }
                             if ($this->context->cart->nbProducts()) {

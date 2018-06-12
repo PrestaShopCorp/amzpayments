@@ -340,6 +340,11 @@ class AmazonTransactions
         if ((int)$oid > 0) {
             $amz_payments = new AmzPayments();
             $new_status = $amz_payments->capture_success_status_id;
+            $order = new Order((int)$oid);
+            $history = $order->getHistory(Context::getContext()->language->id, $amz_payments->capture_success_status_id);
+            if (sizeof($history) > 0) {
+                return false;
+            }
             self::setOrderStatus($oid, $new_status);
         } else {
             if (!isset(Context::getContext()->cookie->amzSetStatusCaptured)) {
@@ -374,6 +379,11 @@ class AmazonTransactions
         if ((int)$oid > 0) {
             $amz_payments = new AmzPayments();
             $new_status = $amz_payments->capture_success_status_id;
+            $order = new Order((int)$oid);
+            $history = $order->getHistory(Context::getContext()->language->id, $amz_payments->capture_success_status_id);
+            if (sizeof($history) > 0) {
+                return false;
+            }
             self::setOrderStatus($oid, $new_status);
         } else {
             if (!isset(Context::getContext()->cookie->amzSetStatusCaptured)) {

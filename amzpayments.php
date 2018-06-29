@@ -177,7 +177,7 @@ class AmzPayments extends PaymentModule
     {
         $this->name = 'amzpayments';
         $this->tab = 'payments_gateways';
-        $this->version = '3.2.3';
+        $this->version = '3.2.4';
         $this->author = 'patworx multimedia GmbH';
         $this->need_instance = 1;
         
@@ -590,7 +590,7 @@ class AmzPayments extends PaymentModule
     
     protected function getIPNURL()
     {
-        return str_replace('http://', 'https://', $this->context->link->getModuleLink('amzpayments', 'ipn.php'));
+        return str_replace('http://', 'https://', $this->context->link->getModuleLink('amzpayments', 'ipn'));
     }
     
     protected function getAllowedReturnUrls($type = 1, $joined = false)

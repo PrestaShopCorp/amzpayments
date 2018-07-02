@@ -202,6 +202,20 @@ class AmazonTransactions
         }
         return false;
     }
+    
+    public static function cancelOrder(AmzPayments $amz_payments, $service, $orderRef)
+    {
+        $requestParameter = array();
+        $requestParameter['merchant_id'] = $amz_payments->merchant_id;
+        $requestParameter['amazon_order_reference_id'] = $orderRef;
+        $response = $service->cancelOrderReference($requestParameter);
+        if ($service->success) {
+            return $response->toArray();
+        } else {
+            return self::handleError($response);
+        }
+        return false;
+    }
 
     public static function captureTotalFromAuth(AmzPayments $amz_payments, $service, $auth_id)
     {

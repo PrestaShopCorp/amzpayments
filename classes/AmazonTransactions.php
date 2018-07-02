@@ -197,6 +197,21 @@ class AmazonTransactions
         }
         return $response;
     }
+    
+    public static function cancelOrder(AmzPayments $amz_payments, $service, $orderRef)
+    {
+        $orderRefRequest = new OffAmazonPaymentsService_Model_CancelOrderReferenceRequest();
+        $orderRefRequest->setSellerId($amz_payments->merchant_id);
+        $orderRefRequest->setAmazonOrderReferenceId($orderRef);
+        try {
+            $response = $service->cancelOrderReference($orderRefRequest);
+        } catch (OffAmazonPaymentsService_Exception $e) {
+            $amz_paymentsObj = new AmzPayments();
+            $amz_paymentsObj->exceptionLog($e);
+            echo 'ERROR: ' . $e->getMessage();
+        }
+        return $response;
+    }
 
     public static function captureTotalFromAuth(AmzPayments $amz_payments, $service, $auth_id)
     {

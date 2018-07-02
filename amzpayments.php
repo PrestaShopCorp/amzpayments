@@ -185,7 +185,7 @@ class AmzPayments extends PaymentModule
     {
         $this->name = 'amzpayments';
         $this->tab = 'payments_gateways';
-        $this->version = '2.2.1';
+        $this->version = '2.2.4';
         $this->author = 'patworx multimedia GmbH';
         $this->need_instance = 1;
         

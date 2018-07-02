@@ -209,6 +209,7 @@ class AmzpaymentsPaymentModuleFrontController extends ModuleFrontController
                         Tools::redirect($this->context->link->getModuleLink('amzpayments', 'addresswallet', array('amz' => $order_reference_id)));
                     } elseif ($reason == 'TransactionTimedOut') {
                         unset($this->context->cookie->setHadErrorNowWallet);
+                        unset($this->context->cookie->has_set_valid_amazon_address);
                         $this->context->cookie->amazonpay_errors_message = self::$amz_payments->l('Your selected payment method is currently not available. Please select another one.');
                         Tools::redirect($this->context->link->getPageLink('order'));
                     } elseif ($reason == 'AmazonRejected') {

@@ -50,8 +50,9 @@ function initAmazon(){
 	   			amzBtnColor = AMZ_BUTTON_COLOR_LPA_NAVI;
 	   		var redirectURL = LOGINREDIRECTAMZ;
 	   		var redirectToCheckout = false;
+	   		var redirectState = '';
 	   		if ($(this).attr("id") == "jsLoginAuthPage" && location.href.indexOf('display_guest_checkout') > 1) {
-	   			redirectURL = LOGINREDIRECTAMZ_CHECKOUT;
+	   			redirectState = '&toCheckout=1';
 	   			redirectToCheckout = true;
 	   		}
 	        OffAmazonPayments.Button($(this).attr('id'), AMZSELLERID, {
@@ -60,7 +61,7 @@ function initAmazon(){
 	                color: amzBtnColor,
 	                language: AMZ_WIDGET_LANGUAGE,
 	                authorization: function() {
-	                loginOptions =  {scope: 'profile postal_code payments:widget payments:shipping_address payments:billing_address', popup: !useRedirect };
+	                loginOptions =  {scope: 'profile postal_code payments:widget payments:shipping_address payments:billing_address', popup: !useRedirect, state: redirectState };
 	                authRequest = amazon.Login.authorize (loginOptions, useRedirect ? redirectURL : null);
 	            },    
 	            onSignIn: function(orderReference) {
@@ -89,7 +90,7 @@ function initAmazon(){
 	}
 	if (LPA_MODE == 'login_pay' || LPA_MODE == 'pay') {
 		if($('#payWithAmazonDiv').length > 0){
-			bindCartButton('payWithAmazonDiv');		   
+			bindCartButton('payWithAmazonDiv');
 		}
 		if ($('#button_order_cart').length > 0 && $('#amz_cart_widgets_summary').length == 0) {
 			$('#button_order_cart').before('<div id="payWithAmazonCartDiv" class="' + (AMZ_CREATE_ACCOUNT_EXP == '1' ? 'amz_create_account' : null) + '"></div>');
@@ -142,14 +143,19 @@ function checkForAmazonListButton() {
 
 function bindCartButton(div_id) {
 	if (jQuery('#' + div_id).attr('data-is-set') != '1') {
-		    OffAmazonPayments.Button(div_id, AMZSELLERID, {
+		var redirectState = '';
+   		var redirectURL = LOGINREDIRECTAMZ;
+		if (useRedirect) {
+			redirectState = '&toCheckout=1';
+		}		
+		OffAmazonPayments.Button(div_id, AMZSELLERID, {
 	            type: AMZ_BUTTON_TYPE_PAY,
 	            size: AMZ_BUTTON_SIZE_LPA,
 	            color: AMZ_BUTTON_COLOR_LPA,
 	            language: AMZ_WIDGET_LANGUAGE,
 	            authorization: function() {
-	            loginOptions =  {scope: 'profile postal_code payments:widget payments:shipping_address payments:billing_address', popup: !useRedirect };
-	            authRequest = amazon.Login.authorize (loginOptions, (useRedirect ? LOGINREDIRECTAMZ_CHECKOUT : null));
+	            loginOptions =  {scope: 'profile postal_code payments:widget payments:shipping_address payments:billing_address', popup: !useRedirect, state: redirectState };
+	            authRequest = amazon.Login.authorize (loginOptions, (useRedirect ? redirectURL : null));
 	        },
 	        onSignIn: function(orderReference) {
 	            amazonOrderReferenceId = orderReference.getAmazonOrderReferenceId();
@@ -181,7 +187,7 @@ function bindCartButton(div_id) {
 	            console.log(error); 
 	        }
 	    });
-			setTipr('#' + div_id);
+		setTipr('#' + div_id);
 	    jQuery('#' + div_id).attr('data-is-set', '1');
 	}	
 }

@@ -339,3 +339,4 @@ $_MODULE['<{amzpayments}prestashop>payment_ed20689b0d8d53ec534166a88b67f259'] = 
 $_MODULE['<{amzpayments}prestashop>payment_8811becbf523354e20e2017242326f70'] = '(Payer en toute sécurité et rapidement en utilisant votre compte Amazon)';
 $_MODULE['<{amzpayments}prestashop>payment_optype_std_64a985a7c1cdd62470ecddd37d04ebc9'] = 'Acheter maintenant avec Amazon Pay';
 $_MODULE['<{amzpayments}prestashop>paymentreset_3f350de08883a6ac8983d5400e4fd43b'] = 'Vous avez choisi Amazon Pay - cliquez ici si vous souhaitez une autre méthode de paiement';
+$_MODULE['<{amzpayments}prestashop>amzpayments_b7f9430e47eba9941b122f07083a6efa'] = 'Afficher le bouton Amazon Pay en haut du panier';

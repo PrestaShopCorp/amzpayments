@@ -3,7 +3,8 @@ Gentile Cliente,
 
 La ringraziamo molto per il suo ordine {$ORDER_NR} de {$ORDER_DATE}.
 Purtroppo Amazon Pay ha rifiutato il suo pagamento.
-La preghiamo di andare all‘indirizzo https://payments.amazon.it/overview selezionando un altro metodo di pagamento o inserendone uno nuovo.
-Una volta inserito il nuovo metodo di pagamento, verrà effettuato un nuovo tentativo di pagamento e inviata un'e-mail di conferma.
+La preghiamo di andare all'indirizzo https://payments.amazon.it/jr/your-account/orders?language=it_IT e aggiornare le informazioni di pagamento per il suo ordine.
+Automaticamente le verrà nuovamente richiesto da Amazon Pay di procedere col pagamento.
+Successivamente riceverà una mail di conferma dell'avvenuto pagamento.
 
 

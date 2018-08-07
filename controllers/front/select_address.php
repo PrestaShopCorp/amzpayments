@@ -67,28 +67,7 @@ class AmzpaymentsSelect_AddressModuleFrontController extends ModuleFrontControll
                 switch (Tools::getValue('method')) {
                     case 'updateAddressesSelected':
                         if (Tools::getValue('src') == 'addresswallet') {
-                            $currency_order = new Currency((int) $this->context->cart->id_currency);
-                            $currency_code = $currency_order->iso_code;
-                            if ($currency_code == 'JYP') {
-                                $currency_code = 'YEN';
-                            }
                             $this->context->cookie->amazon_id = Tools::getValue('amazonOrderReferenceId');
-                            $set_order_reference_details_request = new OffAmazonPaymentsService_Model_SetOrderReferenceDetailsRequest();
-                            $set_order_reference_details_request->setSellerId(self::$amz_payments->merchant_id);
-                            $set_order_reference_details_request->setAmazonOrderReferenceId(Tools::getValue('amazonOrderReferenceId'));
-                            $set_order_reference_details_request->setOrderReferenceAttributes(new OffAmazonPaymentsService_Model_OrderReferenceAttributes());
-                            $set_order_reference_details_request->getOrderReferenceAttributes()->setOrderTotal(new OffAmazonPaymentsService_Model_OrderTotal());
-                            $set_order_reference_details_request->getOrderReferenceAttributes()
-                            ->getOrderTotal()
-                            ->setCurrencyCode($currency_code);
-                            $set_order_reference_details_request->getOrderReferenceAttributes()
-                            ->getOrderTotal()
-                            ->setAmount(10);
-                            $set_order_reference_details_request->getOrderReferenceAttributes()->setPlatformId(self::$amz_payments->getPfId());
-                            try {
-                                $this->service->setOrderReferenceDetails($set_order_reference_details_request);
-                            } catch (Exception $e) {
-                            }
                         }
                         $get_order_reference_details_request = new OffAmazonPaymentsService_Model_GetOrderReferenceDetailsRequest();
                         $get_order_reference_details_request->setSellerId(self::$amz_payments->merchant_id);
@@ -220,6 +199,7 @@ class AmzpaymentsSelect_AddressModuleFrontController extends ModuleFrontControll
                         
                         if (!count($this->errors)) {
                             if (self::$amz_payments->order_process_type == 'standard') {
+                                $old_delivery_address_id = $this->context->cart->id_address_delivery;
                                 $this->context->cart->id_address_delivery = $address_delivery->id;
                                 $billing_address_object = $reference_details_result_wrapper->GetOrderReferenceDetailsResult->getOrderReferenceDetails()->getBillingAddress();
                                 if (method_exists($billing_address_object, 'getPhysicalAddress')) {
@@ -322,6 +302,8 @@ class AmzpaymentsSelect_AddressModuleFrontController extends ModuleFrontControll
                                     $this->context->cart->id_address_invoice = $address_delivery->id;
                                     $address_invoice = $address_delivery;
                                 }
+                                $this->context->cart->setNoMultishipping();
+                                $this->context->cart->updateAddressId($old_delivery_address_id, $address_delivery->id);
                                 $this->context->cart->save();
                                 $this->context->cookie->has_set_valid_amazon_address = true;
                             }

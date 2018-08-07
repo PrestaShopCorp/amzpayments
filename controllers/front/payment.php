@@ -179,7 +179,7 @@ class AmzpaymentsPaymentModuleFrontController extends ModuleFrontController
             
         
             
-        if (self::$amz_payments->authorization_mode == 'fast_auth') {
+        if (self::$amz_payments->authorization_mode == 'fast_auth' || self::$amz_payments->authorization_mode == 'auto') {
             $authorization_reference_id = $order_reference_id;
             
             if (isset($this->context->cookie->setHadErrorNowWallet) && $this->context->cookie->setHadErrorNowWallet == 1) {
@@ -208,19 +208,27 @@ class AmzpaymentsPaymentModuleFrontController extends ModuleFrontController
                         $this->context->cookie->amazonpay_errors_message = self::$amz_payments->l('Your selected payment method is currently not available. Please select another one.');
                         Tools::redirect($this->context->link->getModuleLink('amzpayments', 'addresswallet', array('amz' => $order_reference_id)));
                     } elseif ($reason == 'TransactionTimedOut') {
-                        unset($this->context->cookie->setHadErrorNowWallet);
-                        unset($this->context->cookie->has_set_valid_amazon_address);
-                        $this->context->cookie->amazonpay_errors_message = self::$amz_payments->l('Your selected payment method is currently not available. Please select another one.');
-                        Tools::redirect($this->context->link->getPageLink('order'));
+                        if (self::$amz_payments->authorization_mode == 'auto') {
+                            $jump_to_async = true;
+                        } else {
+                            unset($this->context->cookie->setHadErrorNowWallet);
+                            unset($this->context->cookie->has_set_valid_amazon_address);
+                            $this->context->cookie->amazonpay_errors_message = self::$amz_payments->l('Your selected payment method is currently not available. Please select another one.');
+                            Tools::redirect($this->context->link->getPageLink('order'));
+                        }
                     } elseif ($reason == 'AmazonRejected') {
-                        $this->context->cookie->amazonpay_errors_message = self::$amz_payments->l('Your selected payment method has been declined. Please chose another one.');
-                        $this->context->cookie->amz_logout = true;
-                        unset($this->context->cookie->amz_access_token);
-                        unset($this->context->cookie->amz_access_token_set_time);
-                        unset($this->context->cookie->amazon_id);
-                        unset($this->context->cookie->has_set_valid_amazon_address);
-                        unset($this->context->cookie->setHadErrorNowWallet);
-                        Tools::redirect($this->context->link->getPageLink('order'));
+                        if (self::$amz_payments->authorization_mode == 'auto') {
+                            $jump_to_async = true;
+                        } else {
+                            $this->context->cookie->amazonpay_errors_message = self::$amz_payments->l('Your selected payment method has been declined. Please chose another one.');
+                            $this->context->cookie->amz_logout = true;
+                            unset($this->context->cookie->amz_access_token);
+                            unset($this->context->cookie->amz_access_token_set_time);
+                            unset($this->context->cookie->amazon_id);
+                            unset($this->context->cookie->has_set_valid_amazon_address);
+                            unset($this->context->cookie->setHadErrorNowWallet);
+                            Tools::redirect($this->context->link->getPageLink('order'));
+                        }
                     } else {
                         $this->context->cookie->setHadErrorNowWallet = 1;
                         $this->context->cookie->amazonpay_errors_message = self::$amz_payments->l('Your selected payment method has been declined. Please chose another one.');
@@ -228,9 +236,11 @@ class AmzpaymentsPaymentModuleFrontController extends ModuleFrontController
                     }
                 }
                 
-                $amazon_authorization_id = $authorization_response_wrapper->getAuthorizeResult()
-                ->getAuthorizationDetails()
-                ->getAmazonAuthorizationId();
+                if (!isset($jump_to_async)) {
+                    $amazon_authorization_id = $authorization_response_wrapper->getAuthorizeResult()
+                    ->getAuthorizationDetails()
+                    ->getAmazonAuthorizationId();
+                }
             }
         }
         
@@ -252,7 +262,7 @@ class AmzpaymentsPaymentModuleFrontController extends ModuleFrontController
             exit();
         }
         
-        if (self::$amz_payments->authorization_mode == 'after_checkout') {
+        if (self::$amz_payments->authorization_mode == 'after_checkout' || isset($jump_to_async)) {
             $authorization_reference_id = $order_reference_id;
             $authorization_response_wrapper = AmazonTransactions::authorize(self::$amz_payments, $this->service, $authorization_reference_id, $total, $currency_code);
             $amazon_authorization_id = @$authorization_response_wrapper->getAuthorizeResult()

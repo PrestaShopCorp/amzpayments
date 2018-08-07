@@ -118,6 +118,8 @@ class AmzPayments extends PaymentModule
     
     public $hide_login_on_menu = 1;
     
+    public $show_above_cart = 0;
+    
     public $promo_header = 0;
     
     public $promo_product = 1;
@@ -132,6 +134,8 @@ class AmzPayments extends PaymentModule
     
     private $pfid = 'A1AOZCKI9MBRZA';
     
+    private $max_log_size = 20971520;
+    
     protected static $table_columns = array();
     
     public static $config_array = array(
@@ -144,7 +148,7 @@ class AmzPayments extends PaymentModule
         'lpa_mode' => 'LPA_MODE',
         'order_process_type' => 'AMZ_ORDER_PROCESS_TYPE',
         'button_visibility' => 'BUTTON_VISIBILITY',
-        'environment' => 'ENVIRONMENT',
+        'environment' => 'AMZ_ENVIRONMENT',
         'authorization_mode' => 'AUTHORIZATION_MODE',
         'order_status_id' => 'AMZ_ORDER_STATUS_ID',
         'authorized_status_id' => 'AUTHORIZED_STATUS_ID',
@@ -173,6 +177,7 @@ class AmzPayments extends PaymentModule
         'hide_login_btns' => 'AMZ_HIDE_LOGIN_BTNS',
         'hide_login_on_menu' => 'AMZ_HIDE_LOGIN_ON_MENU',
         'hide_minicart_button' => 'AMZ_HIDE_MINICART_BUTTON',
+        'show_above_cart' => 'AMZ_SHOW_ABOVE_CART',
         'promo_header' => 'AMZ_PROMO_HEADER',
         'promo_header_style' => 'AMZ_PROMO_HEADER_STYLE',
         'promo_product' => 'AMZ_PROMO_PRODUCT',
@@ -185,7 +190,7 @@ class AmzPayments extends PaymentModule
     {
         $this->name = 'amzpayments';
         $this->tab = 'payments_gateways';
-        $this->version = '2.2.4';
+        $this->version = '2.2.5';
         $this->author = 'patworx multimedia GmbH';
         $this->need_instance = 1;
         
@@ -357,6 +362,7 @@ class AmzPayments extends PaymentModule
         $this->registerHook('displayBanner') &&
         $this->registerHook('displayTopColumn') &&
         $this->registerHook('actionCarrierUpdate') &&
+        $this->registerHook('actionCustomerLogoutAfter') &&
         $this->registerHook('displayBackOfficeHeader') &&
         $this->registerHook('displayShoppingCartFooter') &&
         $this->registerHook('displayNav') &&
@@ -368,6 +374,7 @@ class AmzPayments extends PaymentModule
         $this->registerHook('payment') &&
         $this->registerHook('displayPaymentEU') &&
         $this->registerHook('actionDispatcher') &&
+        $this->registerHook('displayBeforeShoppingCartBlock') &&
         $this->registerHook('header');
     }
     
@@ -376,7 +383,7 @@ class AmzPayments extends PaymentModule
         Configuration::updateValue('BUTTON_VISIBILITY', true);
         Configuration::updateValue('POPUP', true);
         Configuration::updateValue('ALLOW_GUEST', true);
-        Configuration::updateValue('ENVIRONMENT', 'LIVE');
+        Configuration::updateValue('AMZ_ENVIRONMENT', 'LIVE');
         Configuration::updateValue('REGION', $this->getDefaultModuleRegion());
         Configuration::updateValue('BUTTON_SIZE', 'medium');
         Configuration::updateValue('BUTTON_SIZE_LPA', 'medium');
@@ -386,6 +393,7 @@ class AmzPayments extends PaymentModule
         Configuration::updateValue('AMZ_HIDE_LOGIN_BTNS', false);
         Configuration::updateValue('AMZ_HIDE_LOGIN_ON_MENU', true);
         Configuration::updateValue('AMZ_HIDE_MINICART_BUTTON', true);
+        Configuration::updateValue('AMZ_SHOW_ABOVE_CART', false);
         Configuration::updateValue('AMZ_PROMO_HEADER', false);
         Configuration::updateValue('AMZ_PROMO_PRODUCT', true);
         Configuration::updateValue('AMZ_PROMO_FOOTER', true);
@@ -454,8 +462,11 @@ class AmzPayments extends PaymentModule
                 'template' => ''
             ), 'INSERT');
         }
-        Configuration::updateValue('CAPTURE_STATUS_ID', $id_order_state);
+        Configuration::updateValue('CAPTURE_SUCCESS_STATUS_ID', $id_order_state);
         unset($id_order_state);
+        Configuration::updateValue('CAPTURE_STATUS_ID', Configuration::get('PS_OS_DELIVERED'));
+        Configuration::updateValue('AMZ_ORDER_STATUS_ID', Configuration::get('PS_OS_PREPARATION'));
+        Configuration::updateValue('AMZ_DECLINE_STATUS_ID', Configuration::get('PS_OS_ERROR'));
     }
     
     public function checkTableForColumn($table, $column)
@@ -473,7 +484,7 @@ class AmzPayments extends PaymentModule
     
     public function uninstall()
     {
-        if (! Configuration::deleteByName('AMZ_MERCHANT_ID') || ! Configuration::deleteByName('ACCESS_KEY') || ! Configuration::deleteByName('SECRET_KEY') || ! Configuration::deleteByName('REGION') || ! Configuration::deleteByName('BUTTON_VISIBILITY') || ! Configuration::deleteByName('ENVIRONMENT') || ! Configuration::deleteByName('AMZ_DECLINE_STATUS_ID') || ! Configuration::deleteByName('AUTHORIZATION_MODE') || ! Configuration::deleteByName('CAPTURE_MODE') || ! Configuration::deleteByName('CAPTURE_STATUS_ID') || ! parent::uninstall()) {
+        if (! Configuration::deleteByName('AMZ_MERCHANT_ID') || ! Configuration::deleteByName('ACCESS_KEY') || ! Configuration::deleteByName('SECRET_KEY') || ! Configuration::deleteByName('REGION') || ! Configuration::deleteByName('BUTTON_VISIBILITY') || ! Configuration::deleteByName('AMZ_ENVIRONMENT') || ! Configuration::deleteByName('AMZ_DECLINE_STATUS_ID') || ! Configuration::deleteByName('AUTHORIZATION_MODE') || ! Configuration::deleteByName('CAPTURE_MODE') || ! Configuration::deleteByName('CAPTURE_STATUS_ID') || ! parent::uninstall()) {
             return false;
         }
         return true;
@@ -483,7 +494,7 @@ class AmzPayments extends PaymentModule
     {
         if (Tools::isSubmit('submitAmzpaymentsModule') || Tools::isSubmit('submitAmzpaymentsModuleConnect')) {
             foreach (self::$config_array as $name => $f) {
-                if (Tools::getValue($f) === false && !in_array($f, array('SHIPPINGS_NOT_ALLOWED', 'PROVOCATION', 'PRODUCTS_NOT_ALLOWED', 'AMZ_HIDE_LOGIN_BTNS', 'AMZ_HIDE_MINICART_BUTTON', 'AMZ_PROMO_HEADER'))) {
+                if (Tools::getValue($f) === false && !in_array($f, array('SHIPPINGS_NOT_ALLOWED', 'PROVOCATION', 'PRODUCTS_NOT_ALLOWED', 'AMZ_HIDE_LOGIN_BTNS', 'AMZ_HIDE_MINICART_BUTTON', 'AMZ_PROMO_HEADER', 'AMZ_SHOW_ABOVE_CART'))) {
                     $this->_postErrors[] = $this->l($name) . ' ' . $this->l(': details are required.');
                 }
             }
@@ -503,7 +514,7 @@ class AmzPayments extends PaymentModule
                 $service = $this->getService(array(
                     'merchantId' => Tools::getValue('AMZ_MERCHANT_ID'),
                     'accessKey' => Tools::getValue('ACCESS_KEY'),
-                    'environment' => Tools::getValue('ENVIRONMENT'),
+                    'environment' => Tools::getValue('AMZ_ENVIRONMENT'),
                     'authorization_mode' => Tools::getValue('AUTHORIZATION_MODE'),
                     'capture_mode' => Tools::getValue('CAPTURE_MODE'),
                     'capture_status_id' => Tools::getValue('CAPTURE_STATUS_ID'),
@@ -600,7 +611,7 @@ class AmzPayments extends PaymentModule
     
     protected function getCronURL()
     {
-        return $this->context->link->getModuleLink('amzpayments', 'cron.php', array('pw' => $this->cron_password));
+        return $this->context->link->getModuleLink('amzpayments', 'cron', array('pw' => $this->cron_password));
     }
     
     protected function getIPNURL()
@@ -622,7 +633,9 @@ class AmzPayments extends PaymentModule
                     $url .= '?toCheckout=1';
                 }
             }
-            $urls[] = $url;
+            if (!in_array($url, $urls)) {
+                $urls[] = $url;
+            }
         }
         if ($joined) {
             return join($joined, $urls);
@@ -865,6 +878,24 @@ class AmzPayments extends PaymentModule
                             )
                         )
                     ),
+                    array(
+                        'type' => 'switch',
+                        'label' => $this->l('Show Amazon Pay button on top of the basket'),
+                        'name' => 'AMZ_SHOW_ABOVE_CART',
+                        'is_bool' => true,
+                        'values' => array(
+                            array(
+                                'id' => 'active_on_above_cart',
+                                'value' => true,
+                                'label' => $this->l('Enabled')
+                            ),
+                            array(
+                                'id' => 'active_off_above_cart',
+                                'value' => '0',
+                                'label' => $this->l('Disabled')
+                            )
+                        )
+                    ),
                 )
             )
         );
@@ -917,6 +948,10 @@ class AmzPayments extends PaymentModule
                                 array(
                                     'id_lpa_auth_mode' => 'after_checkout',
                                     'name' => $this->l('Asynchronous')
+                                ),
+                                array(
+                                    'id_lpa_auth_mode' => 'auto',
+                                    'name' => $this->l('Auto')
                                 ),
                                 array(
                                     'id_lpa_auth_mode' => 'manually',
@@ -1241,7 +1276,7 @@ class AmzPayments extends PaymentModule
                         'col' => 3,
                         'type' => 'select',
                         'prefix' => '<i class="icon icon-tag"></i>',
-                        'name' => 'ENVIRONMENT',
+                        'name' => 'AMZ_ENVIRONMENT',
                         'label' => $this->l('Mode'),
                         'options' => array(
                             'query' => array(
@@ -1458,10 +1493,12 @@ class AmzPayments extends PaymentModule
                                     'id_buttonsize' => 'Pay',
                                     'name' => $this->l('Pay')
                                 ),
+                                /*
                                 array(
                                     'id_buttonsize' => 'A',
                                     'name' => $this->l('logo only')
                                 )
+                                */
                             ),
                             'id' => 'id_buttonsize',
                             'name' => 'name'
@@ -1582,7 +1619,7 @@ class AmzPayments extends PaymentModule
         $this->context->smarty->assign('module_name', $this->name);
         $this->context->smarty->assign('current_version', $this->version);
         $this->context->smarty->assign('allowed_return_url_1', $this->getAllowedReturnUrls(1));
-        $this->context->smarty->assign('allowed_return_url_2', $this->getAllowedReturnUrls(2));
+        $this->context->smarty->assign('allowed_return_url_2', array());
         $this->context->smarty->assign('allowed_js_origins', $this->getDomainForWhitelist());
         $this->context->smarty->assign('base_url', $this->getBaseLink());
         $this->context->smarty->assign('language_code', $this->context->language->iso_code);
@@ -1681,7 +1718,7 @@ class AmzPayments extends PaymentModule
             'uniqueId' => Tools::encryptIV('amzPaymentsSimplePath'),
             'locale' =>  $this->getLocalCodeForSimplePath(),
             'loginRedirectURLs_1' => $this->getAllowedReturnUrls(1),
-            'loginRedirectURLs_2' => $this->getAllowedReturnUrls(2),
+            'loginRedirectURLs_2' => array(),
             'allowedLoginDomains' => $this->getDomainForWhitelist(),
             'storeDescription' => Configuration::get('PS_SHOP_NAME'),
             'language' => $this->getLanguageCodeForSimplePath(),
@@ -1913,7 +1950,11 @@ class AmzPayments extends PaymentModule
     {
         if (isset($this->context->controller->php_self)) {
             if ($this->context->controller->php_self == 'addresses' || $this->context->controller->php_self == 'address') {
-                if ($this->order_process_type == 'standard' && isset($this->context->cookie->amazon_id) && $this->context->customer->isLogged() && $this->isValidOrderReference($this->context->cookie->amazon_id) && $this->hasSetValidAmazonAddress()) {
+                if ($this->order_process_type == 'standard' &&
+                    isset($this->context->cookie->amazon_id) &&
+                    ($this->context->customer->isLogged() || (isset($this->context->customer->is_guest) && $this->context->customer->is_guest == '1')) &&
+                    $this->isValidOrderReference($this->context->cookie->amazon_id) &&
+                    $this->hasSetValidAmazonAddress()) {
                     $redirect_params = array();
                     if (Tools::getValue('back') != '') {
                         $redirect_params['back'] = Tools::getValue('back');
@@ -1921,6 +1962,54 @@ class AmzPayments extends PaymentModule
                     Tools::redirect($this->context->link->getModuleLink('amzpayments', 'addresswallet', $redirect_params));
                 }
             }
+        }
+    }
+    
+    public function hookDisplayBeforeShoppingCartBlock($params)
+    {
+        if (Configuration::get('AMZ_SHOW_ABOVE_CART') != '1') {
+            return;
+        }
+        $show_amazon_button = true;
+        if (isset($this->context->controller->module)) {
+            if ($this->context->controller->module->name == 'amzpayments') {
+                $show_amazon_button = false;
+            }
+        }
+        
+        if (! $this->checkIfCurrencyMatchesModuleRegion()) {
+            $show_amazon_button = false;
+        }
+        
+        if (! $this->checkCurrency($params['cart'])) {
+            $show_amazon_button = false;
+        }
+        
+        if ($this->lpa_mode == 'login') {
+            $show_amazon_button = false;
+        }
+        
+        $summary = $this->context->cart->getSummaryDetails();
+        foreach ($summary['products'] as &$product_update) {
+            $product_id = (int) (isset($product_update['id_product']) ? $product_update['id_product'] : $product_update['product_id']);
+            if ($this->productNotAllowed($product_id)) {
+                $show_amazon_button = false;
+            }
+        }
+        if ($this->order_process_type == 'standard' && isset($this->context->cookie->amazon_id) && ($this->context->customer->isLogged() || (isset($this->context->customer->is_guest) && $this->context->customer->is_guest == '1'))) {
+            if ($this->isValidOrderReference($this->context->cookie->amazon_id) && $this->hasSetValidAmazonAddress()) {
+                $show_amazon_button = false;
+            }
+        }
+        if ($show_amazon_button) {
+            $this->context->smarty->assign('sellerID', $this->merchant_id);
+            $this->context->smarty->assign('create_account', (($this->allow_guests == '0' || Configuration::get('PS_GUEST_CHECKOUT_ENABLED') == '0' || $this->order_process_type == 'standard') && (!$this->context->customer->isLogged()) ? '1' : '0'));
+            $this->context->smarty->assign('size', $this->button_size);
+            $this->context->smarty->assign('color', $this->button_color);
+            $this->context->smarty->assign('btn_url', $this->getButtonURL());
+            $this->context->smarty->assign('hide_button', $this->button_visibility == '0');
+            $this->context->smarty->assign('preBuildButton', $this->lpa_mode == 'pay');
+            return $this->display(__FILE__, 'views/templates/hooks/amzpayments_above.tpl');
         }
     }
     
@@ -1952,7 +2041,7 @@ class AmzPayments extends PaymentModule
                 $show_amazon_button = false;
             }
         }
-        if ($this->order_process_type == 'standard' && isset($this->context->cookie->amazon_id) && $this->context->customer->isLogged()) {
+        if ($this->order_process_type == 'standard' && isset($this->context->cookie->amazon_id) && ($this->context->customer->isLogged() || (isset($this->context->customer->is_guest) && $this->context->customer->is_guest == '1'))) {
             if ($this->isValidOrderReference($this->context->cookie->amazon_id) && $this->hasSetValidAmazonAddress()) {
                 $show_amazon_button = false;
                 $this->context->smarty->assign('resetlink', $this->context->link->getModuleLink('amzpayments', 'resetpayments'));
@@ -2183,32 +2272,9 @@ class AmzPayments extends PaymentModule
         
         $ext_js = '<script type="text/javascript" src="' . $ext_js . '"></script>';
         
-        $amz_login_ready = ' window.onAmazonLoginReady = function() { amazon.Login.setClientId("' . $this->client_id . '"); }; ';
-        
-        $acc_tk = '';
         $is_logged = 'false';
-        
         if (isset($this->context->cookie->amz_access_token) && $this->context->cookie->amz_access_token != '') {
             $is_logged = 'true';
-            if (!isset($this->context->cookie->amazon_id)) {
-                $acc_tk = self::prepareCookieValueForAmazonPaymentsUse($this->context->cookie->amz_access_token);
-                $amz_login_ready = '
-                var accessToken = "' . $acc_tk . '";
-                if (typeof accessToken === \'string\' && accessToken.match(/^Atza/)) {
-                document.cookie = "amazon_Login_accessToken=" + accessToken +";secure";
-            }
-            window.onAmazonLoginReady = function() {
-            amazon.Login.setClientId("' . $this->client_id . '");
-                amazon.Login.setUseCookie(true);
-            };
-            ';
-            }
-        }
-        
-        $logout_str = '';
-        if ($this->context->controller->php_self == 'guest-tracking' || isset($this->context->cookie->amz_logout)) {
-            unset($this->context->cookie->amz_logout);
-            $logout_str .= '<script type="text/javascript"> amazonLogout(); </script>';
         }
         
         if ($this->button_visibility == '0') {
@@ -2240,7 +2306,6 @@ class AmzPayments extends PaymentModule
             ' ',
             ' '
         ), $js_file);
-        $this->context->cookie->amz_js_string = self::prepareCookieValueForPrestaShopUse($amz_login_ready);
         
         if ($this->hide_login_on_menu == '1' && $this->hide_minicart_button == '1') {
             if ($this->isSiteWhereWeDoNotNeedAmazonScripts()) {
@@ -2248,9 +2313,51 @@ class AmzPayments extends PaymentModule
             }
         }
         
+        $logout_str = '';
+        if ($this->context->controller->php_self == 'guest-tracking' || isset($this->context->cookie->amz_logout)) {
+            unset($this->context->cookie->amz_logout);
+            $logout_str .= '<script type="text/javascript"> amazonLogout(); </script>';
+        }
+        
+        $acc_tk = '';
+        if (isset($this->context->cookie->amz_access_token) && $this->context->cookie->amz_access_token != '') {
+            if (!isset($this->context->cookie->amazon_id)) {
+                $acc_tk = self::prepareCookieValueForAmazonPaymentsUse($this->context->cookie->amz_access_token);
+            }
+        }
+        
+        $amz_login_ready = $this->recreateAmzJsString();
         $amz_create_account_exp = (($this->allow_guests == '0' || Configuration::get('PS_GUEST_CHECKOUT_ENABLED') == '0' || $this->order_process_type == 'standard') && (!$this->context->customer->isLogged()) ? '1' : '0');
         $amz_login_ready = '<script type="text/javascript" src="' . Tools::str_replace_once((Configuration::get('PS_SSL_ENABLED') ? 'http://' : ''), (Configuration::get('PS_SSL_ENABLED') ? 'https://' : ''), $this->context->link->getModuleLink('amzpayments', 'jsmode', array('c' => 'amz_js_string', 't' => time()))) . '"></script>';
         return $additional_dpd_string . $css_string . $amz_login_ready . $ext_js . '<script type="text/javascript"> var AMZACTIVE = \'' . ($show_amazon_button ? '1' : '0') . '\'; var AMZSELLERID = "' . $this->merchant_id . '"; var AMZ_ADD_MINI_CART_BTN = "' . ($this->hide_minicart_button == '1' ? '0' : '1') . '"; var AMZ_CREATE_ACCOUNT_EXP = "' . $amz_create_account_exp . '"; var AMZ_BUTTON_TYPE_LOGIN = "' . $this->type_login . '"; var AMZ_BUTTON_TYPE_PAY = "' . $this->type_pay . '"; var AMZ_BUTTON_SIZE_PAY = "' . $this->button_size . '"; var AMZ_BUTTON_SIZE_LPA = "' . $this->button_size_lpa . '"; var AMZ_BUTTON_COLOR_LPA = "' . $this->button_color_lpa . '"; var AMZ_BUTTON_COLOR_PAY = "' . $this->button_color . '"; var AMZ_BUTTON_COLOR_LPA_NAVI = "' . $this->button_color_lpa_navi . '"; var AMZ_WIDGET_LANGUAGE = "' . $this->getWidgetLanguageCode() . '"; var CLIENT_ID = "' . $this->client_id . '"; var useRedirect = ' . (! self::currentSiteIsSSL() || $this->popup == '0' ? 'true' : 'false') . '; var LPA_MODE = "' . $this->lpa_mode . '"; var REDIRECTAMZ = "' . $redirect . '"; var LOGINREDIRECTAMZ_CHECKOUT = "' . $login_checkout_redirect . '"; var LOGINREDIRECTAMZ = "' . $login_redirect . '"; var is_logged = ' . $is_logged . '; var AMZACCTK = "' . $acc_tk . '"; var SETUSERAJAX = "' . $set_user_ajax . '";' . $js_file . ' </script>' . $logout_str;
+    }
+    
+    public function recreateAmzJsString()
+    {
+        $amz_login_ready = ' window.onAmazonLoginReady = function() { amazon.Login.setClientId("' . $this->client_id . '"); }; ';
+        
+        $acc_tk = '';
+        
+        if (isset($this->context->cookie->amz_access_token) && $this->context->cookie->amz_access_token != '') {
+            if (!isset($this->context->cookie->amazon_id)) {
+                $acc_tk = self::prepareCookieValueForAmazonPaymentsUse($this->context->cookie->amz_access_token);
+                $amz_login_ready = '
+				var accessToken = "' . $acc_tk . '";
+				if (typeof accessToken === \'string\' && accessToken.match(/^Atza/)) {
+				document.cookie = "amazon_Login_accessToken=" + accessToken +";secure";
+			}
+			window.onAmazonLoginReady = function() {
+			amazon.Login.setClientId("' . $this->client_id . '");
+			    amazon.Login.setUseCookie(true);
+			};
+			';
+            }
+        }
+        
+        $amz_js_string_cookie = new Cookie('amz_js_string');
+        $amz_js_string_cookie->amz_js_string = self::prepareCookieValueForPrestaShopUse($amz_login_ready);
+        $amz_js_string_cookie->write();
+        return $amz_login_ready;
     }
     
     public function isSiteWhereWeDoNotNeedAmazonScripts()
@@ -2259,7 +2366,7 @@ class AmzPayments extends PaymentModule
         if (Tools::getValue('module') == 'amzpayments') {
             $need_script = true;
         }
-        if (in_array(Tools::getValue('controller'), array('authentication', 'order', 'order-opc', 'cart', 'orderopc'))) {
+        if (in_array(Tools::getValue('controller'), array('authentication', 'order', 'order-opc', 'cart', 'orderopc', 'supercheckout'))) {
             $need_script = true;
         }
         return !$need_script;
@@ -2267,6 +2374,11 @@ class AmzPayments extends PaymentModule
     
     public function hookDisplayAdminOrder($params)
     {
+        if (Configuration::get('AMZ_MERCHANT_ID') == '' ||
+            Configuration::get('ACCESS_KEY') == '' ||
+            Configuration::get('SECRET_KEY') == '') {
+                return;
+        }
         $order = new Order($params['id_order']);
         if ($order->module == $this->name) {
             $q = 'SELECT ao.`amazon_order_reference_id`
@@ -2345,6 +2457,11 @@ class AmzPayments extends PaymentModule
             $this->context->smarty->assign('banner_url', $banners[$banners_style]['footer']);
             return $this->display(__FILE__, 'views/templates/hooks/display_footer.tpl');
         }
+    }
+    
+    public function hookActionCustomerLogoutAfter($params)
+    {
+        $this->context->cookie->amz_logout = true;
     }
     
     public function setAmzOrdersReferences($order_id, $value, $field)
@@ -2943,7 +3060,9 @@ class AmzPayments extends PaymentModule
             AND
             o.current_state = \'' . pSQL($this->capture_status_id) . '\'
             AND
-            a2.amz_tx_id IS NULL';
+            a2.amz_tx_id IS NULL
+            AND
+            a1.amz_tx_expiration > \'' . time() . '\'';
             $rs = Db::getInstance()->ExecuteS($q);
             foreach ($rs as $r) {
                 $ramz = AmazonTransactions::getAuthorizationForCapture($r['amazon_order_reference_id']);
@@ -3292,6 +3411,13 @@ class AmzPayments extends PaymentModule
             $logstr.= $string;
         }
         $logstr.= "\r\n\r\n";
-        file_put_contents($this->getLogFileName(), $logstr, FILE_APPEND);
+        $append = true;
+        if (file_exists($this->getLogFileName())) {
+            $size = filesize($this->getLogFileName());
+            if ($size > $this->max_log_size) {
+                $append = false;
+            }
+        }
+        file_put_contents($this->getLogFileName(), $logstr, $append ? FILE_APPEND : 0);
     }
 }

@@ -11,11 +11,20 @@
 <script>
 {literal}
 var accessToken = getURLParameter("access_token", $(location).attr('href'));
+var state = getURLParameter("state", $(location).attr('href'));
+if (state == '&toCheckout=1') {
+	toCheckout = '&action=checkout';
+}
+{/literal}
+{if $toCheckout}
+toCheckout = '&action=checkout';
+{/if}
+{literal}
 $(document).ready(function() {	
     $.ajax({
 		type: 'GET',
 		url: SETUSERAJAX,
-		data: 'ajax=true{/literal}{if $toCheckout}&action=checkout{/if}{if $fromCheckout}&action=fromCheckout{/if}{literal}&method=setusertoshop&access_token=' + accessToken,
+		data: 'ajax=true' + toCheckout + '{/literal}{if $fromCheckout}&action=fromCheckout{/if}{literal}&method=setusertoshop&access_token=' + accessToken,
 		success: function(htmlcontent) {
 			if (htmlcontent == 'error') {
 				alert('An error occured - please try again or contact our support');

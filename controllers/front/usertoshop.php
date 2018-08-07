@@ -78,8 +78,10 @@ class AmzpaymentsUsertoshopModuleFrontController extends ModuleFrontController
                     case 'redirectAuthentication':
                     case 'setusertoshop':
                         if (Tools::getValue('access_token')) {
-                            $this->context->cookie->amz_access_token = AmzPayments::prepareCookieValueForPrestaShopUse(Tools::getValue('access_token'));
-                            $this->context->cookie->amz_access_token_set_time = time();
+                            if ((Tools::getValue('access_token') != '' && Tools::getValue('access_token') != 'null') /* || !isset($this->context->cookie->amz_access_token) */) {
+                                $this->context->cookie->amz_access_token = AmzPayments::prepareCookieValueForPrestaShopUse(Tools::getValue('access_token'));
+                                $this->context->cookie->amz_access_token_set_time = time();
+                            }
                         } else {
                             if (Tools::getValue('method') == 'redirectAuthentication') {
                                 Tools::redirect('index');
@@ -91,11 +93,15 @@ class AmzpaymentsUsertoshopModuleFrontController extends ModuleFrontController
                         if (Tools::getValue('action') == 'fromCheckout') {
                             $accessTokenValue = AmzPayments::prepareCookieValueForAmazonPaymentsUse(Tools::getValue('access_token'));
                         } else {
-                            if (Tools::getValue('access_token') == '' && isset($this->context->cookie->amz_access_token)) {
+                            if ((Tools::getValue('access_token') == '' || Tools::getValue('access_token') == 'null') && isset($this->context->cookie->amz_access_token)) {
                                 $accessTokenValue = $this->context->cookie->amz_access_token;
                             } else {
                                 $accessTokenValue = Tools::getValue('access_token');
                             }
+                        }
+                        
+                        if (strpos($accessTokenValue, '-HORDIV-') > -1) {
+                            $accessTokenValue = AmzPayments::prepareCookieValueForAmazonPaymentsUse($accessTokenValue);
                         }
                         
                         $d = self::$amz_payments->requestTokenInfo($accessTokenValue);
@@ -108,13 +114,15 @@ class AmzpaymentsUsertoshopModuleFrontController extends ModuleFrontController
                                 die('error');
                             }
                         }
-                        
                         $d = self::$amz_payments->requestProfile($accessTokenValue);
+                        self::$amz_payments->recreateAmzJsString();
+                        $this->context->cookie->write();
                         
                         $customer_userid = $d->user_id;
                         $customer_name = $d->name;
                         $customer_email = $d->email;
                         // $postcode = $d->postal_code;
+                        $_POST['psgdpr-consent'] = true;
                                                 
                         if ($customers_local_id = AmazonPaymentsCustomerHelper::findByAmazonCustomerId($customer_userid)) {
                             // Customer already exists - login

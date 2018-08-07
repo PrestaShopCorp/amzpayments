@@ -34,13 +34,13 @@ class AmazonPaymentsLogHelper
             'SimplePathData' => $amzpayments->getSimplePathData(),
         );
                 
-        $logdir = CURRENT_MODULE_DIR . '/logs';
+        $logdir = CURRENT_AMZ_MODULE_DIR . '/logs';
         if (!is_dir($logdir)) {
             mkdir($logdir);
         }
         $newfilename = 'amazonpay_log_' . date("Y-m-d_His") . '.log';
-        if (file_exists(CURRENT_MODULE_DIR . '/amz_exception.log')) {
-            Tools::copy(CURRENT_MODULE_DIR . '/amz_exception.log', $logdir . '/' . $newfilename);
+        if (file_exists(CURRENT_AMZ_MODULE_DIR . '/amz_exception.log')) {
+            Tools::copy(CURRENT_AMZ_MODULE_DIR . '/amz_exception.log', $logdir . '/' . $newfilename);
         }
         
         $debuginfo = "\r\n\r\n" . "DEBUG INFO: " . "\r\n\r\n" . print_r($debuginfo, true);

@@ -188,6 +188,7 @@ $_MODULE['<{amzpayments}prestashop>configuration_8459542c8c59ecb26529d4c5c6cd3a1
 $_MODULE['<{amzpayments}prestashop>configuration_6376d38e4317cb552dd389c556d187b6'] = '„Login und Bezahlen mit Amazon“ bietet reine Zahlungsabwicklung. Als Händler übermitteln Sie nur den abzuwickelnden Betrag.';
 $_MODULE['<{amzpayments}prestashop>configuration_83c84d4538db0c96ca8a3963855013fa'] = 'Quick configuration';
 $_MODULE['<{amzpayments}prestashop>configuration_03e8d0ad408c42265ba4be4b1a6a25f2'] = 'Just use copy and paste to configure the module with your Amazon Pay credentials, directly out of the Seller Central.';
+$_MODULE['<{amzpayments}prestashop>embedded_payment_option_b060b34f618bd9d3e0bde29b705603f2'] = 'Utilizza le tue credenziali Amazon per pagare';
 $_MODULE['<{amzpayments}prestashop>configuration_8cd70bf7f9cf76fd769889b7d4ab6220'] = 'Parse data';
 $_MODULE['<{amzpayments}prestashop>configuration_fa245a5c03e461251a588fade0fbd2bb'] = 'Version-Checker';
 $_MODULE['<{amzpayments}prestashop>address_field_7cb32e708d6b961d476baced73d362bb'] = 'Partita IVA';

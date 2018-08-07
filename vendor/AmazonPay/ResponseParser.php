@@ -1,5 +1,5 @@
 <?php
-namespace PayWithAmazon;
+namespace AmazonPay;
 
 /* ResponseParser
  * Methods provided to convert the Response from the POST to XML, Array or JSON
@@ -68,7 +68,7 @@ class ResponseParser implements ResponseInterface
     
     public function getOrderReferenceDetailsStatus($response)
     {
-       $oroStatus = getStatus('GetORO', '//GetORO:OrderReferenceStatus', $response);
+       $oroStatus = $this->getStatus('GetORO', '//GetORO:OrderReferenceStatus', $response);
                
        return $oroStatus;
     }
@@ -77,7 +77,7 @@ class ResponseParser implements ResponseInterface
     
     public function getBillingAgreementDetailsStatus($response)
     {
-       $baStatus = getStatus('GetBA', '//GetBA:BillingAgreementStatus', $response);  
+       $baStatus = $this->getStatus('GetBA', '//GetBA:BillingAgreementStatus', $response);  
        
        return $baStatus;
     }

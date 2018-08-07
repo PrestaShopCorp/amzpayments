@@ -187,6 +187,7 @@ $_MODULE['<{amzpayments}prestashop>configuration_6b3737610ac5241264fe4ee058127ac
 $_MODULE['<{amzpayments}prestashop>amzpayments_8667cecb1de0a963f560deab1b02523d'] = 'Cacher les éléments de connexion avec Amazon sur la partie client';
 $_MODULE['<{amzpayments}prestashop>amzpayments_7dbe434224e885e859b7707fa3ebf141'] = 'Etat des commandes passées';
 $_MODULE['<{amzpayments}prestashop>amzpayments_7de64f538bdd7057ea1bbf5b46572d67'] = 'Merci de remplir les champs manquants afin de sauvegarder votre adresse';
+$_MODULE['<{amzpayments}prestashop>embedded_payment_option_b060b34f618bd9d3e0bde29b705603f2'] = 'Utilisez vos identifiants Amazon pour payer';
 $_MODULE['<{amzpayments}prestashop>configuration_98e280401f0b14c5f12154fc67435600'] = 'Sehen Sie hier unseren Video-Leitfaden zur Integration mit PrestaShop:';
 $_MODULE['<{amzpayments}prestashop>configuration_f8e8d7166eb15b369812dcf7e257d38f'] = 'Chance: höhere Konversion, mehr Umsatz';
 $_MODULE['<{amzpayments}prestashop>configuration_a730eca6c28e24224e888bbb17b87ba3'] = 'Amazon Pay kann Ihnen helfen, Umsätze mit Kunden zu erzielen, die aufgrund komplizierterer Anmelde- und Bezahloptionen sonst nicht bei Ihnen eingekauft hätten.';

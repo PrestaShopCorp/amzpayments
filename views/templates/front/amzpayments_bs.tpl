@@ -107,6 +107,26 @@ var amazonOrderReferenceId = '{/literal}{$amz_session}{literal}';
 jQuery(document).ready(function($) {
 	var amzAddressSelectCounter = 0;
 	
+	var redirectURL = LOGINREDIRECTAMZ;	
+	
+	options = { scope: 'payments:widget', popup: true, interactive: 'never' };
+	amazon.Login.authorize(options, function(response) {
+		if (response.error) { 
+			loginOptions =  {scope: 'profile postal_code payments:widget payments:shipping_address payments:billing_address', popup: !useRedirect, state: '&toCheckout=1' };
+			amazon.Login.authorize (loginOptions, (useRedirect ? redirectURL : function(response) {
+				jQuery.ajax({
+		    				type: 'GET',
+		            	    url: REDIRECTAMZ,
+		                	data: 'ajax=true&method=setsession&access_token=' + response.access_token,
+			                success: function(htmlcontent){
+			                  	window.location = REDIRECTAMZ + amazonOrderReferenceId;
+			                }
+				});
+			})
+			);
+		}
+	});
+	
 	new OffAmazonPayments.Widgets.AddressBook({
 		sellerId: '{/literal}{$sellerID}{literal}',
 		{/literal}{if $amz_session == ''}{literal}
@@ -185,6 +205,7 @@ function reCreateAddressBookWidget() {
 		onAddressSelect: function(orderReference) {
 			updateAddressSelection(amazonOrderReferenceId);			
 		},
+		displayMode: "Read",
 		design: {
 			designMode: 'responsive'
 		},

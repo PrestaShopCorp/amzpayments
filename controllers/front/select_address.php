@@ -67,24 +67,7 @@ class AmzpaymentsSelect_AddressModuleFrontController extends ModuleFrontControll
                 switch (Tools::getValue('method')) {
                     case 'updateAddressesSelected':
                         if (Tools::getValue('src') == 'addresswallet') {
-                            $currency_order = new Currency((int) $this->context->cart->id_currency);
-                            $currency_code = $currency_order->iso_code;
-                            if ($currency_code == 'JYP') {
-                                $currency_code = 'YEN';
-                            }
                             $this->context->cookie->amazon_id = Tools::getValue('amazonOrderReferenceId');
-                            $requestParameters = array();
-                            $responsearray = array();
-                            $requestParameters['amazon_order_reference_id'] = Tools::getValue('amazonOrderReferenceId');
-                            $requestParameters['merchant_id'] = self::$amz_payments->merchant_id;
-                            $requestParameters['platform_id'] = self::$amz_payments->getPfId();
-                            
-                            $requestParameters['amount'] = 10;
-                            $requestParameters['currency_code'] = $currency_code;
-                            try {
-                                $response = $this->service->SetOrderReferenceDetails($requestParameters);
-                            } catch (Exception $e) {
-                            }
                         }
                         $requestParameters = array();
                         $requestParameters['amazon_order_reference_id'] = Tools::getValue('amazonOrderReferenceId');
@@ -94,6 +77,9 @@ class AmzpaymentsSelect_AddressModuleFrontController extends ModuleFrontControll
                             $requestParameters['address_consent_token'] = AmzPayments::prepareCookieValueForAmazonPaymentsUse($this->context->cookie->amz_access_token);
                         }
                         
+                        if (!isset($responsearray)) {
+                            $responsearray = array();
+                        }
                         $response = $this->service->GetOrderReferenceDetails($requestParameters);
                         $responsearray['getorderreference'] = $response->toArray();
                         

@@ -11,7 +11,7 @@
 	<div class="col-xs-12">
 		<p class="payment_module">	
 			<a class="amzPayments" style="background: url({$this_path_amzpayments}views/img/amazonpayments.png) 15px 12px no-repeat #fbfbfb; ">				
-				{l s='Pay with Amazon' mod='amzpayments'}&nbsp;<span>{l s='(Comfortable and save payment with your amazon-account)' mod='amzpayments'}</span>
+				{l s='Amazon Pay' mod='amzpayments'}&nbsp;<span>{l s='(Comfortable and save payment with your amazon-account)' mod='amzpayments'}</span>
 				<span id="pay_with_amazon_list_button"></span>
 			</a>	
 		</p>

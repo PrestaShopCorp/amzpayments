@@ -44,8 +44,9 @@ class AmzpaymentsJsmodeModuleFrontController extends ModuleFrontController
         header('Content-Type: application/javascript');
         $cookiestring = Tools::getValue('c');
         if ($cookiestring != '') {
-            if (isset($this->context->cookie->$cookiestring)) {
-                echo AmzPayments::prepareCookieValueForAmazonPaymentsUse($this->context->cookie->$cookiestring);
+            $cookie_object = new Cookie($cookiestring);
+            if (isset($cookie_object->$cookiestring)) {
+                echo AmzPayments::prepareCookieValueForAmazonPaymentsUse($cookie_object->$cookiestring);
             }
         }
         exit();

@@ -69,6 +69,20 @@ class AmzpaymentsProcessloginModuleFrontController extends ModuleFrontController
         
         // Service initialisieren
         $this->service = self::$amz_payments->getService();
+        if (Tools::isSubmit('ajax')) {
+            if (Tools::isSubmit('method')) {
+                switch (Tools::getValue('method')) {
+                    case 'setsession':
+                        if (Tools::getValue('access_token')) {
+                            if (Tools::getValue('access_token') != 'undefined') {
+                                $this->context->cookie->amz_access_token = AmzPayments::prepareCookieValueForPrestaShopUse(Tools::getValue('access_token'));
+                                $this->context->cookie->amz_access_token_set_time = time();
+                                die();
+                            }
+                        }
+                }
+            }
+        }
     }
 
     public function initContent()
@@ -77,7 +91,7 @@ class AmzpaymentsProcessloginModuleFrontController extends ModuleFrontController
         
         unset($this->context->cookie->amazon_id);
         unset($this->context->cookie->setHadErrorNowWallet);
-        
+                
         $this->context->smarty->assign('toCheckout', Tools::getValue('toCheckout'));
         $this->context->smarty->assign('fromCheckout', Tools::getValue('fromCheckout'));
         $this->context->smarty->assign('amzClientId', self::$amz_payments->client_id);

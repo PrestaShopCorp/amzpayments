@@ -1,5 +1,5 @@
 <?php
-namespace PayWithAmazon;
+namespace AmazonPay;
 
 /* Interface for IpnHandler.php */
 

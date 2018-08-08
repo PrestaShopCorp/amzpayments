@@ -1,0 +1,5 @@
+
+Dear customer,
+
+Unfortunately Amazon Pay rejected the payment for your order {$ORDER_NR} from {$ORDER_DATE} in our online shop. Please contact us.
+

@@ -40,7 +40,7 @@ class AmzpaymentsIpnModuleFrontController extends ModuleFrontController
         
         file_put_contents(dirname(__FILE__) . '/../../amz.log', '[' . date("Y-m-d H:i:s") . '] IPN wurde aufgerufen' . "\n", FILE_APPEND);
         
-        require_once(CURRENT_MODULE_DIR . '/vendor/getallheaders.php');
+        require_once(CURRENT_AMZ_MODULE_DIR . '/vendor/getallheaders.php');
         
         $headers = getallheaders();
         $response = \Tools::file_get_contents('php://input');
@@ -49,22 +49,21 @@ class AmzpaymentsIpnModuleFrontController extends ModuleFrontController
         $amz_payments = new \AmzPayments();
         
         try {
-            include_once(CURRENT_MODULE_DIR . '/vendor/PayWithAmazon/IpnHandler.php');
-            $ipnHandler = new \PayWithAmazon\IpnHandler($headers, $response);
+            include_once(CURRENT_AMZ_MODULE_DIR . '/vendor/AmazonPay/IpnHandler.php');
+            $ipnHandler = new \AmazonPay\IpnHandler($headers, $response);
         } catch (\Exception $ex) {
             error_log($ex->getMessage());
             header("HTTP/1.1 503 Service Unavailable");
             exit(0);
         }
-        
+                
         ob_start();
         
         $response = $ipnHandler->returnMessage();
         $message = json_decode($ipnHandler->toJson());
-        
         $response_xml = $message;
         
-        if (Configuration::get('IPN_STATUS') == '1') {
+        if (\Configuration::get('IPN_STATUS') == '1') {
             switch ($message->NotificationType) {
                 case 'PaymentAuthorize':
                     $q = 'SELECT * FROM ' . _DB_PREFIX_ . 'amz_transactions
@@ -98,7 +97,9 @@ class AmzpaymentsIpnModuleFrontController extends ModuleFrontController
                             \AmazonTransactions::setOrderStatusDeclined($r['amz_tx_order_reference']);
                         }
                         if ($reason != 'InvalidPaymentMethod') {
-                            \AmazonTransactions::cancelOrder($amz_payments, $amz_payments->getService(), $r['amz_tx_order_reference']);
+                            if ($amz_payments->authorization_mode != 'auto') {
+                                \AmazonTransactions::cancelOrder($amz_payments, $amz_payments->getService(), $r['amz_tx_order_reference']);
+                            }
                         }
                     }
                     
@@ -160,7 +161,7 @@ class AmzpaymentsIpnModuleFrontController extends ModuleFrontController
         $str = ob_get_contents();
         ob_end_clean();
         
-        file_put_contents(CURRENT_MODULE_DIR . 'amz.log', $str, FILE_APPEND);        
+        file_put_contents(dirname(__FILE__) . '/../../amz.log', $str, FILE_APPEND);        
         
         echo 'OK';
         exit();

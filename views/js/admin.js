@@ -170,7 +170,7 @@ $(document).ready(function(){
 	    	$('#videojavascriptorigins').toggle();
 	    });
 	    
-	    $(".showvideoreturnurls").click(function() {
+	    $(".showvideoreturnurls, #showvideoreturnurls2").click(function() {
 	    	$(this).closest('div').find('.videoreturnurls').toggle();
 	    });
 	    

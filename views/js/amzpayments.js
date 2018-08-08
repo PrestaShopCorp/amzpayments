@@ -43,8 +43,9 @@ function initAmazon(){
 	   			amzBtnColor = AMZ_BUTTON_COLOR_LPA_NAVI;
 	   		var redirectURL = LOGINREDIRECTAMZ;
 	   		var redirectToCheckout = false;
+	   		var redirectState = '';
 	   		if ($(this).attr("id") == "jsLoginAuthPage" && location.href.indexOf('display_guest_checkout') > 1) {
-	   			redirectURL = LOGINREDIRECTAMZ_CHECKOUT;
+	   			redirectState = '&toCheckout=1';
 	   			redirectToCheckout = true;
 	   		}
 	        OffAmazonPayments.Button($(this).attr('id'), AMZSELLERID, {
@@ -53,7 +54,7 @@ function initAmazon(){
 	                color: amzBtnColor,
 	                language: AMZ_WIDGET_LANGUAGE,
 	                authorization: function() {
-	                loginOptions =  {scope: 'profile postal_code payments:widget payments:shipping_address payments:billing_address', popup: !useRedirect };
+	                loginOptions =  {scope: 'profile postal_code payments:widget payments:shipping_address payments:billing_address', popup: !useRedirect, state: redirectState };
 	                authRequest = amazon.Login.authorize (loginOptions, useRedirect ? redirectURL : null);
 	            },    
 	            onSignIn: function(orderReference) {
@@ -129,14 +130,23 @@ function checkForAmazonListButton() {
 
 function bindCartButton(div_id) {
 	if (jQuery('#' + div_id).attr('data-is-set') != '1') {
-		    OffAmazonPayments.Button(div_id, AMZSELLERID, {
+		var redirectState = '';
+		if (useRedirect) {
+			redirectState = '&toCheckout=1';
+		}
+		var redirectURL = LOGINREDIRECTAMZ;
+		var addToCheckoutInPopup = '';
+		if (jQuery('#' + div_id).attr('data-checkout') == '1' && !useRedirect) {
+			addToCheckoutInPopup = '&toCheckout=1';
+		}
+		OffAmazonPayments.Button(div_id, AMZSELLERID, {
 	            type: AMZ_BUTTON_TYPE_PAY,
 	            size: AMZ_BUTTON_SIZE_LPA,
 	            color: AMZ_BUTTON_COLOR_LPA,
 	            language: AMZ_WIDGET_LANGUAGE,
 	            authorization: function() {
-	            loginOptions =  {scope: 'profile postal_code payments:widget payments:shipping_address payments:billing_address', popup: !useRedirect };
-	            authRequest = amazon.Login.authorize (loginOptions, (useRedirect ? LOGINREDIRECTAMZ_CHECKOUT : null));
+	            loginOptions =  {scope: 'profile postal_code payments:widget payments:shipping_address payments:billing_address', popup: !useRedirect, state: redirectState };
+	            authRequest = amazon.Login.authorize (loginOptions, (useRedirect ? redirectURL : null));
 	        },
 	        onSignIn: function(orderReference) {
 	            amazonOrderReferenceId = orderReference.getAmazonOrderReferenceId();
@@ -160,7 +170,7 @@ function bindCartButton(div_id) {
 		                    url: REDIRECTAMZ,
 		                    data: 'ajax=true&method=setsession&access_token=' + authRequest.access_token + '&amazon_id=' + amazonOrderReferenceId,
 		                    success: function(htmlcontent){
-		                    	window.location = REDIRECTAMZ + amazonOrderReferenceId;
+		                    	window.location = REDIRECTAMZ + amazonOrderReferenceId + addToCheckoutInPopup;
 		                    }
 		            });
 	            }
@@ -176,13 +186,15 @@ function bindCartButton(div_id) {
 function bindBuyNowButton(div_id) {
 	if ($("#add-to-cart-or-refresh button[type=submit]").length > 0) {
 		bindCartButton(div_id);
-		$("#" + div_id).hide();	
-		var newImg = $('<img />');
-		newImg.attr("src", $("#" + div_id + " img").attr("src")).addClass('amzButtonProductdetail');
-		$("#" + div_id).parent().append(newImg);
-		newImg.on('click', function() {
-			$("#add-to-cart-or-refresh button[type=submit]").trigger('click');
-			setTimeout(function(){ $("#" + div_id + " img").trigger('click'); }, 1000);		
-		});
+		window.setTimeout(function() {
+			$("#" + div_id).hide();	
+			var newImg = $('<img />');
+			newImg.attr("src", $("#" + div_id + " img").attr("src")).addClass('amzButtonProductdetail');
+			$("#" + div_id).parent().append(newImg);
+			newImg.on('click', function() {
+				$("#add-to-cart-or-refresh button[type=submit]").trigger('click');
+				setTimeout(function(){ $("#" + div_id + " img").trigger('click'); }, 1000);		
+			});
+		}, 1000);  
 	}
 }

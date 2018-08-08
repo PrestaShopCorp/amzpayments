@@ -3,5 +3,5 @@ Saludos,
 
 Muchas gracias por tu pedido {$ORDER_NR} de {$ORDER_DATE}.
 Desgraciadamente, Amazon Pay ha rechazado tu pago.
-Por favor, dirígete a https://payments.amazon.es/overview y revisa la información de pago de tu pedido.
+Por favor, dirígete a https://payments.amazon.es/jr/your-account/orders?language=es_ES y revisa la información de pago de tu pedido.
 Una vez hayas actualizado tu información de pago, solicitaremos automáticamente un nuevo pago en Amazon Pay y recibirás un correo electrónico de confirmación.

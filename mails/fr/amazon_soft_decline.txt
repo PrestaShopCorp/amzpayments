@@ -3,5 +3,6 @@ Cher client,
 
 Merci pour votre commande auprès {$ORDER_NR} de {$ORDER_DATE}.
 Malheureusement Amazon Pay n’a pas pu traiter le paiement.
-Veuillez aller sur https://payments.amazon.fr/overview et mettez à jour les informations de paiement pour votre commande.
+Veuillez aller sur https://payments.amazon.fr/jr/your-account/orders?language=fr_FR et mettez à jour les informations de paiement pour votre commande.
+Dans la suite une nouvelle demande de paiement va être demandé à Amazon Pay et vous allez recevoir un email de confirmation.
 

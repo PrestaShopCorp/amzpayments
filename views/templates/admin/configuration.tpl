@@ -478,8 +478,8 @@
 					<a style="cursor: pointer;" target="_blank" href="https://sellercentral-europe.amazon.com/home?cor=mmd_EU">
 						{l s='Enter these URLs in your Amazon Pay account' mod='amzpayments'}
 					</a>
-					<a style="color:#FF9900;cursor: pointer;" aria-hidden="true" data-toggle="modal" data-target="#myModal2"><i class="fa fa-eye" aria-hidden="true"></i> {l s='See instructions' mod='amzpayments'}</a>
-					<a style="color:#FF9900;cursor: pointer;" id="showvideonotification" title="{l s='Watch our video' mod='amzpayments'}"><i class="fa fa-file-video-o" aria-hidden="true"></i> {l s='Watch our video' mod='amzpayments'}</a>
+					<a style="color:#FF9900;cursor: pointer;" aria-hidden="true" data-toggle="modal" data-target="#myModal5"><i class="fa fa-eye" aria-hidden="true"></i> {l s='See instructions' mod='amzpayments'}</a>
+					<a style="color:#FF9900;cursor: pointer;" id="showvideoreturnurls2" title="{l s='Watch our video' mod='amzpayments'}"><i class="fa fa-file-video-o" aria-hidden="true"></i> {l s='Watch our video' mod='amzpayments'}</a>
 					<br />
 					{foreach from=$allowed_return_url_1 item=aru}
 						{$aru|escape:'htmlall':'UTF-8'}<br />		
@@ -487,6 +487,12 @@
 					{foreach from=$allowed_return_url_2 item=aru}
 						{$aru|escape:'htmlall':'UTF-8'}<br />		
 					{/foreach}
+					
+					<div class="videoreturnurls" style="width: 80%; clear: both">
+    	       			<video controls="controls" style="max-width: 100%;">
+							<source src="{$videodir|escape:'html':'UTF-8'}{$langdir|escape:'html':'UTF-8'}/ReturnURLs{$langdir|escape:'html':'UTF-8'|strtoupper}.mp4" type="video/webm" />
+						</video>
+					</div>  
 				</div>
 				
 				<div id="grouping_states" style="display: none">

@@ -40,6 +40,8 @@ class AmzpaymentsIpnModuleFrontController extends ModuleFrontController
         
         file_put_contents(dirname(__FILE__) . '/../../amz.log', '[' . date("Y-m-d H:i:s") . '] IPN wurde aufgerufen' . "\n", FILE_APPEND);
         
+        require_once(CURRENT_MODULE_DIR . '/vendor/getallheaders.php');
+        
         $headers_tmp = getallheaders();
         $headers = array();
         foreach ($headers_tmp as $k => $v) {
@@ -65,13 +67,14 @@ class AmzpaymentsIpnModuleFrontController extends ModuleFrontController
         $response = $this->jsonCleanDecode($response);
         $message = $this->jsonCleanDecode($response->Message);
         $response_xml = simplexml_load_string($message->NotificationData);
-        $response_xml = $response_xml;
-        
+        file_put_contents(dirname(__FILE__) . '/../../amz.log', '[' . date("Y-m-d H:i:s") . '] responseXml: ' . print_r($response_xml, true) . "\n", FILE_APPEND);
+                
         if ($amz_payments->ipn_status == '1') {
             echo '[' . date("Y-m-d H:i:s") . '] [' . $message->NotificationType . '] ';
         
             switch ($message->NotificationType) {
                 case 'PaymentAuthorize':
+                    file_put_contents(dirname(__FILE__) . '/../../amz.log', '[' . date("Y-m-d H:i:s") . '] AuthorizationId: ' . $response_xml->AuthorizationDetails->AmazonAuthorizationId . "\n", FILE_APPEND);
                     $q = 'SELECT * FROM ' . _DB_PREFIX_ . 'amz_transactions
                     WHERE amz_tx_type = \'auth\' AND amz_tx_amz_id = \'' . pSQL($response_xml->AuthorizationDetails->AmazonAuthorizationId) . '\'';
                     $r = Db::getInstance()->getRow($q);
@@ -82,6 +85,8 @@ class AmzpaymentsIpnModuleFrontController extends ModuleFrontController
                         'amz_tx_expiration' => strtotime($response_xml->AuthorizationDetails->ExpirationTimestamp),
                         'amz_tx_last_update' => time()
                     );
+                    file_put_contents(dirname(__FILE__) . '/../../amz.log', '[' . date("Y-m-d H:i:s") . '] sqlArr: ' . print_r($sqlArr, true) . "\n", FILE_APPEND);
+                                        
                     Db::getInstance()->update('amz_transactions', $sqlArr, ' amz_tx_id = ' . (int) $r['amz_tx_id']);
                     $amz_payments->refreshAuthorization($response_xml->AuthorizationDetails->AmazonAuthorizationId);
                     if ($sqlArr['amz_tx_status'] == 'Open') {
@@ -97,10 +102,18 @@ class AmzpaymentsIpnModuleFrontController extends ModuleFrontController
                             }
                         }
                     } elseif ($sqlArr['amz_tx_status'] == 'Declined') {
+                        file_put_contents(dirname(__FILE__) . '/../../amz.log', '[' . date("Y-m-d H:i:s") . '] is in DECLINE mode' . "\n", FILE_APPEND);
                         $reason = (string) $response_xml->AuthorizationDetails->AuthorizationStatus->ReasonCode;
                         $amz_payments->intelligentDeclinedMail($response_xml->AuthorizationDetails->AmazonAuthorizationId, $reason);
                         if ($amz_payments->decline_status_id > 0) {
+                            file_put_contents(dirname(__FILE__) . '/../../amz.log', '[' . date("Y-m-d H:i:s") . '] setting Order status Declined' . "\n", FILE_APPEND);
                             AmazonTransactions::setOrderStatusDeclined($r['amz_tx_order_reference']);
+                        }
+                        if ($reason != 'InvalidPaymentMethod') {
+                            if ($amz_payments->authorization_mode != 'auto') {
+                                file_put_contents(dirname(__FILE__) . '/../../amz.log', '[' . date("Y-m-d H:i:s") . '] Canceling the order' . "\n", FILE_APPEND);
+                                AmazonTransactions::cancelOrder($amz_payments, $amz_payments->getService(), $r['amz_tx_order_reference']);
+                            }
                         }
                     }
         
@@ -109,22 +122,23 @@ class AmzpaymentsIpnModuleFrontController extends ModuleFrontController
                     $q = 'SELECT * FROM ' . _DB_PREFIX_ . 'amz_transactions
                     WHERE amz_tx_type = \'capture\' AND amz_tx_amz_id = \'' . pSQL($response_xml->CaptureDetails->AmazonCaptureId) . '\'';
                     $r = Db::getInstance()->getRow($q);
-        
-                    $sqlArr = array(
-                        'amz_tx_status' => pSQL((string) $response_xml->CaptureDetails->CaptureStatus->State),
-                        'amz_tx_last_change' => time(),
-                        'amz_tx_amount_refunded' => (float) $response_xml->CaptureDetails->RefundedAmount->Amount,
-                        'amz_tx_last_update' => time()
-                    );
-                    Db::getInstance()->update('amz_transactions', $sqlArr, ' amz_tx_id = ' . (int) $r['amz_tx_id']);
                     
-                    AmazonTransactions::setOrderStatusCapturedSuccesfully($r['amz_tx_order_reference']);
-        
-                    $orderTotal = AmazonTransactions::getOrderRefTotal($r['amz_tx_order_reference']);
-                    if ($r['amz_tx_amount'] == $orderTotal) {
-                        AmazonTransactions::closeOrder($amz_payments, $amz_payments->getService(), $r['amz_tx_order_reference']);
-                    }
-        
+                    if (isset($r['amz_tx_id']) && $r['amz_tx_id'] != '') {
+                        $sqlArr = array(
+                            'amz_tx_status' => pSQL((string) $response_xml->CaptureDetails->CaptureStatus->State),
+                            'amz_tx_last_change' => time(),
+                            'amz_tx_amount_refunded' => (float) $response_xml->CaptureDetails->RefundedAmount->Amount,
+                            'amz_tx_last_update' => time()
+                        );
+                        Db::getInstance()->update('amz_transactions', $sqlArr, ' amz_tx_id = ' . (int) $r['amz_tx_id']);
+                        
+                        AmazonTransactions::setOrderStatusCapturedSuccesfully($r['amz_tx_order_reference']);
+            
+                        $orderTotal = AmazonTransactions::getOrderRefTotal($r['amz_tx_order_reference']);
+                        if ($r['amz_tx_amount'] == $orderTotal) {
+                            AmazonTransactions::closeOrder($amz_payments, $amz_payments->getService(), $r['amz_tx_order_reference']);
+                        }
+                    }        
                     break;
         
                 case 'PaymentRefund':

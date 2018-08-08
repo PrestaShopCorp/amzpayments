@@ -353,6 +353,14 @@ class AmazonTransactions
         if ($oid) {
             $amz_payments = new AmzPayments();
             $new_status = $amz_payments->capture_success_status_id;
+            $order = new Order((int)$oid);
+            $history = $order->getHistory(Context::getContext()->language->id, $amz_payments->capture_success_status_id);
+            if (sizeof($history) > 0) {
+                return false;
+            }
+            if ($order->getCurrentState() == $amz_payments->capture_success_status_id) {
+                return false;
+            }
             self::setOrderStatus($oid, $new_status);
         } else {
             if (! isset(Context::getContext()->cookie->amzSetStatusCaptured)) {
@@ -376,6 +384,9 @@ class AmazonTransactions
                 if (sizeof($history) > 0) {
                     return false;
                 }
+                if ($order->getCurrentState() == $amz_payments->decline_status_id) {
+                    return false;
+                }
             }
             self::setOrderStatus($oid, $new_status);
         }
@@ -387,6 +398,14 @@ class AmazonTransactions
         if ($oid) {
             $amz_payments = new AmzPayments();
             $new_status = $amz_payments->capture_success_status_id;
+            $order = new Order((int)$oid);
+            $history = $order->getHistory(Context::getContext()->language->id, $amz_payments->capture_success_status_id);
+            if (sizeof($history) > 0) {
+                return false;
+            }
+            if ($order->getCurrentState() == $amz_payments->capture_success_status_id) {
+                return false;
+            }
             self::setOrderStatus($oid, $new_status);
         } else {
             if (! isset(Context::getContext()->cookie->amzSetStatusCaptured)) {

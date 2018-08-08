@@ -108,11 +108,14 @@ class AmzpaymentsUser_To_ShopModuleFrontController extends ModuleFrontController
                         }
                         
                         $d = self::$amz_payments->requestProfile($accessTokenValue);
+                        self::$amz_payments->recreateAmzJsString();
+                        $this->context->cookie->write();
                         
                         $customer_userid = $d->user_id;
                         $customer_name = $d->name;
                         $customer_email = $d->email;
                         // $postcode = $d->postal_code;
+                        $_POST['psgdpr-consent'] = true;
                         
                         if ($customers_local_id = AmazonPaymentsCustomerHelper::findByAmazonCustomerId($customer_userid)) {
                             // Customer already exists - login

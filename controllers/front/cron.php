@@ -19,7 +19,7 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
-class AmzpaymentsJsmodeModuleFrontController extends ModuleFrontController
+class AmzpaymentsCronModuleFrontController extends ModuleFrontController
 {
 
     public $ssl = true;
@@ -33,22 +33,37 @@ class AmzpaymentsJsmodeModuleFrontController extends ModuleFrontController
     public function __construct()
     {
         $this->controller_type = 'modulefront';
-        
         $this->module = Module::getInstanceByName(Tools::getValue('module'));
         if (! $this->module->active) {
             Tools::redirect('index');
         }
-        $this->page_name = 'module-' . $this->module->name . '-' . Dispatcher::getInstance()->getController();
         
-        parent::__construct();
-        header('Content-Type: application/javascript');
-        $cookiestring = Tools::getValue('c');
-        if ($cookiestring != '') {
-            $cookie_object = new Cookie($cookiestring);
-            if (isset($cookie_object->$cookiestring)) {
-                echo AmzPayments::prepareCookieValueForAmazonPaymentsUse($cookie_object->$cookiestring);
+        $module_name = Tools::getValue('moduleName');
+        
+        $amz_payments = new AmzPayments();
+        
+        if ($amz_payments->cron_status == '1' && Tools::getValue('pw') == $amz_payments->cron_password) {
+            if ($amz_payments->capture_mode == 'after_shipping') {
+                $amz_payments->shippingCapture();
             }
+            
+            $q = 'SELECT * FROM ' . _DB_PREFIX_ . 'amz_transactions WHERE amz_tx_status = \'Pending\' ORDER BY amz_tx_last_update ASC';
+            $rs = Db::getInstance()->ExecuteS($q);
+            foreach ($rs as $r) {
+                $amz_payments->intelligentRefresh($r);
+                sleep(1);
+            }
+            
+            $q = 'SELECT * FROM ' . _DB_PREFIX_ . 'amz_transactions WHERE amz_tx_status != \'Closed\' AND amz_tx_status != \'Completed\' AND amz_tx_status != \'Declined\' ORDER BY amz_tx_last_update ASC LIMIT 40';
+            $rs = Db::getInstance()->ExecuteS($q);
+            foreach ($rs as $r) {
+                $amz_payments->intelligentRefresh($r);
+                sleep(1);
+            }
+            echo 'COMPLETED';
         }
+        
+       
         exit();
     }
 }

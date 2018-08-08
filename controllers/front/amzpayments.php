@@ -161,6 +161,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                 $customer_userid = $d->user_id;
                                 $customer_name = $d->name;
                                 $customer_email = $d->email;
+                                $_POST['psgdpr-consent'] = true;
 
                                 if ($customers_local_id = AmazonPaymentsCustomerHelper::findByAmazonCustomerId($customer_userid)) {
                                     Hook::exec('actionBeforeAuthentication');
@@ -616,6 +617,15 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                             }
 
                             if (Tools::getValue('confirm')) {
+                                if (AmazonTransactions::getOrdersIdFromOrderRef(Tools::getValue('amazonOrderReferenceId')) > 0) {
+                                    die(Tools::jsonEncode(array(
+                                        'hasError' => true,
+                                        'redirection' => 'index.php?controller=cart',
+                                        'errors' => array(
+                                            self::$amz_payments->l('Your order has already been placed.')
+                                        )
+                                    )));
+                                }
                                 $total = $this->context->cart->getOrderTotal(true, Cart::BOTH);
 
                                 $currency_order = new Currency((int) $this->context->cart->id_currency);
@@ -755,38 +765,41 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                 }
 
                                 $address_delivery = AmazonPaymentsAddressHelper::findByAmazonOrderReferenceIdOrNew(Tools::getValue('amazonOrderReferenceId'), false, $physical_destination);
+                                $address_delivery->id_customer = $this->context->cart->id_customer;
+                                
+                                if (in_array(Tools::strtolower((string) $physical_destination->getCountryCode()), array(
+                                    'de',
+                                    'at',
+                                    'uk'
+                                ))) {
+                                    if ($s_company_name != '') {
+                                        $address_delivery->company = $s_company_name;
+                                    }
+                                    $address_delivery->address1 = (string) $s_street . ' ' . (string) $s_street_nr;
+                                } else {
+                                    $address_delivery->address1 = (string) $physical_destination->getAddressLine1();
+                                    if (trim($address_delivery->address1) == '') {
+                                        $address_delivery->address1 = (string) $physical_destination->getAddressLine2();
+                                    } else {
+                                        if (trim((string) $physical_destination->getAddressLine2()) != '') {
+                                            $address_delivery->address2 = (string) $physical_destination->getAddressLine2();
+                                        }
+                                    }
+                                    if (trim((string) $physical_destination->getAddressLine3()) != '') {
+                                        $address_delivery->address2 .= ' ' . (string) $physical_destination->getAddressLine3();
+                                    }
+                                }
+                                $address_delivery = AmzPayments::prepareAddressLines($address_delivery);
+                                if ($phone != '') {
+                                    $address_delivery->phone = $phone;
+                                }
+                                
                                 if ((int)$address_delivery->id == 0) {
                                     $address_delivery->lastname = $names_array[1];
                                     $address_delivery->firstname = $names_array[0];
-    
-                                    if (in_array(Tools::strtolower((string) $physical_destination->getCountryCode()), array(
-                                        'de',
-                                        'at',
-                                        'uk'
-                                    ))) {
-                                        if ($s_company_name != '') {
-                                            $address_delivery->company = $s_company_name;
-                                        }
-                                        $address_delivery->address1 = (string) $s_street . ' ' . (string) $s_street_nr;
-                                    } else {
-                                        $address_delivery->address1 = (string) $physical_destination->getAddressLine1();
-                                        if (trim($address_delivery->address1) == '') {
-                                            $address_delivery->address1 = (string) $physical_destination->getAddressLine2();
-                                        } else {
-                                            if (trim((string) $physical_destination->getAddressLine2()) != '') {
-                                                $address_delivery->address2 = (string) $physical_destination->getAddressLine2();
-                                            }
-                                        }
-                                        if (trim((string) $physical_destination->getAddressLine3()) != '') {
-                                            $address_delivery->address2 .= ' ' . (string) $physical_destination->getAddressLine3();
-                                        }
-                                    }
-                                    $address_delivery = AmzPayments::prepareAddressLines($address_delivery);
+
                                     $address_delivery->postcode = (string) $physical_destination->getPostalCode();
                                     $address_delivery->id_country = Country::getByIso((string) $physical_destination->getCountryCode());
-                                    if ($phone != '') {
-                                        $address_delivery->phone = $phone;
-                                    }
                                     if ($state != '') {
                                         $state_id = State::getIdByIso($state, Country::getByIso((string) $physical_destination->getCountryCode()));
                                         if (! $state_id) {
@@ -795,6 +808,11 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                         if ($state_id) {
                                             $address_delivery->id_state = $state_id;
                                         }
+                                    }
+                                } else {
+                                    if ($address_delivery->lastname == 'amzLastname' || $address_delivery->firstname == 'amzFirstname') {
+                                        $address_delivery->lastname = $names_array[1];
+                                        $address_delivery->firstname = $names_array[0];
                                     }
                                 }
 
@@ -909,7 +927,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                 }
                                 $this->context->cart->save();
 
-                                if (self::$amz_payments->authorization_mode == 'fast_auth') {
+                                if (self::$amz_payments->authorization_mode == 'fast_auth' || self::$amz_payments->authorization_mode == 'auto') {
                                     $authorization_reference_id = Tools::getValue('amazonOrderReferenceId');
 
                                     if (isset($this->context->cookie->setHadErrorNowWallet) && $this->context->cookie->setHadErrorNowWallet == 1) {
@@ -945,6 +963,8 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                                         Tools::displayError(self::$amz_payments->l('Your selected payment method is currently not available. Please select another one.'))
                                                     )
                                                 )));
+                                            } elseif (($reason == 'TransactionTimedOut' || $reason == 'TransactionTimeout' || $reason == 'AmazonRejected') && self::$amz_payments->authorization_mode == 'auto') {
+                                                $jump_to_async = true;
                                             } else {
                                                 die(Tools::jsonEncode(array(
                                                     'hasError' => true,
@@ -955,10 +975,12 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                                 )));
                                             }
                                         }
-
-                                        $amazon_authorization_id = $authorization_response_wrapper->getAuthorizeResult()
-                                        ->getAuthorizationDetails()
-                                        ->getAmazonAuthorizationId();
+                                        
+                                        if (!isset($jump_to_async)) {
+                                            $amazon_authorization_id = $authorization_response_wrapper->getAuthorizeResult()
+                                            ->getAuthorizationDetails()
+                                            ->getAmazonAuthorizationId();
+                                        }
                                     }
                                 }
 
@@ -980,7 +1002,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                     exit();
                                 }
 
-                                if (self::$amz_payments->authorization_mode == 'after_checkout') {
+                                if (self::$amz_payments->authorization_mode == 'after_checkout' || isset($jump_to_async)) {
                                     $authorization_reference_id = Tools::getValue('amazonOrderReferenceId');
                                     $authorization_response_wrapper = AmazonTransactions::authorize(self::$amz_payments, $this->service, $authorization_reference_id, $total, $currency_code);
                                     $amazon_authorization_id = @$authorization_response_wrapper->getAuthorizeResult()
@@ -1703,9 +1725,9 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
         }
         return $result;
     }
-        
-    protected function exceptionLog($e)
+    
+    protected function exceptionLog($e, $string = false)
     {
-        self::$amz_payments->exceptionLog($e);
+        self::$amz_payments->exceptionLog($e, $string);
     }
 }

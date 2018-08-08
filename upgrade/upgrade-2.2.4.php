@@ -19,11 +19,15 @@
  *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  */
 
-/**
- * @deprecated This file is just for backward compatibility!
- */
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
 
-$_GET['module'] = 'amzpayments';
-$_GET['controller'] = 'cron';
-$_GET['fc'] = 'module';
-require_once('../../index.php');
+function upgrade_module_2_2_4($module)
+{
+    $old_value = Configuration::get('ENVIRONMENT');
+    Configuration::updateValue('AMZ_ENVIRONMENT', $old_value);
+    $module->registerHook('displayBeforeShoppingCartBlock');
+    $module->registerHook('actionCustomerLogoutAfter');
+    return true;
+}

@@ -2237,7 +2237,7 @@ class AmzPayments extends PaymentModule
             }
         }
         
-        $ext_js = '<script type="text/javascript" src="' . $ext_js . '"></script>';
+        $ext_js = '<script type="text/javascript" src="' . $ext_js . '" defer></script>';
         
         $is_logged = 'false';
         if (isset($this->context->cookie->amz_access_token) && $this->context->cookie->amz_access_token != '') {

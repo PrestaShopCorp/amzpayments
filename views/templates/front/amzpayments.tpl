@@ -114,7 +114,7 @@ jQuery(document).ready(function($) {
 		}
 	});
 	walletWidget.setPresentmentCurrency("{/literal}{$currency->iso_code|escape:'htmlall':'UTF-8'}{literal}");
-	walletWidget.bind("walletWidgetDivBs");	
+	walletWidget.bind("walletWidgetDiv");	
 	
 });
 
@@ -134,7 +134,7 @@ function reCreateWalletWidget() {
 		}
 	});
 	walletWidget.setPresentmentCurrency("{/literal}{$currency->iso_code|escape:'htmlall':'UTF-8'}{literal}");
-	walletWidget.bind("walletWidgetDivBs");		
+	walletWidget.bind("walletWidgetDiv");		
 }
 function reCreateAddressBookWidget() {
 	$("#addressBookWidgetDiv").html('');

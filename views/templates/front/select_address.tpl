@@ -47,7 +47,7 @@ jQuery(document).ready(function($) {
 			loginOptions =  {scope: 'profile postal_code payments:widget payments:shipping_address payments:billing_address', popup: !useRedirect, state: '' };
 			amazon.Login.authorize (loginOptions, (useRedirect ? redirectURL : function(response) {
 				jQuery.ajax({
-		    				type: 'GET',
+		    				type: 'POST',
 		            	    url: REDIRECTAMZ,
 		                	data: 'ajax=true&method=setsession&access_token=' + response.access_token,
 			                success: function(htmlcontent){

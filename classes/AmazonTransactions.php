@@ -316,6 +316,17 @@ class AmazonTransactions
                 ->getAuthorizationDetails()
                 ->getAuthorizationStatus()
                 ->getState() != 'Open') {
+                if ($response->getAuthorizeResult()
+                        ->getAuthorizationDetails()
+                        ->getAuthorizationStatus()
+                        ->getState() == 'Closed') {
+                    if (! isset(Context::getContext()->cookie->amzSetStatusCaptured)) {
+                        Context::getContext()->cookie->amzSetStatusCaptured = serialize(array());
+                    }
+                    $tmpData = Tools::unSerialize(Context::getContext()->cookie->amzSetStatusCaptured);
+                    $tmpData[] = $order_ref;
+                    Context::getContext()->cookie->amzSetStatusCaptured = serialize($tmpData);
+                }
                 return $response;
             }
             self::setOrderStatusAuthorized($order_ref, true);

@@ -119,8 +119,12 @@ class AmzpaymentsPaymentModuleFrontController extends ModuleFrontController
             $get_order_reference_details_request = new OffAmazonPaymentsService_Model_GetOrderReferenceDetailsRequest();
             $get_order_reference_details_request->setSellerId(self::$amz_payments->merchant_id);
             $get_order_reference_details_request->setAmazonOrderReferenceId($order_reference_id);
-            if (isset($this->context->cookie->amz_access_token)) {
+            if (isset($this->context->cookie->amz_access_token) && $this->context->cookie->amz_access_token != '') {
                 $get_order_reference_details_request->setAddressConsentToken(AmzPayments::prepareCookieValueForAmazonPaymentsUse($this->context->cookie->amz_access_token));
+            } else {
+                if (getAmazonPayCookie()) {
+                    $get_order_reference_details_request->setAddressConsentToken(getAmazonPayCookie());
+                }
             }
             
             try {
@@ -146,8 +150,12 @@ class AmzpaymentsPaymentModuleFrontController extends ModuleFrontController
             $get_order_reference_details_request = new OffAmazonPaymentsService_Model_GetOrderReferenceDetailsRequest();
             $get_order_reference_details_request->setSellerId(self::$amz_payments->merchant_id);
             $get_order_reference_details_request->setAmazonOrderReferenceId($order_reference_id);
-            if (isset($this->context->cookie->amz_access_token)) {
+            if (isset($this->context->cookie->amz_access_token) && $this->context->cookie->amz_access_token != '') {
                 $get_order_reference_details_request->setAddressConsentToken(AmzPayments::prepareCookieValueForAmazonPaymentsUse($this->context->cookie->amz_access_token));
+            } else {
+                if (getAmazonPayCookie()) {
+                    $get_order_reference_details_request->setAddressConsentToken(getAmazonPayCookie());
+                }
             }
             $reference_details_result_wrapper = $this->service->getOrderReferenceDetails($get_order_reference_details_request);
             
@@ -171,8 +179,12 @@ class AmzpaymentsPaymentModuleFrontController extends ModuleFrontController
             $get_order_reference_details_request = new OffAmazonPaymentsService_Model_GetOrderReferenceDetailsRequest();
             $get_order_reference_details_request->setSellerId(self::$amz_payments->merchant_id);
             $get_order_reference_details_request->setAmazonOrderReferenceId($order_reference_id);
-            if (isset($this->context->cookie->amz_access_token)) {
+            if (isset($this->context->cookie->amz_access_token) && $this->context->cookie->amz_access_token != '') {
                 $get_order_reference_details_request->setAddressConsentToken(AmzPayments::prepareCookieValueForAmazonPaymentsUse($this->context->cookie->amz_access_token));
+            } else {
+                if (getAmazonPayCookie()) {
+                    $get_order_reference_details_request->setAddressConsentToken(getAmazonPayCookie());
+                }
             }
             $reference_details_result_wrapper = $this->service->getOrderReferenceDetails($get_order_reference_details_request);
         }
@@ -223,6 +235,7 @@ class AmzpaymentsPaymentModuleFrontController extends ModuleFrontController
                             $this->context->cookie->amazonpay_errors_message = self::$amz_payments->l('Your selected payment method has been declined. Please chose another one.');
                             $this->context->cookie->amz_logout = true;
                             unset($this->context->cookie->amz_access_token);
+                            unsetAmazonPayCookie();
                             unset($this->context->cookie->amz_access_token_set_time);
                             unset($this->context->cookie->amazon_id);
                             unset($this->context->cookie->has_set_valid_amazon_address);

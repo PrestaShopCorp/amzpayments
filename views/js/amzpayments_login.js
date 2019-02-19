@@ -15,17 +15,13 @@ function getURLParameter(name, source) {
 function amazonLogout(){
     amazon.Login.logout();
 	document.cookie = "amazon_Login_accessToken=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
-	document.cookie = "amazon_Login_accessToken=; expires=Thu, 18 Aug 1979 00:00:00 GMT; path=/prestashop/";
+	document.cookie = "amazon_Login_accessToken=; expires=Thu, 01 Jan 1970 00:00:00 GMT;secure";
 	document.cookie = "amazon_Login_state_cache=; expires=Thu, 01 Jan 1970 00:00:00 GMT";
 }
 
 var authRequest;    
 
-jQuery(document).ready(function($){
-	if ($("#authentication #SubmitCreate").length > 0 && LPA_MODE != 'pay') {
-		$("#authentication #SubmitCreate").parent().append('<div class="amazonLoginWr" id="jsLoginAuthPage"></div>');
-	}
-	
+jQuery(document).ready(function($){	
 	if (AMZACTIVE == '1') {
 		initAmazon();
 		$('.logout').click(function() {
@@ -34,11 +30,38 @@ jQuery(document).ready(function($){
 	}
 });
 
-function initAmazon(){	
+function buildAmazonButtonContainer(){
+	return '<div class="amzbuttoncontainer"><h3 class="page-subheading">' + AMZ_USE_ACCOUNT_HEAD + '</h3><p>' + AMZ_USE_ACCOUNT_BODY + '</p></div>';
+}
 
+function buildAmazonMiniCartButtonContainer(){
+	if (AMZ_MINI_CART_ENHANCEMENT == '1' && AMZ_ADD_MINI_CART_BTN != '0') {
+		return '<div class="button_enhanced_mini_cart_info"><p>' + AMZ_MINI_CART_INFO + '</p></div><div style="clear:both;"></div>';	
+	}
+	return '';
+}
+
+function initAmazon() {	
+
+	if ($("#authentication #SubmitCreate").length > 0 && LPA_MODE != 'login' && AMZ_SHOW_REGISTRATION_PAGE == '1') {
+		if ($("body#authentication").length > 0 && $("#order_step").length == 0) {
+			$("#authentication #SubmitCreate").parent().append('<div class="amazonLoginToPay amazonLoginWr" id="jsLoginAmazonPay">' + buildAmazonButtonContainer() + '</div>');			
+		} else {
+			$("#authentication #SubmitCreate").parent().append('<div class="amazonLoginToPay" id="jsLoginAmazonPay">' + buildAmazonButtonContainer() + '</div>');
+			bindCartButton('jsLoginAmazonPay');			
+		}
+	}
+	
 	if (jQuery("#form_onepagecheckoutps #opc_social_networks").length > 0) {
 		if (jQuery("#payWithAmazonSocialDiv").length == 0) {
 			jQuery("#opc_social_networks").append('<span id="payWithAmazonSocialDiv" class="amazonLoginWr"></span>');
+		}
+	}
+	
+	if (AMZ_SHOW_IN_CART_POPUP == '1') {
+		if ($('#layer_cart .button-container').length > 0) {
+			$('#layer_cart .button-container').append('<span id="payWithAmazonLayerCartDiv" class="' + (AMZ_CREATE_ACCOUNT_EXP == '1' ? 'amz_create_account' : null) + '"></span>');
+			bindCartButton('payWithAmazonLayerCartDiv');		
 		}
 	}
 
@@ -66,10 +89,15 @@ function initAmazon(){
 	            },    
 	            onSignIn: function(orderReference) {
 	                var amazonOrderReferenceId = orderReference.getAmazonOrderReferenceId();
+	                document.cookie = "amazon_Login_accessToken=" + authRequest.access_token + ";path=/;secure";
+	                acctk = '';
+	                if (AMZ_NO_TOKEN_AJAX == '0') {
+	                	acctk = '&access_token=' + authRequest.access_token;
+	                }
 	                $.ajax({
-	                    type: 'GET',
+	                    type: 'POST',
 	                    url: SETUSERAJAX,
-	                    data: 'ajax=true&method=setusertoshop&access_token=' + authRequest.access_token + '&amazon_id=' + amazonOrderReferenceId + (redirectToCheckout ? '&action=checkout' : null),
+	                    data: 'ajax=true&method=setusertoshop&amazon_id=' + amazonOrderReferenceId + (redirectToCheckout ? '&action=checkout' : null) + acctk,
 	                    success: function(htmlcontent){
 	                        if (htmlcontent == 'error') {
 	                            alert('An error occured - please try again or contact our support');
@@ -93,7 +121,11 @@ function initAmazon(){
 			bindCartButton('payWithAmazonDiv');
 		}
 		if ($('#button_order_cart').length > 0 && $('#amz_cart_widgets_summary').length == 0) {
-			$('#button_order_cart').before('<div id="payWithAmazonCartDiv" class="' + (AMZ_CREATE_ACCOUNT_EXP == '1' ? 'amz_create_account' : null) + '"></div>');
+			if (AMZ_MINI_CART_ENHANCEMENT == '1' && AMZ_ADD_MINI_CART_BTN != '0') {
+				$('#button_order_cart').before('<div class="button_enhanced_mini_cart">' + buildAmazonMiniCartButtonContainer() + '<div id="payWithAmazonCartDiv" class="' + (AMZ_CREATE_ACCOUNT_EXP == '1' ? 'amz_create_account' : null) + '"></div><div style="clear:both;"></div></div>');		
+			} else {
+				$('#button_order_cart').before('<div id="payWithAmazonCartDiv" class="' + (AMZ_CREATE_ACCOUNT_EXP == '1' ? 'amz_create_account' : null) + '"></div>');
+			}
 			bindCartButton('payWithAmazonCartDiv');
 		}
 
@@ -119,25 +151,28 @@ function initAmazon(){
 function checkForAmazonListButton() {
 	if (jQuery("#pay_with_amazon_list_button").length > 0) {
 		if (jQuery.trim(jQuery("#pay_with_amazon_list_button").html()) == '') {
-			jQuery("#pay_with_amazon_list_button").append('<span id="payWithAmazonListDiv" class="' + (AMZ_CREATE_ACCOUNT_EXP == '1' ? 'amz_create_account' : null) + '"></span>');
-			bindCartButton('payWithAmazonListDiv');
+			if (AMZ_SHOW_AS_PAYMENT_METHOD == '1') {
+				jQuery("#pay_with_amazon_list_button").append('<span id="payWithAmazonListDiv" class="' + (AMZ_CREATE_ACCOUNT_EXP == '1' ? 'amz_create_account' : null) + '"></span>');
+				bindCartButton('payWithAmazonListDiv');
+			}
 		}
 	}	
 	if (jQuery("#HOOK_ADVANCED_PAYMENT").length > 0) {		
 		if (jQuery("#payWithAmazonListDiv").length == 0) {
-			jQuery('<div class="col-xs-6 col-md-6" id="amzRowElement"><span id="payWithAmazonListDiv" class="' + (AMZ_CREATE_ACCOUNT_EXP == '1' ? 'amz_create_account' : null) + '"></span></div>').appendTo("#HOOK_ADVANCED_PAYMENT .row");
-			bindCartButton('payWithAmazonListDiv');
+			if (AMZ_SHOW_AS_PAYMENT_METHOD == '1') {
+				jQuery('<div class="col-xs-6 col-md-6" id="amzRowElement"><span id="payWithAmazonListDiv" class="' + (AMZ_CREATE_ACCOUNT_EXP == '1' ? 'amz_create_account' : null) + '"></span></div>').appendTo("#HOOK_ADVANCED_PAYMENT .row");
+				bindCartButton('payWithAmazonListDiv');
+			}
 		}
 	}
 	/* Adaption for onepagecheckout module */
 	if (jQuery("#form_onepagecheckoutps #onepagecheckoutps_step_three").length > 0) {
 		if (jQuery("#payWithAmazonPaymentOPC").length == 0) {
-			jQuery("#onepagecheckoutps_step_three").append('<span id="payWithAmazonPaymentOPC" class="' + (AMZ_CREATE_ACCOUNT_EXP == '1' ? 'amz_create_account' : null) + '"></span>');
-			bindCartButton('payWithAmazonPaymentOPC');
+			if (AMZ_SHOW_AS_PAYMENT_METHOD == '1') {
+				jQuery("#onepagecheckoutps_step_three").append('<span id="payWithAmazonPaymentOPC" class="' + (AMZ_CREATE_ACCOUNT_EXP == '1' ? 'amz_create_account' : null) + '"></span>');
+				bindCartButton('payWithAmazonPaymentOPC');
+			}
 		}
-	}
-	if (jQuery("#onepagecheckoutps_step_review #payWithAmazonMainDiv").length > 0) {
-		jQuery("#onepagecheckoutps_step_review #payWithAmazonMainDiv").detach();
 	}
 }
 
@@ -160,10 +195,15 @@ function bindCartButton(div_id) {
 	        onSignIn: function(orderReference) {
 	            amazonOrderReferenceId = orderReference.getAmazonOrderReferenceId();
 	            if (jQuery('#' + div_id).hasClass('amz_create_account')) {
+	                document.cookie = "amazon_Login_accessToken=" + authRequest.access_token + ";path=/;secure";
+	                acctk = '';
+	                if (AMZ_NO_TOKEN_AJAX == '0') {
+	                	acctk = '&access_token=' + authRequest.access_token;
+	                }
 	                $.ajax({
-	                    type: 'GET',
+	                    type: 'POST',
 	                    url: SETUSERAJAX,
-	                    data: 'ajax=true&method=setusertoshop&access_token=' + authRequest.access_token + '&amazon_id=' + amazonOrderReferenceId + '&action=checkout',
+	                    data: 'ajax=true&method=setusertoshop&amazon_id=' + amazonOrderReferenceId + '&action=checkout' + acctk,
 	                    success: function(htmlcontent){
 	                        if (htmlcontent == 'error') {
 	                            alert('An error occured - please try again or contact our support');
@@ -173,10 +213,15 @@ function bindCartButton(div_id) {
 	                    }
 	                });
 	            } else {
+	                document.cookie = "amazon_Login_accessToken=" + authRequest.access_token + ";path=/;secure";
+	                acctk = '';
+	                if (AMZ_NO_TOKEN_AJAX == '0') {
+	                	acctk = '&access_token=' + authRequest.access_token;
+	                }
 		            jQuery.ajax({
-		                    type: 'GET',
+		                    type: 'POST',
 		                    url: REDIRECTAMZ,
-		                    data: 'ajax=true&method=setsession&access_token=' + authRequest.access_token + '&amazon_id=' + amazonOrderReferenceId,
+		                    data: 'ajax=true&method=setsession&amazon_id=' + amazonOrderReferenceId + acctk,
 		                    success: function(htmlcontent){
 		                    	window.location = REDIRECTAMZ + amazonOrderReferenceId;
 		                    }
@@ -194,6 +239,6 @@ function bindCartButton(div_id) {
 
 function setTipr(element) {
 	if (jQuery("#amazonpay_tooltip").length > 0) {
-		jQuery(element).find("img").attr('data-tip', jQuery("#amazonpay_tooltip").html()).tipr();
+		setTimeout(function() { jQuery(element).find("img").attr('data-tip', jQuery("#amazonpay_tooltip").html()).tipr(); }, 2000);	
 	}
 }

@@ -69,24 +69,6 @@ jQuery(document).ready(function($) {
 	
 	var redirectURL = LOGINREDIRECTAMZ;	
 	
-	options = { scope: 'payments:widget', popup: true, interactive: 'never' };
-	amazon.Login.authorize(options, function(response) {
-		if (response.error) { 
-			loginOptions =  {scope: 'profile postal_code payments:widget payments:shipping_address payments:billing_address', popup: !useRedirect, state: '&toCheckout=1' };
-			amazon.Login.authorize (loginOptions, (useRedirect ? redirectURL : function(response) {
-				jQuery.ajax({
-		    				type: 'GET',
-		            	    url: REDIRECTAMZ,
-		                	data: 'ajax=true&method=setsession&access_token=' + response.access_token,
-			                success: function(htmlcontent){
-			                  	window.location = REDIRECTAMZ + amazonOrderReferenceId;
-			                }
-				});
-			})
-			);
-		}
-	});		
-	
 	new OffAmazonPayments.Widgets.AddressBook({
 		sellerId: '{/literal}{$sellerID|escape:'htmlall':'UTF-8'}{literal}',
 		{/literal}{if $amz_session == ''}{literal}
@@ -129,7 +111,7 @@ jQuery(document).ready(function($) {
 		}
 	}).bind("addressBookWidgetDivBs");
 	
-	new OffAmazonPayments.Widgets.Wallet({
+	walletWidget = new OffAmazonPayments.Widgets.Wallet({
 		sellerId: '{/literal}{$sellerID|escape:'htmlall':'UTF-8'}{literal}',
 		{/literal}{if $amz_session != ''}{literal}amazonOrderReferenceId: '{/literal}{$amz_session|escape:'htmlall':'UTF-8'}{literal}', {/literal}{/if}{literal}
 		design: {
@@ -140,13 +122,15 @@ jQuery(document).ready(function($) {
 		onError: function(error) {
 			console.log(error.getErrorMessage());
 		}
-	}).bind("walletWidgetDivBs");
+	});
+	walletWidget.setPresentmentCurrency("{/literal}{$currency->iso_code|escape:'htmlall':'UTF-8'}{literal}");
+	walletWidget.bind("walletWidgetDivBs");
 	
 });
 
 function reCreateWalletWidget() {
 	$("#walletWidgetDivBs").html('');
-	new OffAmazonPayments.Widgets.Wallet({
+	walletWidget = new OffAmazonPayments.Widgets.Wallet({
 		sellerId: '{/literal}{$sellerID|escape:'htmlall':'UTF-8'}{literal}',
 		{/literal}{if $amz_session != ''}{literal}amazonOrderReferenceId: '{/literal}{$amz_session|escape:'htmlall':'UTF-8'}{literal}', {/literal}{/if}{literal}
 		design: {
@@ -158,7 +142,9 @@ function reCreateWalletWidget() {
 		onError: function(error) {
 			console.log(error.getErrorMessage());
 		}
-	}).bind("walletWidgetDivBs");		
+	});
+	walletWidget.setPresentmentCurrency("{/literal}{$currency->iso_code|escape:'htmlall':'UTF-8'}{literal}");
+	walletWidget.bind("walletWidgetDivBs");	
 }
 function reCreateAddressBookWidget() {
 	$("#addressBookWidgetDivBs").html('');

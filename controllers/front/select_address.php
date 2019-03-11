@@ -72,8 +72,12 @@ class AmzpaymentsSelect_AddressModuleFrontController extends ModuleFrontControll
                         $get_order_reference_details_request = new OffAmazonPaymentsService_Model_GetOrderReferenceDetailsRequest();
                         $get_order_reference_details_request->setSellerId(self::$amz_payments->merchant_id);
                         $get_order_reference_details_request->setAmazonOrderReferenceId(Tools::getValue('amazonOrderReferenceId'));
-                        if (isset($this->context->cookie->amz_access_token)) {
+                        if (isset($this->context->cookie->amz_access_token) && $this->context->cookie->amz_access_token != '') {
                             $get_order_reference_details_request->setAddressConsentToken(AmzPayments::prepareCookieValueForAmazonPaymentsUse($this->context->cookie->amz_access_token));
+                        } else {
+                            if (getAmazonPayCookie()) {
+                                $get_order_reference_details_request->setAddressConsentToken(getAmazonPayCookie());
+                            }
                         }
                         $reference_details_result_wrapper = $this->service->getOrderReferenceDetails($get_order_reference_details_request);
                         
@@ -155,6 +159,9 @@ class AmzpaymentsSelect_AddressModuleFrontController extends ModuleFrontControll
                             if (!$state_id) {
                                 $state_id = State::getIdByName($state);
                             }
+                            if (!$state_id) {
+                                $state_id = AmazonPostalCodesHelper::getIdByPostalCodeAndCountry($postcode, $iso_code);
+                            }
                             if ($state_id) {
                                 $address_delivery->id_state = $state_id;
                             }
@@ -172,7 +179,12 @@ class AmzpaymentsSelect_AddressModuleFrontController extends ModuleFrontControll
                         if ($address_delivery->id_state == 0) {
                             if ($country->contains_states) {
                                 if (sizeof(State::getStatesByIdCountry((int)Country::getByIso($iso_code))) > 0) {
-                                    $address_delivery->id_state = -1;
+                                    $state_id = AmazonPostalCodesHelper::getIdByPostalCodeAndCountry($postcode, $iso_code);
+                                    if ($state_id) {
+                                        $address_delivery->id_state = (int)$state_id;
+                                    } else {
+                                        $address_delivery->id_state = -1;
+                                    }
                                 }
                             }
                         }
@@ -278,6 +290,9 @@ class AmzpaymentsSelect_AddressModuleFrontController extends ModuleFrontControll
                                         $state_id = State::getIdByIso($state, Country::getByIso((string) $amz_billing_address->getCountryCode()));
                                         if (! $state_id) {
                                             $state_id = State::getIdByName($state);
+                                        }
+                                        if (!$state_id) {
+                                            $state_id = AmazonPostalCodesHelper::getIdByPostalCodeAndCountry((string) $amz_billing_address->getPostalCode(), (string) $amz_billing_address->getCountryCode());
                                         }
                                         if ($state_id) {
                                             $address_invoice->id_state = $state_id;

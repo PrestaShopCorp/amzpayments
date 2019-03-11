@@ -51,6 +51,7 @@ class AmzpaymentsResetpaymentsModuleFrontController extends ModuleFrontControlle
         if (isset($this->context->cookie->amz_access_token)) {
             unset($this->context->cookie->amz_access_token);
         }
+        unsetAmazonPayCookie();
         if (isset($this->context->cookie->amz_access_token_set_time)) {
             unset($this->context->cookie->amz_access_token_set_time);
         }

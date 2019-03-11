@@ -79,7 +79,7 @@ class AmazonPaymentsAddressHelper
     public static function addAdditionalValues(Address $address, array $additional_data)
     {
         foreach ($additional_data as $field => $value) {
-            if (!($field == 'id_state' && (int)$value < 0)) {
+            if (!($field == 'id_state' && (int)$value < 0) && trim($value) != '') {
                 $address->$field = pSQL($value);
             }
         }
@@ -116,8 +116,11 @@ class AmazonPaymentsAddressHelper
         return $amazon_hash;
     }
     
-    public static function getThemeTranslation($s)
+    public static function getThemeTranslation($s, $controller = false)
     {
+        if (!$controller) {
+            $controller = 'address';
+        }
         switch ($s) {
             case 'company':
                 $s = 'Company';
@@ -160,7 +163,7 @@ class AmazonPaymentsAddressHelper
         if (Validate::isLangIsoCode($iso)) {
             $lang_file = _PS_THEME_DIR_.'lang/'.$iso.'.php';
             if (file_exists($lang_file) && include($lang_file)) {
-                $key = 'address_'.md5($s);
+                $key = $controller.'_'.md5($s);
                 if (isset($_LANG)) {
                     if (isset($_LANG[$key])) {
                         return $_LANG[$key];

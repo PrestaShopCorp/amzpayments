@@ -135,7 +135,7 @@ switch (Tools::getValue('action')) {
     
     case 'versionCheck':
         if (function_exists('curl_version')) {
-            $url = 'http://www.patworx.de/API/amazon_advanced_payments.php';
+            $url = 'https://www.patworx.de/API/amazon_advanced_payments.php';
             $fields_string = '';
             foreach ($_POST as $key => $value) {
                 $fields_string .= $key . '=' . $value . '&';

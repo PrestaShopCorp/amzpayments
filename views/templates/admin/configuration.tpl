@@ -57,6 +57,7 @@
 
 <input type="hidden" name="button_img_dir_base" value="{$imgdir|escape:'htmlall':'UTF-8'}buttons/" />
 <input type="hidden" name="button_img_lang_var" value="{$button_lang_var|escape:'htmlall':'UTF-8'}" />
+<input type="hidden" name="commonlyfacedproblems_url" value="{$commonlyfacedproblems|escape:'htmlall':'UTF-8'}" />
 
 <div id="amzconfigarea">
 {$configform} {* no escaping needed, comes from PrestaShop Form Helper!!! *}
@@ -66,6 +67,7 @@
 		<li class="active"><a href="#amzregistration" data-toggle="tab">{l s='Registration' mod='amzpayments'}</a></li>
 		<li><a href="#amzconnect" data-toggle="tab">{l s='Connection' mod='amzpayments'}</a></li>
 		<li><a href="#amzconfiguration" data-toggle="tab">{l s='Configuration' mod='amzpayments'}</a></li>
+		<li><a href="#amzsupport" data-toggle="tab">{l s='Support' mod='amzpayments'}</a></li>
 		<li><a href="#amzpromote" data-toggle="tab">{l s='Promotion' mod='amzpayments'}</a></li>
 		<li><a href="#amzcontactus" data-toggle="tab">{l s='Contact us' mod='amzpayments'}</a></li>
 		<li><a href="#amzfaq" data-toggle="tab">{l s='FAQ' mod='amzpayments'}</a></li>
@@ -76,7 +78,7 @@
 				<div class="col-xs-12 col-md-6">
 					<p>
 						<img src="{$imgdir|escape:'html':'UTF-8'}amazon-payments.jpg" alt="amazon payments" class="img-responsive" />
-					</p>					
+					</p>
 					<p>
 						<strong>{l s='Amazon Pay: Amazon’s Payment and Checkout method for your website' mod='amzpayments'}</strong>
 					</p>
@@ -514,7 +516,44 @@
 				</button>
 			</div>			
 		</div>
+		<div id="amzsupport" class="tab-pane">
+			<div class="panel">
+				<div class="panel-heading">
+					<i class="icon-cogs"></i> {l s='Troubleshooting Wizard' mod='amzpayments'}
+				</div>
+				<div class="troubleshooter-content">
+					<button type="button" id="start_troubleshooter" class="btn" data-url="{$troubleshooter|escape:'htmlall':'UTF-8'}">
+						<strong>{l s='Run Troubleshooter' mod='amzpayments'}</strong>
+						<img style="display:none; height: 15px" src="{$smarty.const._PS_BASE_URL_SSL_|escape:'htmlall':'UTF-8'}{$smarty.const.__PS_BASE_URI__|escape:'htmlall':'UTF-8'}modules/{$module_name|escape:'htmlall':'UTF-8'}/views/img/ts_loader.gif" />
+					</button>					
+				</div>
+				<div class="troubleshooter-content-results"></div>
+			</div>
+			<div class="panel">
+				<div class="panel-heading">
+					<i class="icon-cogs"></i> {l s='Commonly faced problems' mod='amzpayments'}
+				</div>
+				<div class="row">
+					<div class="col-xs-12 col-md-2">
+						{l s='What problems are you having?' mod='amzpayments'}
+					</div>
+					<div class="col-xs-12 col-md-6">
+						<div class="commonly_select"></div>
+						<span class="commonly_select_info"><a id="show_contact" href="#" onclick="jQuery('#amztabs a[href=#amzcontactus]').tab('show');">{l s='Please contact us if the problem you are experiencing is not listed.' mod='amzpayments'}</a></span>
+					</div>
+				</div>
+				<div class="commonly_results">
+					
+				</div>
+			</div>
+		</div>
 		<div id="amzpromote" class="tab-pane">
+		
+			<div id="promoenhancement">
+				{foreach from=$enhancementimages item=image key=imagetyp}
+					<div id="enhancement_{$imagetyp|escape:'htmlall':'UTF-8'}"><img src="{$image|escape:'htmlall':'UTF-8'}" /></div>
+				{/foreach}
+			</div>
 		
 			<div id="promobanners">
 				{foreach from=$banners item=bannerset key=settyp}
@@ -703,7 +742,7 @@
 	<div class="row">
 		<div class="col-xs-12">
 			<p style="text-align: center" id="versionCheck">
-				<img src="{$smarty.const._PS_BASE_URL_|escape:'htmlall':'UTF-8'}{$smarty.const.__PS_BASE_URI__|escape:'htmlall':'UTF-8'}modules/{$module_name|escape:'htmlall':'UTF-8'}/views/img/loading_indicator.gif" />
+				<img src="{$smarty.const._PS_BASE_URL_SSL_|escape:'htmlall':'UTF-8'}{$smarty.const.__PS_BASE_URI__|escape:'htmlall':'UTF-8'}modules/{$module_name|escape:'htmlall':'UTF-8'}/views/img/loading_indicator.gif" />
 				<br /><br />
 				{l s='We check if there is a new version of the plugin available.' mod='amzpayments'}
 				<br /><br />

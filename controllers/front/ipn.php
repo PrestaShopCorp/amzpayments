@@ -138,7 +138,7 @@ class AmzpaymentsIpnModuleFrontController extends ModuleFrontController
                         if ($r['amz_tx_amount'] == $orderTotal) {
                             AmazonTransactions::closeOrder($amz_payments, $amz_payments->getService(), $r['amz_tx_order_reference']);
                         }
-                    }        
+                    }
                     break;
         
                 case 'PaymentRefund':

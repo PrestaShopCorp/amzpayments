@@ -69,7 +69,7 @@ class AmzpaymentsAddresswalletModuleFrontController extends ModuleFrontControlle
                     case 'setsession':
                         if (Tools::getValue('access_token')) {
                             if (Tools::getValue('access_token') != 'undefined') {
-                                $this->context->cookie->amz_access_token = AmzPayments::prepareCookieValueForPrestaShopUse(Tools::getValue('access_token'));
+                                //$this->context->cookie->amz_access_token = AmzPayments::prepareCookieValueForPrestaShopUse(Tools::getValue('access_token'));
                                 $this->context->cookie->amz_access_token_set_time = time();
                                 die();
                             }

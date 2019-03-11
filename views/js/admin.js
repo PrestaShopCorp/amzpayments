@@ -42,12 +42,16 @@ $(document).ready(function(){
 		buttons_area = '#fieldset_8_8';
 		if ($(buttons_area).length < 1) { buttons_area = '#fieldset_8'; }
 		
+		enhancement_area = '#fieldset_9_9';
+		if ($(enhancement_area).length < 1) { buttons_area = '#fieldset_9'; }
+		
 		$(connect_area).detach().appendTo('#amzconnect #amzconnectform').show();
 		$(config_area).detach().prependTo('#amzconfiguration').show();
 		$(advanced_config_area).detach().appendTo('#amzconfiguration #advancedconfig').show();
 		$(mode_area).detach().insertAfter('#advancedconfig').show();
 		$(buttons_area).detach().prependTo('#amzpromote').show();
 		$(banners_area).detach().prependTo('#amzpromote').show();
+		$(enhancement_area).detach().prependTo('#amzpromote').show();
 		
 		$("#returnedurl").detach().appendTo($("#POPUP_on").closest('.form-group')).show();
 		$("button[name=submitAmzpaymentsModule]").first().clone().attr('name','submitAmzpaymentsModuleConnect').appendTo($("#REGION").parent());
@@ -149,11 +153,70 @@ $(document).ready(function(){
 		
 	    ajaxHandler = $('.amzAjaxHandler').val();   
 	    
+	    $("#start_troubleshooter").click(function() {
+	    	$(this).find('strong').hide();
+	    	$(this).find('img').show();
+	    	$(".troubleshooter-content-results").html('');
+	    	tsurl = $(this).attr("data-url");
+	        $.post(
+	        	tsurl,
+	        	{},
+	        	function(data){
+	        		$("#start_troubleshooter").find('strong').show();
+	        		$("#start_troubleshooter").find('img').hide();
+	        		$(".troubleshooter-content-results").html(data.troubleshooter);
+	            }	            
+	        );
+	    });
+
+	    var CommonlyFacedProblems = '';
+	    $.post(
+	    	$("input[name=commonlyfacedproblems_url]").val(),
+	    	{},
+	    	function (data) {
+	    		if (data.error != 'true') {
+	    			CommonlyFacedProblems = data.CommonlyFacedProblems;
+	    			var selectbox = $("<select>").addClass('');
+	    			var option = $("<option>").val('-1').html('-'); 
+    				selectbox.append(option);
+	    			for (i = 0; i < data.CommonlyFacedProblems.length; i++) {
+	    				var option = $("<option>").val(i).html(data.CommonlyFacedProblems[i].Title); 
+	    				selectbox.append(option);
+	    			}
+	    			selectbox.on('change', function() {
+	    				if ($(this).val() == '-1') {
+	    					$(".commonly_results").html('');
+	    					return;
+	    				}
+	    				var problem = CommonlyFacedProblems[$(this).val()];
+	    				var rootcause = $("<div/>").append($('<h4/>').html(data.l.rootcause));
+	    				var resolution = $("<div/>").append($('<h4/>').html(data.l.resolution));
+	    				var detailedinformation = $("<div/>").append($('<h4/>').html(data.l.detailedinformation));
+	    				
+	    				var resolutions = $("<ol/>");
+		    			for (i = 0; i < problem.ResolutionStepByStep.length; i++) {
+		    				var listelement = $("<li/>").html(problem.ResolutionStepByStep[i].Step);
+		    				resolutions.append(listelement);
+		    			}	    				
+	    				rootcause.append($("<div/>").html(problem.RootCause));
+	    				resolution.append($("<div/>").html(resolutions));
+	    				detailedinformation.append($("<div/>").html(problem.DetailledInfo));
+	    				
+	    				$(".commonly_results").html('');
+	    				$(".commonly_results").append(rootcause).append(resolution).append(detailedinformation);
+	    			});
+	    			$(".commonly_select").append(selectbox);
+	    		} else {	    			
+	    			$(".commonly_select").html('No data available.');
+	    		}	    			
+	    	},
+	    	'json'
+	    );
+	    
 	    $('.carousel').carousel({
 	        interval: 4000
 	    });
 	    $('#videoprestashopyoutube, .videoreturnurls, #videojavascriptorigins').hide();
-
 	
 	    $("#showvideoprestashopyoutube").click(function() {
 	    	$('#videoprestashopyoutube').parent('.responsive-video').show();
@@ -219,6 +282,13 @@ $(document).ready(function(){
 	    	if ($("select[name=AMZ_PROMO_FOOTER_STYLE]").val() == '1') { stylesetting = 'dark'; } else { stylesetting = 'light'; }
 	    	if ($("#AMZ_PROMO_FOOTER_STYLE_IMG").length > 0) { $("#AMZ_PROMO_FOOTER_STYLE_IMG").remove(); }    	
 	    	$("select[name=AMZ_PROMO_FOOTER_STYLE]").closest('.form-group').append('<div id="AMZ_PROMO_FOOTER_STYLE_IMG">' + $("#banner_" + stylesetting + "_footer").html() + '</div>');
+	    	
+	    	if ($("#AMZ_PROMO_ENHANCEMENT_CART_IMG").length > 0) { $("#AMZ_PROMO_ENHANCEMENT_CART_IMG").remove(); }    	
+	    	$("input[name=AMZ_BUTTON_ENHANCEMENT_CART]").closest('.form-group').append('<div id="AMZ_PROMO_ENHANCEMENT_CART_IMG">' + $("#enhancement_cart").html() + '</div>');
+	    	
+	    	if ($("#AMZ_PROMO_ENHANCEMENT_MINICART_IMG").length > 0) { $("#AMZ_PROMO_ENHANCEMENT_MINICART_IMG").remove(); }    	
+	    	$("input[name=AMZ_BUTTON_ENHANCEMENT_MINI_CART]").closest('.form-group').append('<div id="AMZ_PROMO_ENHANCEMENT_MINICART_IMG">' + $("#enhancement_minicart").html() + '</div>');
+	    	
 	    }
 	    function setPayButton() {
 	    	baseUrl = $("input[name=button_img_dir_base]").val();

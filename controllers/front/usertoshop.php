@@ -77,26 +77,26 @@ class AmzpaymentsUsertoshopModuleFrontController extends ModuleFrontController
                 switch (Tools::getValue('method')) {
                     case 'redirectAuthentication':
                     case 'setusertoshop':
-                        if (Tools::getValue('access_token')) {
-                            if ((Tools::getValue('access_token') != '' && Tools::getValue('access_token') != 'null') /* || !isset($this->context->cookie->amz_access_token) */) {
-                                $this->context->cookie->amz_access_token = AmzPayments::prepareCookieValueForPrestaShopUse(Tools::getValue('access_token'));
-                                $this->context->cookie->amz_access_token_set_time = time();
-                            }
+                        if (Tools::getValue('method') == 'redirectAuthentication') {
+                            Tools::redirect('index');
                         } else {
-                            if (Tools::getValue('method') == 'redirectAuthentication') {
-                                Tools::redirect('index');
+                            if (getAmazonPayCookie()) {
+                                $accessTokenValue = getAmazonPayCookie();
                             } else {
-                                self::$amz_payments->exceptionLog(false, 'user_to_shop controller: Error, method not submitted and no token');
-                                die('error');
+                                if (Tools::getValue('access_token') != 'undefined' && Tools::getValue('access_token') != '' && Tools::getValue('access_token') != 'null') {
+                                    self::$amz_payments->cookie->amz_access_token = AmzPayments::prepareCookieValueForPrestaShopUse(Tools::getValue('access_token'));
+                                    $accessTokenValue = self::$amz_payments->cookie->amz_access_token;
+                                    $this->context->cookie->amz_access_token_set_time = time();
+                                } else {
+                                    self::$amz_payments->exceptionLog(false, 'user_to_shop controller: Error, method not submitted and no token');
+                                    die('error');
+                                }
                             }
                         }
-                        if (Tools::getValue('action') == 'fromCheckout') {
-                            $accessTokenValue = AmzPayments::prepareCookieValueForAmazonPaymentsUse(Tools::getValue('access_token'));
-                        } else {
-                            if ((Tools::getValue('access_token') == '' || Tools::getValue('access_token') == 'null') && isset($this->context->cookie->amz_access_token)) {
-                                $accessTokenValue = $this->context->cookie->amz_access_token;
-                            } else {
-                                $accessTokenValue = Tools::getValue('access_token');
+
+                        if (is_null($accessTokenValue) || $accessTokenValue === false) {
+                            if (getAmazonPayCookie()) {
+                                $accessTokenValue = getAmazonPayCookie();
                             }
                         }
                         
@@ -197,15 +197,17 @@ class AmzpaymentsUsertoshopModuleFrontController extends ModuleFrontController
                                 
                                 $firstname = '';
                                 $lastname = '';
-                                $customer_name = preg_replace("/[0-9]/", "", $customer_name);
+                                $customer_name = preg_replace('/[^A-Za-z ]/', "", $customer_name);
                                 if (strpos(trim($customer_name), ' ') !== false) {
                                     list ($firstname, $lastname) = explode(' ', trim($customer_name));
                                 } elseif (strpos(trim($customer_name), '-') !== false) {
                                     list ($firstname, $lastname) = explode('-', trim($customer_name));
                                 } else {
                                     $firstname = trim($customer_name);
-                                    $lastname = 'Placeholder';
+                                    $lastname = '-';
                                 }
+                                
+                                $customer_names_error = self::$amz_payments->customerNamesError($firstname, $lastname);
                                 
                                 $customer = new Customer();
                                 $customer->email = $customer_email;
@@ -257,6 +259,11 @@ class AmzpaymentsUsertoshopModuleFrontController extends ModuleFrontController
                                                 $goto = 'index.php?controller=history';
                                             } else {
                                                 $goto = $this->context->link->getModuleLink('amzpayments', 'select_address');
+                                            }
+                                            
+                                            if ($customer_names_error && (int)self::$amz_payments->amz_force_name_completion == 1) {
+                                                $this->context->cookie->amzEditIdentity = true;
+                                                $goto = $this->context->link->getModuleLink('amzpayments', 'personaldata');
                                             }
                                             
                                             if (Tools::getValue('method') == 'redirectAuthentication') {

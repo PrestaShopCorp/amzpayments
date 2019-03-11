@@ -23,7 +23,9 @@
 #amzconfigarea #fieldset_6_6,
 #amzconfigarea #fieldset_7_7,
 #amzconfigarea #fieldset_8_8,
+#amzconfigarea #fieldset_9_9,
 #promobanners,
+#promoenhancement,
 #amzconfigarea #advancedconfig,
 #videonotification, 
 #videoURLs,
@@ -51,6 +53,8 @@
 	padding-left: 45px;
 	text-align: left;
 }
+#AMZ_PROMO_ENHANCEMENT_CART_IMG,
+#AMZ_PROMO_ENHANCEMENT_PRODUCT_IMG,
 #TYPE_PAY_BUTTON_IMG,
 #TYPE_LPA_BUTTON_IMG,
 #AMZ_PROMO_HEADER_STYLE_IMG,
@@ -176,7 +180,30 @@ a.registerButton:hover {
 	max-width: 600px;
 	border-radius: 10px;
 }
-
+#start_troubleshooter {
+	min-width: 180px;
+	text-align: center;
+	background: #00aff0;
+	color: #fff;
+}
+.innerrow {
+	margin-bottom: 15px;	
+}
+.troubleshooter-content-results {
+	margin-top: 15px;
+}
+.troubleshooter_state_0 {
+	font-weight: bold;
+	color: red;
+}
+.troubleshooter_state_1 {
+	font-weight: bold;
+	color: green;
+}
+.commonly_select_info {
+	font-size: 10px;
+	font-style: italic;
+}
 .has-warning {
 	
 }

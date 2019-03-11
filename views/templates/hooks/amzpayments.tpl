@@ -8,6 +8,10 @@
 *  @license    Released under the GNU General Public License
 *}
 <div id="payWithAmazonMainDiv"{if $hide_button} style="display:none;"{/if}>
-	<div id="payWithAmazonDiv" class="{if $create_account}amz_create_account{/if}"></div>
+	<div id="payWithAmazonDiv" class="{if $create_account}amz_create_account{/if} {if isset($buttonEnhancement) && $buttonEnhancement}button_enhanced{/if}">
+		{if isset($buttonEnhancement) && $buttonEnhancement}
+			<p>{l s='Pay securely using your Amazon account information' mod='amzpayments'}</p>
+		{/if}
+	</div>
 </div>
 {literal}<script> bindCartButton('payWithAmazonDiv'); </script>{/literal}

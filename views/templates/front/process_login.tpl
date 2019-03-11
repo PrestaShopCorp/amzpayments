@@ -15,6 +15,16 @@
 {literal}
 var toCheckout = '';
 var accessToken = getURLParameter("access_token", $(location).attr('href'));
+
+if (typeof accessToken === 'string' && accessToken.match(/^Atza/)) {
+	document.cookie = "amazon_Login_accessToken=" + accessToken + ";path=/;secure";
+}
+
+acctk = '';
+if (AMZ_NO_TOKEN_AJAX == '0') {
+	acctk = '&access_token=' + accessToken;
+}
+
 var state = getURLParameter("state", $(location).attr('href'));
 if (state == '&toCheckout=1') {
 	toCheckout = '&action=checkout';
@@ -27,9 +37,9 @@ toCheckout = '&action=checkout';
 
 $(document).ready(function() {	
     $.ajax({
-		type: 'GET',
+		type: 'POST',
 		url: SETUSERAJAX,
-		data: 'ajax=true' + toCheckout + '{/literal}{if $fromCheckout}&action=fromCheckout{/if}{literal}&method=setusertoshop&access_token=' + accessToken,
+		data: 'ajax=true' + toCheckout + '{/literal}{if $fromCheckout}&action=fromCheckout{/if}{literal}&method=setusertoshop' + acctk,
 		success: function(htmlcontent) {
 			if (htmlcontent == 'error') {
 				alert('An error occured - please try again or contact our support');

@@ -45,6 +45,7 @@ class AmzpaymentsResetpaymentsModuleFrontController extends ModuleFrontControlle
 
     public function init()
     {
+        self::$amzpayments = new AmzPayments();
         if (isset($this->context->cookie->amazon_id)) {
             unset($this->context->cookie->amazon_id);
         }
@@ -53,6 +54,13 @@ class AmzpaymentsResetpaymentsModuleFrontController extends ModuleFrontControlle
         }
         if (isset($this->context->cookie->amz_access_token_set_time)) {
             unset($this->context->cookie->amz_access_token_set_time);
+        }
+        unsetAmazonPayCookie();
+        if (isset(self::$amzpayments->cookie->amz_access_token)) {
+            unset(self::$amzpayments->cookie->amz_access_token);
+        }
+        if (isset(self::$amzpayments->cookie->amz_access_token_set_time)) {
+            unset(self::$amzpayments->cookie->amz_access_token_set_time);
         }
         if (isset($this->context->cart->id_address_delivery)) {
             $this->context->cart->id_address_delivery = 0;

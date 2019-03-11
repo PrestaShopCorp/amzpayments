@@ -143,7 +143,7 @@ class AmazonTransactions
         } else {
             return self::handleError($response);
         }
-        return $response;
+        return $responsearray;
     }
 
     public static function capture(AmzPayments $amz_payments, $service, $auth_id, $amount, $currency_code = 'EUR')
@@ -317,6 +317,14 @@ class AmazonTransactions
         ob_end_clean();
         if (is_array($response)) {
             if ($response['AuthorizeResult']['AuthorizationDetails']['AuthorizationStatus']['State'] != 'Open') {
+                if ($response['AuthorizeResult']['AuthorizationDetails']['AuthorizationStatus']['State'] == 'Closed') {
+                    if (!isset(Context::getContext()->cookie->amzSetStatusCaptured)) {
+                        Context::getContext()->cookie->amzSetStatusCaptured = serialize(array());
+                    }
+                    $tmpData = Tools::unSerialize(Context::getContext()->cookie->amzSetStatusCaptured);
+                    $tmpData[] = $order_ref;
+                    Context::getContext()->cookie->amzSetStatusCaptured = serialize($tmpData);
+                }
                 return $response;
             }
             self::setOrderStatusAuthorized($order_ref);

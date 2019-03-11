@@ -8,6 +8,7 @@
 *  @license    Released under the GNU General Public License
 */
 
+var orderExecutionIsRunning = false;
 var requestIsRunning = false;
 $(document).ready(function() {
 	
@@ -31,6 +32,11 @@ $(document).ready(function() {
 	
 	$("#amz_execute_order").on('click', function() {
 		
+		if (orderExecutionIsRunning) {
+			return;
+		}
+		orderExecutionIsRunning = true;
+		
 		var redirectURL = LOGINREDIRECTAMZ;	
 		
 		$('#amzOverlay').fadeIn('slow');
@@ -41,7 +47,7 @@ $(document).ready(function() {
 				loginOptions =  {scope: 'profile postal_code payments:widget payments:shipping_address payments:billing_address', popup: !useRedirect, state: '&toCheckout=1' };
 				amazon.Login.authorize (loginOptions, (useRedirect ? redirectURL : function(response) {
 					jQuery.ajax({
-			    				type: 'GET',
+			    				type: 'POST',
 			            	    url: REDIRECTAMZ,
 			                	data: 'ajax=true&method=setsession&access_token=' + response.access_token,
 				                success: function(htmlcontent){
@@ -50,6 +56,7 @@ $(document).ready(function() {
 					});
 				})
 				);
+				orderExecutionIsRunning = false;
 				return false;
 			} else {
 				var connectRequest = '';
@@ -81,6 +88,7 @@ $(document).ready(function() {
 							if (typeof jsonData.redirection !== 'undefined') {
 								if (jsonData.redirection.length > 0) {
 									window.location.href = jsonData.redirection;
+									orderExecutionIsRunning = false;
 									return;
 								}
 							}
@@ -94,9 +102,11 @@ $(document).ready(function() {
 							});
 							reCreateWalletWidget();
 							reCreateAddressBookWidget();
+							orderExecutionIsRunning = false;
 						}
 						else
 						{
+							orderExecutionIsRunning = false;
 							window.location.href = jsonData.redirection;
 						}
 					},
@@ -104,6 +114,7 @@ $(document).ready(function() {
 						if (textStatus !== 'abort')
 							alert("TECHNICAL ERROR: unable to save adresses \n\nDetails:\nError thrown: " + XMLHttpRequest + "\n" + 'Text status: ' + textStatus);
 						$('#amzOverlay, #opc_account-overlay, #opc_delivery_methods-overlay, #opc_payment_methods-overlay').fadeOut('slow');
+						orderExecutionIsRunning = false;
 					}
 				});
 			}

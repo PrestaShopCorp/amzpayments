@@ -15,15 +15,28 @@ function getURLParameter(name, source) {
 function amazonLogout(){
     amazon.Login.logout();
 	document.cookie = "amazon_Login_accessToken=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
-	document.cookie = "amazon_Login_accessToken=; expires=Thu, 18 Aug 1979 00:00:00 GMT; path=/prestashop/";
 	document.cookie = "amazon_Login_state_cache=; expires=Thu, 01 Jan 1970 00:00:00 GMT";
 }
 
 var authRequest;    
 
 jQuery(document).ready(function($){
-	if ($("#authentication #SubmitCreate").length > 0) {
-		$("#authentication #SubmitCreate").parent().append('<div class="amazonLoginWr" id="jsLoginAuthPage"></div>');
+	if ($("#authentication #SubmitCreate").length > 0 && AMZ_SHOW_REGISTRATION_PAGE == '1') {
+		$("#authentication #SubmitCreate").parent().append('<div class="amazonLoginWr" id="jsLoginAuthPage">' + buildAmazonButtonContainer() + '</div>');
+	}
+	if ($("#authentication #customer-form button[type=submit]").length > 0 && AMZ_SHOW_REGISTRATION_PAGE == '1') {
+		$("#authentication #customer-form button[type=submit]").parent().append('<div class="amazonLoginWr" id="jsLoginAuthCreationPage">' + buildAmazonButtonContainer() + '</div>');
+	}
+	if ($("#checkout #customer-form button[type=submit]").length > 0 && AMZ_SHOW_REGISTRATION_PAGE == '1') {
+		$("#checkout #customer-form button[type=submit]").parent().append('<div class="" id="jsLoginAuthCreationPage">' + buildAmazonButtonContainer() + '</div>');
+		bindCartButton("jsLoginAuthCreationPage");
+	}
+	if ($("#checkout #login-form button[type=submit]").length > 0 && AMZ_SHOW_REGISTRATION_PAGE == '1') {
+		$("#checkout #login-form button[type=submit]").parent().append('<div class="" id="jsLoginAuthPage">' + buildAmazonButtonContainer() + '</div>');
+		bindCartButton("jsLoginAuthPage");
+	}
+	if ($("#amazonLoginFormButton").length > 0) {
+		$("#amazonLoginFormButton").append(buildAmazonButtonContainer());
 	}
 	
 	if (AMZACTIVE == '1') {
@@ -34,17 +47,30 @@ jQuery(document).ready(function($){
 	}
 });
 
+function buildAmazonButtonContainer(){
+	return '<div class="amzbuttoncontainer"><h3>' + AMZ_USE_ACCOUNT_HEAD + '</h3><p>' + AMZ_USE_ACCOUNT_BODY + '</p></div>';
+}
+
 function initAmazon(){
 
 	if($('.amazonLoginWr').length > 0){
-	   $('.amazonLoginWr').each(function(){
+		var amazonElementsSelected = [];
+		var amazonElements = [];
+		$('.amazonLoginWr').each(function(){
+		   if (!amazonElementsSelected.includes($(this).attr("id"))) {
+			   amazonElementsSelected.push($(this).attr("id"));
+			   amazonElements.push($(this));
+		   }
+		});
+		amazonElements = jQuery.unique(amazonElements);
+		$(amazonElements).each(function(){
 	   		var amzBtnColor = AMZ_BUTTON_COLOR_LPA;
 	   		if ($(this).attr("id") == "amazonLogin")
 	   			amzBtnColor = AMZ_BUTTON_COLOR_LPA_NAVI;
 	   		var redirectURL = LOGINREDIRECTAMZ;
 	   		var redirectToCheckout = false;
 	   		var redirectState = '';
-	   		if ($(this).attr("id") == "jsLoginAuthPage" && location.href.indexOf('display_guest_checkout') > 1) {
+	   		if ($(this).attr("id") == "jsLoginAuthPage" || $(this).attr("id") == "jsLoginAuthCreationPage") {
 	   			redirectState = '&toCheckout=1';
 	   			redirectToCheckout = true;
 	   		}
@@ -59,10 +85,15 @@ function initAmazon(){
 	            },    
 	            onSignIn: function(orderReference) {
 	                var amazonOrderReferenceId = orderReference.getAmazonOrderReferenceId();
+	                document.cookie = "amazon_Login_accessToken=" + authRequest.access_token + ";path=/;secure";
+	                acctk = '';
+	                if (AMZ_NO_TOKEN_AJAX == '0') {
+	                	acctk = '&access_token=' + authRequest.access_token;
+	                }
 	                $.ajax({
-	                    type: 'GET',
+	                    type: 'POST',
 	                    url: SETUSERAJAX,
-	                    data: 'ajax=true&method=setusertoshop&access_token=' + authRequest.access_token + '&amazon_id=' + amazonOrderReferenceId + (redirectToCheckout ? '&action=checkout' : null),
+	                    data: 'ajax=true&method=setusertoshop&amazon_id=' + amazonOrderReferenceId + (redirectToCheckout ? '&action=checkout' : null) + acctk,
 	                    success: function(htmlcontent){
 	                        if (htmlcontent == 'error') {
 	                            alert('An error occured - please try again or contact our support');
@@ -106,7 +137,21 @@ function initAmazon(){
 				
 		setInterval(checkForAmazonListButton, 2000);
 	}
+	if (AMZ_SHOW_IN_CART_POPUP == '1') {
+		setInterval(checkForModalIntegration, 1000);
+	}
+	setTipr(".amazonLoginWr");
 }
+
+function checkForModalIntegration() {
+    if ($('#blockcart-modal .cart-content-btn').length > 0) {
+    	if ($('#blockcart-modal #payWithAmazonLayerCartDiv').length == 0) {
+            $('#blockcart-modal .cart-content-btn').parent().append('<span id="payWithAmazonLayerCartDiv" class="' + (AMZ_CREATE_ACCOUNT_EXP == '1' ? 'amz_create_account' : null) + '"></span>');
+            bindCartButton('payWithAmazonLayerCartDiv');    		
+    	}
+    }
+}
+
 
 function checkForAmazonListButton() {
 	if (jQuery("#pay_with_amazon_list_button").length > 0) {
@@ -152,10 +197,15 @@ function bindCartButton(div_id) {
 	            amazonOrderReferenceId = orderReference.getAmazonOrderReferenceId();
 	            jQuery(div_id).html('');
 	            if (jQuery('#' + div_id).hasClass('amz_create_account')) {
+	                document.cookie = "amazon_Login_accessToken=" + authRequest.access_token + ";path=/;secure";
+	                acctk = '';
+	                if (AMZ_NO_TOKEN_AJAX == '0') {
+	                	acctk = '&access_token=' + authRequest.access_token;
+	                }
 	                $.ajax({
-	                    type: 'GET',
+	                    type: 'POST',
 	                    url: SETUSERAJAX,
-	                    data: 'ajax=true&method=setusertoshop&access_token=' + authRequest.access_token + '&amazon_id=' + amazonOrderReferenceId + '&action=checkout',
+	                    data: 'ajax=true&method=setusertoshop&amazon_id=' + amazonOrderReferenceId + '&action=checkout' + acctk,
 	                    success: function(htmlcontent){
 	                        if (htmlcontent == 'error') {
 	                            alert('An error occured - please try again or contact our support');
@@ -165,10 +215,15 @@ function bindCartButton(div_id) {
 	                    }
 	                });	            	
 	            } else {
+	                document.cookie = "amazon_Login_accessToken=" + authRequest.access_token + ";path=/;secure";
+	                acctk = '';
+	                if (AMZ_NO_TOKEN_AJAX == '0') {
+	                	acctk = '&access_token=' + authRequest.access_token;
+	                }
 		            jQuery.ajax({
-		                    type: 'GET',
+		                    type: 'POST',
 		                    url: REDIRECTAMZ,
-		                    data: 'ajax=true&method=setsession&access_token=' + authRequest.access_token + '&amazon_id=' + amazonOrderReferenceId,
+		                    data: 'ajax=true&method=setsession&amazon_id=' + amazonOrderReferenceId + acctk,
 		                    success: function(htmlcontent){
 		                    	window.location = REDIRECTAMZ + amazonOrderReferenceId + addToCheckoutInPopup;
 		                    }
@@ -180,6 +235,7 @@ function bindCartButton(div_id) {
 	        }
 	    });
 	    jQuery('#' + div_id).attr('data-is-set', '1');
+	    setTipr('#' + div_id);
 	}	
 }
 
@@ -190,11 +246,21 @@ function bindBuyNowButton(div_id) {
 			$("#" + div_id).hide();	
 			var newImg = $('<img />');
 			newImg.attr("src", $("#" + div_id + " img").attr("src")).addClass('amzButtonProductdetail');
-			$("#" + div_id).parent().append(newImg);
+			if ($("#" + div_id).parent().find('.button_enhanced').length > 0) {
+				$("#" + div_id).parent().find('.button_enhanced').append(newImg);				
+			} else {
+				$("#" + div_id).parent().append(newImg);				
+			}
 			newImg.on('click', function() {
 				$("#add-to-cart-or-refresh button[type=submit]").trigger('click');
 				setTimeout(function(){ $("#" + div_id + " img").trigger('click'); }, 1000);		
 			});
 		}, 1000);  
+	}
+}
+
+function setTipr(element) {
+	if (jQuery("#amazonpay_tooltip").length > 0) {
+		setTimeout(function() { jQuery(element).find("img").attr('data-tip', jQuery("#amazonpay_tooltip").html()).tipr(); }, 2000);	
 	}
 }

@@ -72,9 +72,11 @@ class AmzpaymentsSelect_AddressModuleFrontController extends ModuleFrontControll
                         $requestParameters = array();
                         $requestParameters['amazon_order_reference_id'] = Tools::getValue('amazonOrderReferenceId');
                         $requestParameters['merchant_id'] = self::$amz_payments->merchant_id;
-                        
-                        if (isset($this->context->cookie->amz_access_token)) {
-                            $requestParameters['address_consent_token'] = AmzPayments::prepareCookieValueForAmazonPaymentsUse($this->context->cookie->amz_access_token);
+
+                        if (getAmazonPayCookie()) {
+                            $requestParameters['address_consent_token'] = AmzPayments::prepareCookieValueForAmazonPaymentsUse(getAmazonPayCookie());
+                        } elseif (isset(self::$amz_payments->cookie->amz_access_token)) {
+                            $requestParameters['address_consent_token'] = AmzPayments::prepareCookieValueForAmazonPaymentsUse(self::$amz_payments->cookie->amz_access_token);
                         }
                         
                         if (!isset($responsearray)) {
@@ -89,6 +91,9 @@ class AmzpaymentsSelect_AddressModuleFrontController extends ModuleFrontControll
                         $city = (string) AmzPayments::getFromArray($physical_destination, 'City');
                         $postcode = (string) AmzPayments::getFromArray($physical_destination, 'PostalCode');
                         $state = (string) AmzPayments::getFromArray($physical_destination, 'State');
+                        if ($state == '') {
+                            $state = (string) AmzPayments::getFromArray($physical_destination, 'StateOrRegion');
+                        }
 
                         $names_array = explode(' ', (string) (string) AmzPayments::getFromArray($physical_destination, 'Name'), 2);
                         $names_array = AmzPayments::prepareNamesArray($names_array);
@@ -152,6 +157,9 @@ class AmzpaymentsSelect_AddressModuleFrontController extends ModuleFrontControll
                             if (!$state_id) {
                                 $state_id = State::getIdByName($state);
                             }
+                            if (!$state_id) {
+                                $state_id = AmazonPostalCodesHelper::getIdByPostalCodeAndCountry((string)$postcode, $iso_code);
+                            }
                             if ($state_id) {
                                 $address_delivery->id_state = $state_id;
                             }
@@ -172,7 +180,12 @@ class AmzpaymentsSelect_AddressModuleFrontController extends ModuleFrontControll
                             $country = new Country((int)Country::getByIso($iso_code));
                             if ($country->contains_states) {
                                 if (sizeof(State::getStatesByIdCountry((int)Country::getByIso($iso_code))) > 0) {
-                                    $address_delivery->id_state = -1;
+                                    $state_id = AmazonPostalCodesHelper::getIdByPostalCodeAndCountry($postcode, $iso_code);
+                                    if ($state_id) {
+                                        $address_delivery->id_state = (int)$state_id;
+                                    } else {
+                                        $address_delivery->id_state = -1;
+                                    }
                                 }
                             }
                         }
@@ -207,6 +220,9 @@ class AmzpaymentsSelect_AddressModuleFrontController extends ModuleFrontControll
                                         $city = (string) AmzPayments::getFromArray($amz_billing_address, 'City');
                                         $postcode = (string) AmzPayments::getFromArray($amz_billing_address, 'PostalCode');
                                         $state = (string) AmzPayments::getFromArray($amz_billing_address, 'State');
+                                        if ($state == '') {
+                                            $state = (string) AmzPayments::getFromArray($amz_billing_address, 'StateOrRegion');
+                                        }
                                         
                                         $invoice_names_array = explode(' ', (string) AmzPayments::getFromArray($amz_billing_address, 'Name'), 2);
                                         $invoice_names_array = AmzPayments::prepareNamesArray($invoice_names_array);
@@ -271,6 +287,9 @@ class AmzpaymentsSelect_AddressModuleFrontController extends ModuleFrontControll
                                             $state_id = State::getIdByIso($state, Country::getByIso($iso_code));
                                             if (!$state_id) {
                                                 $state_id = State::getIdByName($state);
+                                            }
+                                            if (!$state_id) {
+                                                $state_id = AmazonPostalCodesHelper::getIdByPostalCodeAndCountry((string)$postcode, $iso_code);
                                             }
                                             if ($state_id) {
                                                 $address_invoice->id_state = $state_id;

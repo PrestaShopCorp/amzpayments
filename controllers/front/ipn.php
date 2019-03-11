@@ -161,10 +161,9 @@ class AmzpaymentsIpnModuleFrontController extends ModuleFrontController
         $str = ob_get_contents();
         ob_end_clean();
         
-        file_put_contents(dirname(__FILE__) . '/../../amz.log', $str, FILE_APPEND);        
+        file_put_contents(dirname(__FILE__) . '/../../amz.log', $str, FILE_APPEND);
         
         echo 'OK';
         exit();
     }
-    
 }

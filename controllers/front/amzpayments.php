@@ -85,6 +85,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
         }
         
         $this->context->smarty->assign('back', Tools::safeOutput(Tools::getValue('back')));
+        $this->context->smarty->assign('currency', $this->context->currency);
         
         if ($this->nbProducts) {
             $this->context->smarty->assign('virtual_cart', $this->context->cart->isVirtualCart());
@@ -97,19 +98,26 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                     switch (Tools::getValue('method')) {
                         case 'setsession':
                             $this->context->cookie->amazon_id = Tools::getValue('amazon_id');
-                            if (Tools::getValue('access_token') != 'null' && Tools::getValue('access_token') != '') {
-                                $this->context->cookie->amz_access_token = AmzPayments::prepareCookieValueForPrestaShopUse(Tools::getValue('access_token'));
+
+                            if (getAmazonPayCookie()) {
+                                $access_token = AmzPayments::prepareCookieValueForPrestaShopUse(getAmazonPayCookie());
+                                $this->context->cookie->amz_access_token_set_time = time();
+                            } else {
+                                if (Tools::getValue('access_token') != 'undefined' && Tools::getValue('access_token') != '' && Tools::getValue('access_token') != 'null') {
+                                    self::$amz_payments->cookie->amz_access_token = AmzPayments::prepareCookieValueForPrestaShopUse(Tools::getValue('access_token'));
+                                    $access_token = self::$amz_payments->cookie->amz_access_token;
+                                    $this->context->cookie->amz_access_token_set_time = time();
+                                }
                             }
-                            $this->context->cookie->amz_access_token_set_time = time();
                             
                             if (!$this->context->customer->isLogged() && self::$amz_payments->lpa_mode != 'pay') {
-                                $d = self::$amz_payments->requestTokenInfo(AmzPayments::prepareCookieValueForAmazonPaymentsUse($this->context->cookie->amz_access_token));
+                                $d = self::$amz_payments->requestTokenInfo(AmzPayments::prepareCookieValueForAmazonPaymentsUse($access_token));
 
                                 if ($d->aud != self::$amz_payments->client_id) {
                                     die('error');
                                 }
                                 
-                                $d = self::$amz_payments->requestProfile(AmzPayments::prepareCookieValueForAmazonPaymentsUse($this->context->cookie->amz_access_token));
+                                $d = self::$amz_payments->requestProfile(AmzPayments::prepareCookieValueForAmazonPaymentsUse($access_token));
                                 
                                 $customer_userid = $d->user_id;
                                 $customer_name = $d->name;
@@ -199,8 +207,14 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                             $requestParameters = array();
                             $requestParameters['amazon_order_reference_id'] = Tools::getValue('amazonOrderReferenceId');
                             $requestParameters['merchant_id'] = self::$amz_payments->merchant_id;
-                            if (isset($this->context->cookie->amz_access_token)) {
-                                $requestParameters['address_consent_token'] = AmzPayments::prepareCookieValueForAmazonPaymentsUse($this->context->cookie->amz_access_token);
+
+                            if (getAmazonPayCookie()) {
+                                $requestParameters['address_consent_token'] = getAmazonPayCookie();
+                                self::$amz_payments->cookie->amz_access_token = AmzPayments::prepareCookieValueForPrestaShopUse(getAmazonPayCookie());
+                            } else {
+                                if (isset(self::$amz_payments->cookie->amz_access_token) && self::$amz_payments->cookie->amz_access_token != '') {
+                                    $requestParameters['address_consent_token'] = AmzPayments::prepareCookieValueForAmazonPaymentsUse(self::$amz_payments->cookie->amz_access_token);
+                                }
                             }
 
                             try {
@@ -215,7 +229,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                             }
                                                         
                             $physical_destination = $response['GetOrderReferenceDetailsResult']['OrderReferenceDetails']['Destination']['PhysicalDestination'];
-                            
+
                             $names_array = array('amzFirstname', 'amzLastname');
                             $names_array_tmp = explode(' ', (string) (string) AmzPayments::getFromArray($physical_destination, 'Name'), 2);
                             if ($names_array_tmp) {
@@ -226,6 +240,9 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                             $city = (string) AmzPayments::getFromArray($physical_destination, 'City');
                             $postcode = (string) AmzPayments::getFromArray($physical_destination, 'PostalCode');
                             $state = (string) AmzPayments::getFromArray($physical_destination, 'State');
+                            if ($state == '') {
+                                $state = (string) AmzPayments::getFromArray($physical_destination, 'StateOrRegion');
+                            }
                             
                             $address_delivery = AmazonPaymentsAddressHelper::findByAmazonOrderReferenceIdOrNew(Tools::getValue('amazonOrderReferenceId'), false, $physical_destination);
                                                         
@@ -283,6 +300,9 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                 if (!$state_id) {
                                     $state_id = State::getIdByName($state);
                                 }
+                                if (!$state_id) {
+                                    $state_id = AmazonPostalCodesHelper::getIdByPostalCodeAndCountry($postcode, $iso_code);
+                                }
                                 if ($state_id) {
                                     $address_delivery->id_state = $state_id;
                                 }
@@ -295,19 +315,28 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                             }
                             
                             $fields_to_set = array();
-                            if ($address_delivery->id_state > 0 && !AmazonPaymentsAddressHelper::stateBelongsToCountry($address_delivery->id_state, (int)Country::getByIso($iso_code))) {
+                            if ($address_delivery->id_state > 0 && !AmazonPaymentsAddressHelper::stateBelongsToCountry($address_delivery->id_state, (int)Country::getByIso($iso_code))) {                                
                                 $address_delivery->id_state = 0;
                             }
                             if ($address_delivery->id_state == 0) {
                                 $country = new Country((int)Country::getByIso($iso_code));
                                 if ($country->contains_states) {
                                     if (sizeof(State::getStatesByIdCountry((int)Country::getByIso($iso_code))) > 0) {
-                                        $address_delivery->id_state = -1;
+                                        $state_id = AmazonPostalCodesHelper::getIdByPostalCodeAndCountry($postcode, $iso_code);
+                                        if ($state_id) {
+                                            $address_delivery->id_state = (int)$state_id;
+                                        } else {
+                                            $address_delivery->id_state = -1;
+                                        }
                                     }
                                 }
                             }
                             $htmlstr = '';
                             try {
+                                if ($this->context->customer->lastname == '-' || $this->context->customer->lastname == 'Placeholder') {
+                                    $this->context->customer->lastname = $address_delivery->lastname;
+                                    $this->context->customer->save();
+                                }
                                 $address_delivery->save();
                                 AmazonPaymentsAddressHelper::saveAddressAmazonReference($address_delivery, Tools::getValue('amazonOrderReferenceId'), $physical_destination);
                                 
@@ -412,7 +441,8 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                 $customer->save();
                             }
                             if (Tools::getValue('confirm')) {
-                                if (AmazonTransactions::getOrdersIdFromOrderRef(Tools::getValue('amazonOrderReferenceId')) > 0) {
+                                if (AmazonTransactions::getOrdersIdFromOrderRef(Tools::getValue('amazonOrderReferenceId')) > 0 ||
+                                    !self::$amz_payments->isInValidTimestamp()) {
                                     die(Tools::jsonEncode(array(
                                         'hasError' => true,
                                         'redirection' => 'index.php?controller=cart',
@@ -536,6 +566,9 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                 $city = (string) AmzPayments::getFromArray($physical_destination, 'City');
                                 $postcode = (string) AmzPayments::getFromArray($physical_destination, 'PostalCode');
                                 $state = (string) AmzPayments::getFromArray($physical_destination, 'State');
+                                if ($state == '') {
+                                    $state = (string) AmzPayments::getFromArray($physical_destination, 'StateOrRegion');
+                                }
                                 
                                 $names_array = explode(' ', (string) (string) AmzPayments::getFromArray($physical_destination, 'Name'), 2);
                                 $names_array = AmzPayments::prepareNamesArray($names_array);
@@ -614,6 +647,9 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                         if (!$state_id) {
                                             $state_id = State::getIdByName($state);
                                         }
+                                        if (!$state_id) {
+                                            $state_id = AmazonPostalCodesHelper::getIdByPostalCodeAndCountry((string)$postcode, $iso_code);
+                                        }
                                         if ($state_id) {
                                             $address_delivery->id_state = $state_id;
                                         }
@@ -635,6 +671,9 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                         $city = (string) AmzPayments::getFromArray($amz_billing_address, 'City');
                                         $postcode = (string) AmzPayments::getFromArray($amz_billing_address, 'PostalCode');
                                         $state = (string) AmzPayments::getFromArray($amz_billing_address, 'State');
+                                        if ($state == '') {
+                                            $state = (string) AmzPayments::getFromArray($amz_billing_address, 'StateOrRegion');
+                                        }
                                         
                                         $invoice_names_array = explode(' ', (string) AmzPayments::getFromArray($amz_billing_address, 'Name'), 2);
                                         $invoice_names_array = AmzPayments::prepareNamesArray($invoice_names_array);
@@ -661,6 +700,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                         }
                                         
                                         $address_invoice = AmazonPaymentsAddressHelper::findByAmazonOrderReferenceIdOrNew(Tools::getValue('amazonOrderReferenceId') . '-inv', false, $amz_billing_address);
+                                        $address_invoice->id_customer = (int)$address_delivery->id_customer;
                                         $address_invoice->alias = 'Amazon Payments Invoice';
                                         $address_invoice->lastname = $invoice_names_array[1];
                                         $address_invoice->firstname = $invoice_names_array[0];
@@ -696,6 +736,9 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                             $state_id = State::getIdByIso($state, Country::getByIso($iso_code));
                                             if (!$state_id) {
                                                 $state_id = State::getIdByName($state);
+                                            }
+                                            if (!$state_id) {
+                                                $state_id = AmazonPostalCodesHelper::getIdByPostalCodeAndCountry((string)$postcode, $iso_code);
                                             }
                                             if ($state_id) {
                                                 $address_invoice->id_state = $state_id;
@@ -773,6 +816,8 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                 }
                                 $this->module->validateOrder((int) $this->context->cart->id, $new_order_status_id, $total, $this->module->displayName, null, array(), null, false, $customer->secure_key);
                                 
+                                self::$amz_payments->setOrderReferenceAtAmazonPay($this->module->currentOrder, Tools::getValue('amazonOrderReferenceId'), $total, $currency_code);
+                                
                                 if (self::$amz_payments->authorization_mode == 'after_checkout' || isset($jump_to_async)) {
                                     $authorization_reference_id = Tools::getValue('amazonOrderReferenceId');
                                     $authorization_response_wrapper = AmazonTransactions::authorize(self::$amz_payments, $this->service, $authorization_reference_id, $total, $currency_code);
@@ -813,7 +858,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                     $this->context->cookie->amz_payments_invoice_address_id = $address_invoice->id;
                                     $login_redirect = $this->context->link->getModuleLink('amzpayments', 'processlogin');
                                     $login_redirect = str_replace('http://', 'https://', $login_redirect);
-                                    $login_redirect .= '?fromCheckout=1&access_token=' . $this->context->cookie->amz_access_token;
+                                    $login_redirect .= '?fromCheckout=1&access_token=' . self::$amz_payments->cookie->amz_access_token;
                                     die(Tools::jsonEncode(array(
                                         'orderSucceed' => true,
                                         'redirection' => $login_redirect
@@ -910,14 +955,15 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
         $this->context->smarty->assign('cart', $presentedCart);
         
         if (self::$amz_payments->lpa_mode != 'pay' &&
-            isset($this->context->cookie->amz_access_token) &&
-            $this->context->cookie->amz_access_token != '' &&
+            ((isset(self::$amz_payments->cookie->amz_access_token) &&
+            self::$amz_payments->cookie->amz_access_token != '') || getAmazonPayCookie()) &&
             !AmazonPaymentsCustomerHelper::customerHasAmazonCustomerId($this->context->cookie->id_customer)
             ) {
             $this->context->smarty->assign('show_amazon_account_creation_allowed', true);
         } else {
             $this->context->smarty->assign('show_amazon_account_creation_allowed', false);
         }
+        $this->context->smarty->assign('currency', $this->context->currency);
         
         $this->context->smarty->assign('preselect_create_account', Configuration::get('PRESELECT_CREATE_ACCOUNT') == 1);
         $this->context->smarty->assign('force_account_creation', Configuration::get('FORCE_ACCOUNT_CREATION') == 1);

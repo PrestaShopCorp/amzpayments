@@ -45,24 +45,8 @@
 <script>
 jQuery(document).ready(function($) {
 
-	options = { scope: 'payments:widget', popup: true, interactive: 'never' };
-	amazon.Login.authorize(options, function(response) {
-		if (response.error) { 
-			loginOptions =  {scope: 'profile postal_code payments:widget payments:shipping_address payments:billing_address', popup: !useRedirect, state: '' };
-			amazon.Login.authorize (loginOptions, (useRedirect ? redirectURL : function(response) {
-				jQuery.ajax({
-		    				type: 'GET',
-		            	    url: REDIRECTAMZ,
-		                	data: 'ajax=true&method=setsession&access_token=' + response.access_token,
-			                success: function(htmlcontent){
-			                  	location.reload();
-			                }
-				});
-			})
-			);
-		}
-	});
-
+    var redirectURL = LOGINREDIRECTAMZ;
+	
 	new OffAmazonPayments.Widgets.AddressBook({
 		sellerId: '{/literal}{$sellerID|escape:'htmlall':'UTF-8'}{literal}',
 		{/literal}{if isset($amz_session) && $amz_session != ''}{literal}amazonOrderReferenceId: '{/literal}{$amz_session|escape:'htmlall':'UTF-8'}{literal}', {/literal}{/if}{literal}
@@ -83,7 +67,7 @@ jQuery(document).ready(function($) {
 			console.log(error.getErrorMessage());
 		}
 	}).bind("addressBookWidgetDivBs");
-	new OffAmazonPayments.Widgets.Wallet({
+	walletWidget = new OffAmazonPayments.Widgets.Wallet({
 		sellerId: '{/literal}{$sellerID|escape:'htmlall':'UTF-8'}{literal}',
 		{/literal}{if isset($amz_session) && $amz_session != ''}{literal}amazonOrderReferenceId: '{/literal}{$amz_session|escape:'htmlall':'UTF-8'}{literal}', {/literal}{/if}{literal}
 		design: {
@@ -94,7 +78,9 @@ jQuery(document).ready(function($) {
 		onError: function(error) {
 			console.log(error.getErrorMessage());
 		}
-	}).bind("walletWidgetDivBs");	
+	});	
+	walletWidget.setPresentmentCurrency("{/literal}{$currency->iso_code}{literal}");
+	walletWidget.bind("walletWidgetDivBs");
 });
 
 

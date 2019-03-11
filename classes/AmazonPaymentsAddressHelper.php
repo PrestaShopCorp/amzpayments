@@ -79,7 +79,7 @@ class AmazonPaymentsAddressHelper
     public static function addAdditionalValues(Address $address, array $additional_data)
     {
         foreach ($additional_data as $field => $value) {
-            if (!($field == 'id_state' && (int)$value < 0)) {
+            if (!($field == 'id_state' && (int)$value < 0) && trim($value) != '') {
                 $address->$field = pSQL($value);
             }
         }
@@ -108,5 +108,63 @@ class AmazonPaymentsAddressHelper
             $amazon_hash = md5($amazon_hash);
         }
         return $amazon_hash;
+    }
+    
+    public static function getThemeTranslation($s, $controller = false)
+    {
+        if (!$controller) {
+            $controller = 'address';
+        }
+        switch ($s) {
+            case 'company':
+                $s = 'Company';
+                break;
+            case 'vat_number':
+                $s = 'VAT number';
+                break;
+            case 'dni':
+                $s = 'Identification number';
+                break;
+            case 'firstname':
+                $s = 'First name';
+                break;
+            case 'lastname':
+                $s = 'Last name';
+                break;
+            case 'address1':
+                $s = 'Address';
+                break;
+            case 'address2':
+                $s = 'Address (Line 2)';
+                break;
+            case 'postcode':
+                $s = 'Zip/Postal Code';
+                break;
+            case 'city':
+                $s = 'City';
+                break;
+            case 'phone':
+                $s = 'Home phone';
+                break;
+            case 'phone_mobile':
+                $s = 'Mobile phone';
+                break;
+            case 'other':
+                $s = 'Additional information';
+                break;
+        }
+        $iso = Context::getContext()->language->iso_code;
+        if (Validate::isLangIsoCode($iso)) {
+            $lang_file = _PS_THEME_DIR_.'lang/'.$iso.'.php';
+            if (file_exists($lang_file) && include($lang_file)) {
+                $key = $controller.'_'.md5($s);
+                if (isset($_LANG)) {
+                    if (isset($_LANG[$key])) {
+                        return $_LANG[$key];
+                    }
+                }
+            }
+        }
+        return $s;
     }
 }

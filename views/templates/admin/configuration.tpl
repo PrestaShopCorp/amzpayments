@@ -33,6 +33,14 @@
 	</div>				
 {/if}
 
+{if $promotional_banner}
+	<div class="promotional_notify">
+		<a href="{$promotional_banner.PictureURL|escape:'htmlall':'UTF-8'}" target="_blank">
+			<img src="{$promotional_banner.PictureName|escape:'htmlall':'UTF-8'}">
+		</a>
+	</div>
+{/if}
+
 <form method="POST" action="https://payments-eu.amazon.com/register" target="_blank" id="amazonRegForm"> 
 	<input type="hidden" value="{$simple_path.ref|escape:'htmlall':'UTF-8'}" name="ref" />
 	<input type="hidden" value="{$simple_path.locale|escape:'htmlall':'UTF-8'}" name="locale" />  

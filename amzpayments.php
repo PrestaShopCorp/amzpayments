@@ -211,7 +211,7 @@ class AmzPayments extends PaymentModule
     {
         $this->name = 'amzpayments';
         $this->tab = 'payments_gateways';
-        $this->version = '2.2.7';
+        $this->version = '2.2.8';
         $this->author = 'patworx multimedia GmbH';
         $this->need_instance = 1;
         
@@ -1783,6 +1783,10 @@ class AmzPayments extends PaymentModule
             'commonlyfacedproblems',
             $this->context->link->getAdminLink('AdminModules', false) . '&configure=' . $this->name . '&tab_module=' . $this->tab . '&module_name=' . $this->name . '&token=' . Tools::getAdminTokenLite('AdminModules') . '&commonlyfacedproblems=true'
         );
+        $this->context->smarty->assign(
+            'promotional_banner',
+            $this->getPromotionalJsonForRegion()
+        );
         
         $register_link = 'https://sellercentral-europe.amazon.com/hz/me/sp/redirect?ld=';
         
@@ -2229,7 +2233,9 @@ class AmzPayments extends PaymentModule
             return;
         }
         if ($this->show_as_payment_method == 0) {
-            return;
+            if (!($this->order_process_type == 'standard' && isset($this->context->cookie->amazon_id) && $this->isValidOrderReference($this->context->cookie->amazon_id))) {
+                return;
+            }
         }
         
         $this->smarty->assign(array(
@@ -2351,8 +2357,10 @@ class AmzPayments extends PaymentModule
         } else {
             if ($this->context->customer->isLogged() && Tools::getValue('controller') != 'personaldata') {
                 if ($this->customerNamesError($this->context->cookie->customer_firstname, $this->context->cookie->customer_lastname)) {
-                    $this->context->cookie->amzEditIdentity = true;
-                    Tools::redirect($this->context->link->getModuleLink('amzpayments', 'personaldata'));
+                    if ((int)$this->amz_force_name_completion == 1) {
+                        $this->context->cookie->amzEditIdentity = true;
+                        Tools::redirect($this->context->link->getModuleLink('amzpayments', 'personaldata'));
+                    }
                 }
             }
         }
@@ -2471,7 +2479,7 @@ class AmzPayments extends PaymentModule
         }
         
         if ($this->button_visibility == '0') {
-            $css_string = '<style> #jsLoginAuthPage,#payWithAmazonCartDiv,#HOOK_ADVANCED_PAYMENT #payWithAmazonListDiv { display: none; } </style>';
+            $css_string = '<style> #jsLoginAmazonPay, .amazonLoginWr, .button_enhanced_mini_cart, #payWithAmazonLayerCartDiv, #jsLoginAuthPage,#payWithAmazonCartDiv,#HOOK_ADVANCED_PAYMENT #payWithAmazonListDiv { display: none; } </style>';
         } else {
             if ($this->order_process_type == 'standard' && isset($this->context->cookie->amazon_id) && $this->context->customer->isLogged()) {
                 $css_string = '<style> #HOOK_ADVANCED_PAYMENT #payWithAmazonListDiv { display: none; } </style>';
@@ -2481,7 +2489,7 @@ class AmzPayments extends PaymentModule
         }
         
         if ($this->hide_login_btns == 1) {
-            $css_string.= '<style> #jsLoginAuthPage { display: none; } </style>';
+            $css_string.= '<style> #jsLoginAmazonPay, .amazonLoginWr, .button_enhanced_mini_cart, #payWithAmazonMainDiv, #payWithAmazonCartDiv, #payWithAmazonLayerCartDiv, #jsLoginAuthPage { display: none; } </style>';
         }
         
         if ($this->hide_minicart_button == 1) {
@@ -2546,7 +2554,7 @@ class AmzPayments extends PaymentModule
         Media::addJsDef(array('AMZ_SHOW_AS_PAYMENT_METHOD' => $this->show_as_payment_method == '0' ? '0' : '1'));
         Media::addJsDef(array('AMZ_WIDGET_LANGUAGE' => $this->getWidgetLanguageCode()));
         Media::addJsDef(array('CLIENT_ID' => $this->client_id));
-        Media::addJsDef(array('useRedirect' => (! self::currentSiteIsSSL() || $this->popup == '0' ? 'true' : 'false')));
+        Media::addJsDef(array('useRedirect' => (! self::currentSiteIsSSL() || $this->popup == '0' ? true : false)));
         Media::addJsDef(array('LPA_MODE' => $this->lpa_mode));
         Media::addJsDef(array('REDIRECTAMZ' => $redirect));
         Media::addJsDef(array('LOGINREDIRECTAMZ_CHECKOUT' => $login_checkout_redirect));
@@ -3498,6 +3506,29 @@ class AmzPayments extends PaymentModule
                 break;
         }
         return 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Prestashop/json/' . $lang_code . '/AmazonPayTroubleshooter.json';
+    }
+    
+    public function getPromotionalJsonForRegion()
+    {
+        $url = 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Prestashop/json/' . Tools::strtolower($this->region) . '/PromoBanner.json';
+        try {
+            $c = curl_init();
+            curl_setopt($c,CURLOPT_URL, $url);
+            curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($c, CURLOPT_FRESH_CONNECT, true);
+            $r = curl_exec($c);
+            if (curl_error($c)) {
+                $this->exceptionLog(curl_error($c));
+            }
+            curl_close($c);
+            $d = Tools::jsonDecode($r, true);
+        } catch (Exception $e) {
+            return false;
+        }
+        if (isset($d) && is_array($d) && isset($d['PictureURL'])) {
+            return $d;
+        }
+        return false;
     }
     
     public function getBannersForLanguageCode()

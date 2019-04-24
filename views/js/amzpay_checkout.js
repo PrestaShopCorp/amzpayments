@@ -256,6 +256,24 @@ function updateAddressSelection(amazonOrderReferenceId)
 				if ($('#gift-price').length == 1)
 					$('#gift-price').html(jsonData.gift_price);
 				checkCGV();
+
+				var delivery_option_radio = $('input.delivery_option_radio');
+				var delivery_option_is_checked = false;
+				$.each(delivery_option_radio, function(i) {
+					if ($(this).prop('checked')) {
+						delivery_option_is_checked = true;
+					}
+				});
+				if (!delivery_option_is_checked) {
+					var first_delivery_option = true;
+					$.each(delivery_option_radio, function(i) {
+						if (first_delivery_option) {
+							$(this).attr('checked', 'checked');
+							first_delivery_option = false;
+						}						
+					});
+				}
+				
 				$('#amzOverlay, #opc_account-overlay, #opc_delivery_methods-overlay, #opc_payment_methods-overlay').fadeOut('slow');
 			}
 		},
@@ -286,7 +304,18 @@ $(document).on('click', '#amz_execute_order', function() {
 			connectRequest = '&connect_amz_account=' + $("#connect_amz_account").val();
 		}
 	}
-	
+	OffAmazonPayments.initConfirmationFlow(
+        AMZSELLERID,
+        amazonOrderReferenceId,
+        function(confirmationFlow) {
+            placeAmazonPayOrder(confirmationFlow, connectRequest);
+        }
+    );
+	return;
+});
+
+function placeAmazonPayOrder(confirmationFlow, connectRequest)
+{
 	$.ajax({
 		type: 'POST',
 		headers: { "cache-control": "no-cache" },
@@ -321,14 +350,22 @@ $(document).on('click', '#amz_execute_order', function() {
 				$('#gift, .delivery_option_radio, #recyclable').click(function(){
 				    return false;
 				});
+				
+				if (typeof jsonData.amzWidgetReadonly !== 'undefined') {
+					if (jsonData.amzWidgetReadonly == '1') {
+						amzWidgetReadonly = true;
+					}
+				}
 				reCreateWalletWidget();
 				reCreateAddressBookWidget();
+				amzWidgetReadonly = false;
 				orderExecutionIsRunning = false;
 			}
 			else
 			{
 				orderExecutionIsRunning = false;
-				window.location.href = jsonData.redirection;
+                confirmationFlow.success();
+				//window.location.href = jsonData.redirection;
 			}
 		},
 		error: function(XMLHttpRequest, textStatus, errorThrown) {
@@ -338,8 +375,8 @@ $(document).on('click', '#amz_execute_order', function() {
 			orderExecutionIsRunning = false;
 		}
 	});	
-	
-});
+		
+}
 
 function bindInputs()
 {

@@ -13,6 +13,9 @@
 .amzconfig .carousel .item img {
 	margin: 0 auto;
 }
+.promotional_notify {
+	margin-bottom: 15px;
+} 
 
 #amzconfigarea #fieldset_0,
 #amzconfigarea #fieldset_1_1,

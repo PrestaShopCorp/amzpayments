@@ -56,7 +56,7 @@ class OffAmazonPaymentsService_Model_SetOrderReferenceDetailsRequest extends Off
     {
         $this->_fields = array (
         'SellerId' => array('FieldValue' => null, 'FieldType' => 'string'),
-        'AmazonOrderReferenceId' => array('FieldValue' => null, 'FieldType' => 'string'),
+            'AmazonOrderReferenceId' => array('FieldValue' => null, 'FieldType' => 'string'),
 
         'OrderReferenceAttributes' => array('FieldValue' => null, 'FieldType' => 'OffAmazonPaymentsService_Model_OrderReferenceAttributes'),
 
@@ -64,7 +64,7 @@ class OffAmazonPaymentsService_Model_SetOrderReferenceDetailsRequest extends Off
         parent::__construct($data);
     }
 
-        /**
+    /**
      * Gets the value of the SellerId property.
      * 
      * @return string SellerId
@@ -108,6 +108,7 @@ class OffAmazonPaymentsService_Model_SetOrderReferenceDetailsRequest extends Off
     {
         return !is_null($this->_fields['SellerId']['FieldValue']);
     }
+    
 
     /**
      * Gets the value of the AmazonOrderReferenceId property.

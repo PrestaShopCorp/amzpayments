@@ -202,7 +202,7 @@ class AmzPayments extends PaymentModule
     {
         $this->name = 'amzpayments';
         $this->tab = 'payments_gateways';
-        $this->version = '3.2.7';
+        $this->version = '3.2.8';
         $this->author = 'patworx multimedia GmbH';
         $this->need_instance = 1;
         
@@ -502,7 +502,7 @@ class AmzPayments extends PaymentModule
     {
         if (Tools::isSubmit('submitAmzpaymentsModule') || Tools::isSubmit('submitAmzpaymentsModuleConnect')) {
             foreach (self::$config_array as $name => $f) {
-                if (Tools::getValue($f) === false && !in_array($f, array('SHIPPINGS_NOT_ALLOWED', 'PROVOCATION', 'PRODUCTS_NOT_ALLOWED', 'AMZ_HIDE_LOGIN_BTNS', 'AMZ_HIDE_MINICART_BUTTON', 'AMZ_PROMO_HEADER', 'AMZ_PRODUCT_PAGE_CHECKOUT'))) {
+                if (Tools::getValue($f) === false && !in_array($f, array('AMZ_FORCE_NAME_COMPLETION', 'AMZ_BUTTON_ENHANCEMENT_CART', 'AMZ_BUTTON_ENHANCEMENT_PRODUCT', 'SHIPPINGS_NOT_ALLOWED', 'PROVOCATION', 'PRODUCTS_NOT_ALLOWED', 'AMZ_HIDE_LOGIN_BTNS', 'AMZ_HIDE_MINICART_BUTTON', 'AMZ_PROMO_HEADER', 'AMZ_PRODUCT_PAGE_CHECKOUT'))) {
                     $this->_postErrors[] = $this->l($name) . ' ' . $this->l(': details are required.');
                 }
             }
@@ -2090,7 +2090,7 @@ class AmzPayments extends PaymentModule
         if ($this->show_as_payment_method == 0) {
             if (!($this->order_process_type == 'standard' && isset($this->context->cookie->amazon_id) && $this->isValidOrderReference($this->context->cookie->amazon_id))) {
                 return;
-            }            
+            }
         }
         
         $payment_options = [
@@ -2349,7 +2349,7 @@ class AmzPayments extends PaymentModule
                 if ($this->customerNamesError($this->context->cookie->customer_firstname, $this->context->cookie->customer_lastname)) {
                     if ((int)$this->amz_force_name_completion == 1) {
                         $this->context->cookie->amzEditIdentity = true;
-                        Tools::redirect($this->context->link->getModuleLink('amzpayments', 'personaldata'));                        
+                        Tools::redirect($this->context->link->getModuleLink('amzpayments', 'personaldata'));
                     }
                 }
             }
@@ -2379,6 +2379,10 @@ class AmzPayments extends PaymentModule
         $this->context->controller->addCSS($this->_path . 'views/css/tipr.css', 'all');
         $this->context->controller->addJS($this->_path . 'views/js/tipr.min.js');
         $redirect = $this->context->link->getModuleLink('amzpayments', 'amzpayments');
+        
+        if (Tools::getValue('AuthenticationStatus') == 'Abandoned') {
+            $this->context->controller->errors[] = $this->l('Your selected payment method is currently not available. Please select another one.');
+        }
         
         if (isset($this->context->cookie->amazonpay_errors_message)) {
             $this->context->controller->errors[] = $this->context->cookie->amazonpay_errors_message;
@@ -2450,7 +2454,7 @@ class AmzPayments extends PaymentModule
         if ($this->context->controller->php_self == 'guest-tracking' || isset($this->context->cookie->amz_logout)) {
             unset($this->context->cookie->amz_logout);
             if ($this->lpa_mode != 'pay') {
-                $logout_str .= '<script type="text/javascript"> amazonLogout(); </script>';
+                $logout_str .= '<script type="text/javascript"> setTimeout(function() { amazonLogout(); }, 1500); </script>';
             }
         }
         
@@ -3483,7 +3487,7 @@ class AmzPayments extends PaymentModule
         $url = 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Prestashop/json/' . Tools::strtolower($this->region) . '/PromoBanner.json';
         try {
             $c = curl_init();
-            curl_setopt($c,CURLOPT_URL, $url);
+            curl_setopt($c, CURLOPT_URL, $url);
             curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($c, CURLOPT_FRESH_CONNECT, true);
             $r = curl_exec($c);

@@ -204,6 +204,10 @@ a.registerButton:hover {
 	font-size: 10px;
 	font-style: italic;
 }
+.promotional_notify {
+	margin-bottom: 15px;
+	
+}
 .has-warning {
 	
 }

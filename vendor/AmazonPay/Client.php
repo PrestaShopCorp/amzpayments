@@ -23,7 +23,7 @@ use Psr\Log\LoggerInterface;
 
 class Client implements ClientInterface, LoggerAwareInterface
 {
-    const SDK_VERSION = '3.3.1';
+    const SDK_VERSION = '3.4.1';
     const MWS_VERSION = '2013-01-01';
     const MAX_ERROR_RETRY = 3;
 
@@ -431,7 +431,7 @@ class Client implements ClientInterface, LoggerAwareInterface
         if (array_key_exists('currency_code', $fieldMappings)) {
             if (!empty($requestParameters['currency_code'])) {
                 $parameters[$fieldMappings['currency_code']] = strtoupper($requestParameters['currency_code']);
-            } else if (!(array_key_exists('Action', $parameters) && $parameters['Action'] === 'SetOrderAttributes')) {
+            } else if (!(array_key_exists('Action', $parameters) && ( $parameters['Action'] === 'SetOrderAttributes' || $parameters['Action'] === 'ConfirmOrderReference'))) {
                 // Only supply a default CurrencyCode parameter if not using SetOrderAttributes API
                 $parameters[$fieldMappings['currency_code']] = strtoupper($this->config['currency_code']);
             }
@@ -565,6 +565,7 @@ class Client implements ClientInterface, LoggerAwareInterface
     public function getOrderReferenceDetails($requestParameters = array())
     {
 
+        $parameters           = array();
         $parameters['Action'] = 'GetOrderReferenceDetails';
         $requestParameters    = array_change_key_case($requestParameters, CASE_LOWER);
 
@@ -574,6 +575,87 @@ class Client implements ClientInterface, LoggerAwareInterface
             'address_consent_token'     => 'AddressConsentToken',
             'access_token'              => 'AccessToken',
             'mws_auth_token'            => 'MWSAuthToken'
+        );
+
+        $responseObject = $this->setParametersAndPost($parameters, $fieldMappings, $requestParameters);
+        return ($responseObject);
+    }
+
+
+    /* ListOrderReference API call - Returns details about the Order Reference object and its current state from the sellers.
+     * @see https://pay.amazon.com/developer/documentation/apireference/201751970
+     *
+     * @param requestParameters['merchant_id'] - [String]
+     * @param requestParameters['query_id'] - [String]
+     * @param requestParameters['query_id_type'] - [String] (SellerOrderId)
+     * @optional requestParameters['page_size'] - [Int]
+     * @optional requestParameters['created_start_time'] - [String] (Date/Time ISO8601)
+     * @optional requestParameters['created_end_time'] - [String] (Date/Time ISO8601) Limited to 31 days
+     * @optional requestParameters['sort_order'] - [String] (Ascending/Descending)
+     * @optional requestParameters['mws_auth_token'] - [String]
+     * @optional requestParameters['status_list'] - [Array]
+     */
+    public function listOrderReference($requestParameters = array())
+    {
+        $parameters           = array();
+        $parameters['Action'] = 'ListOrderReference';
+        $requestParameters    = array_change_key_case($requestParameters, CASE_LOWER);
+
+        $payment_domains = array(
+            "us"    => "NA_USD",
+            "jp"    => "FE_JPY",
+            "de"    => "EU_EUR",
+            "uk"    => "EU_GBP"
+        );
+
+        $requestParameters['payment_domain'] = $payment_domains[strtolower($this->config['region'])];
+
+        $fieldMappings = array(
+            'merchant_id'        => 'SellerId',
+            'mws_auth_token'     => 'MWSAuthToken',
+            
+            'query_id'           => 'QueryId',
+            'query_id_type'      => 'QueryIdType',
+            'page_size'          => 'PageSize',
+            'created_start_time' => 'CreatedTimeRange.StartTime',
+            'created_end_time'   => 'CreatedTimeRange.EndTime',
+            'sort_order'         => 'SortOrder',
+            'payment_domain'     => 'PaymentDomain'
+        );
+
+        if( $requestParameters['order_status_list'] ){
+            $status_index = 0;
+            foreach ($requestParameters['order_status_list'] as $status) {
+                $status_index++;
+                $requestParameters['order_status_list_'.$status_index] = $status;
+                $fieldMappings['order_status_list_'.$status_index] = 'OrderReferenceStatusListFilter.OrderReferenceStatus.'.$status_index;
+            }
+        }
+
+        $responseObject = $this->setParametersAndPost($parameters, $fieldMappings, $requestParameters);
+
+        return ($responseObject);
+    }
+
+    /* ListOrderReferenceByNextToken API call - Returns details about the Order Reference object and its current
+     * state from the sellers.
+     * @see https://pay.amazon.com/developer/documentation/apireference/201751970
+     *
+     * @param requestParameters['merchant_id'] - [String]
+     * @param requestParameters['next_token'] - [String]
+     * @optional requestParameters['mws_auth_token'] - [String]
+     */
+    public function listOrderReferenceByNextToken($requestParameters = array())
+    {
+        $parameters           = array();
+        $parameters['Action'] = 'ListOrderReferenceByNextToken';
+        $requestParameters    = array_change_key_case($requestParameters, CASE_LOWER);
+
+        $fieldMappings = array(
+            'merchant_id'    => 'SellerId',
+            'mws_auth_token' => 'MWSAuthToken',
+            
+            'next_page_token' => 'NextPageToken'
         );
 
         $responseObject = $this->setParametersAndPost($parameters, $fieldMappings, $requestParameters);
@@ -593,6 +675,7 @@ class Client implements ClientInterface, LoggerAwareInterface
      * @optional requestParameters['seller_order_id'] - [String]
      * @optional requestParameters['store_name'] - [String]
      * @optional requestParameters['custom_information'] - [String]
+     * @optional requestParameters['supplementary_data'] - [String]
      * @optional requestParameters['request_payment_authorization'] - [Boolean]
      * @optional requestParameters['mws_auth_token'] - [String]
      */
@@ -612,6 +695,7 @@ class Client implements ClientInterface, LoggerAwareInterface
             'seller_order_id'               => 'OrderReferenceAttributes.SellerOrderAttributes.SellerOrderId',
             'store_name'                    => 'OrderReferenceAttributes.SellerOrderAttributes.StoreName',
             'custom_information'            => 'OrderReferenceAttributes.SellerOrderAttributes.CustomInformation',
+            'supplementary_data'            => 'OrderReferenceAttributes.SellerOrderAttributes.SupplementaryData',
             'request_payment_authorization' => 'OrderReferenceAttributes.RequestPaymentAuthorization',
             'mws_auth_token'                => 'MWSAuthToken'
         );
@@ -632,6 +716,7 @@ class Client implements ClientInterface, LoggerAwareInterface
      * @optional requestParameters['seller_order_id'] - [String]
      * @optional requestParameters['store_name'] - [String]
      * @optional requestParameters['custom_information'] - [String]
+     * @optional requestParameters['supplementary_data'] - [String]
      * @optional requestParameters['request_payment_authorization'] - [Boolean]
      * @optional requestParameters['payment_service_provider_id'] - [String]
      * @optional requestParameters['payment_service_provider_order_id'] - [String]
@@ -654,6 +739,7 @@ class Client implements ClientInterface, LoggerAwareInterface
             'seller_order_id'                   => 'OrderAttributes.SellerOrderAttributes.SellerOrderId',
             'store_name'                        => 'OrderAttributes.SellerOrderAttributes.StoreName',
             'custom_information'                => 'OrderAttributes.SellerOrderAttributes.CustomInformation',
+            'supplementary_data'                => 'OrderAttributes.SellerOrderAttributes.SupplementaryData',            
             'request_payment_authorization'     => 'OrderAttributes.RequestPaymentAuthorization',
             'payment_service_provider_id'       => 'OrderAttributes.PaymentServiceProviderAttributes.PaymentServiceProviderId',
             'payment_service_provider_order_id' => 'OrderAttributes.PaymentServiceProviderAttributes.PaymentServiceProviderOrderId',
@@ -671,6 +757,10 @@ class Client implements ClientInterface, LoggerAwareInterface
 
      * @param requestParameters['merchant_id'] - [String]
      * @param requestParameters['amazon_order_reference_id'] - [String]
+     * @optional requestParameters['success_url'] - [String]'
+     * @optional requestParameters['failure_url'] - [String]
+     * @optional requestParameters['authorization_amount'] - [String]
+     * @optional requestParameters['currency_code'] - [String]
      * @optional requestParameters['mws_auth_token'] - [String]
      */
     public function confirmOrderReference($requestParameters = array())
@@ -680,12 +770,21 @@ class Client implements ClientInterface, LoggerAwareInterface
         $requestParameters    = array_change_key_case($requestParameters, CASE_LOWER);
 
         $fieldMappings = array(
-            'merchant_id'         => 'SellerId',
+            'merchant_id'               => 'SellerId',
             'amazon_order_reference_id' => 'AmazonOrderReferenceId',
-            'mws_auth_token'         => 'MWSAuthToken'
+            'success_url'               => 'SuccessUrl',
+            'failure_url'               => 'FailureUrl',
+            'authorization_amount'      => 'AuthorizationAmount.Amount',
+            'currency_code'             => 'AuthorizationAmount.CurrencyCode',
+            'mws_auth_token'            => 'MWSAuthToken'
         );
 
+        if (isset($requestParameters['authorization_amount']) && !isset($requestParameters['currency_code'])) {
+            $requestParameters['currency_code'] = strtoupper($this->config['currency_code']);
+        }
+
         $responseObject = $this->setParametersAndPost($parameters, $fieldMappings, $requestParameters);
+
         return ($responseObject);
     }
 
@@ -997,6 +1096,7 @@ class Client implements ClientInterface, LoggerAwareInterface
      * @optional requestParameters['seller_note'] - [String]
      * @optional requestParameters['seller_order_id'] - [String]
      * @optional requestParameters['store_name'] - [String]
+     * @optional requestParameters['supplementary_data'] - [String]
      * @optional requestParameters['custom_information'] - [String]
      * @optional requestParameters['mws_auth_token'] - [String]
      */
@@ -1018,6 +1118,7 @@ class Client implements ClientInterface, LoggerAwareInterface
             'seller_note'              => 'OrderReferenceAttributes.SellerNote',
             'seller_order_id'          => 'OrderReferenceAttributes.SellerOrderAttributes.SellerOrderId',
             'store_name'               => 'OrderReferenceAttributes.SellerOrderAttributes.StoreName',
+            'supplementary_data'       => 'OrderReferenceAttributes.SupplementaryData',
             'custom_information'       => 'OrderReferenceAttributes.SellerOrderAttributes.CustomInformation',
             'mws_auth_token'           => 'MWSAuthToken'
         );
@@ -1159,6 +1260,7 @@ class Client implements ClientInterface, LoggerAwareInterface
      * @optional requestParameters['custom_information'] - [String]
      * @optional requestParameters['seller_order_id'] - [String]
      * @optional requestParameters['store_name'] - [String]
+     * @optional requestParameters['supplementary_data'] - [String]
      * @optional requestParameters['inherit_shipping_address'] [Boolean] - Defaults to true
      * @optional requestParameters['mws_auth_token'] - [String]
      */
@@ -1183,6 +1285,7 @@ class Client implements ClientInterface, LoggerAwareInterface
             'custom_information'          => 'SellerOrderAttributes.CustomInformation',
             'seller_order_id'             => 'SellerOrderAttributes.SellerOrderId',
             'store_name'                  => 'SellerOrderAttributes.StoreName',
+            'supplementary_data'          => 'SellerOrderAttributes.SupplementaryData',
             'inherit_shipping_address'    => 'InheritShippingAddress',
             'mws_auth_token'              => 'MWSAuthToken'
         );

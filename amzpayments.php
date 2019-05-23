@@ -211,7 +211,7 @@ class AmzPayments extends PaymentModule
     {
         $this->name = 'amzpayments';
         $this->tab = 'payments_gateways';
-        $this->version = '2.2.8';
+        $this->version = '2.3.0';
         $this->author = 'patworx multimedia GmbH';
         $this->need_instance = 1;
         
@@ -517,7 +517,7 @@ class AmzPayments extends PaymentModule
     {
         if (Tools::isSubmit('submitAmzpaymentsModule') || Tools::isSubmit('submitAmzpaymentsModuleConnect')) {
             foreach (self::$config_array as $name => $f) {
-                if (Tools::getValue($f) === false && !in_array($f, array('SHIPPINGS_NOT_ALLOWED', 'PROVOCATION', 'PRODUCTS_NOT_ALLOWED', 'AMZ_HIDE_LOGIN_BTNS', 'AMZ_HIDE_MINICART_BUTTON', 'AMZ_PROMO_HEADER', 'AMZ_SHOW_ABOVE_CART'))) {
+                if (Tools::getValue($f) === false && !in_array($f, array('AMZ_FORCE_NAME_COMPLETION', 'AMZ_BUTTON_ENHANCEMENT_CART', 'AMZ_BUTTON_ENHANCEMENT_MINI_CART', 'SHIPPINGS_NOT_ALLOWED', 'PROVOCATION', 'PRODUCTS_NOT_ALLOWED', 'AMZ_HIDE_LOGIN_BTNS', 'AMZ_HIDE_MINICART_BUTTON', 'AMZ_PROMO_HEADER', 'AMZ_SHOW_ABOVE_CART'))) {
                     $this->_postErrors[] = $this->l($name) . ' ' . $this->l(': details are required.');
                 }
             }
@@ -625,6 +625,11 @@ class AmzPayments extends PaymentModule
         );
         
         return $helper->generateAmazonForm($this->context->smarty, $this->getConfigForm());
+    }
+
+    public function isNoPSD2Region()
+    {
+        return $this->region == 'US' || $this->region == 'JP';
     }
     
     protected function getPossibleRegionEntries()
@@ -2412,6 +2417,10 @@ class AmzPayments extends PaymentModule
         $this->context->controller->addJS($this->_path . 'views/js/tipr.min.js');
         $redirect = $this->context->link->getModuleLink('amzpayments', 'amzpayments');
         
+        if (Tools::getValue('AuthenticationStatus') == 'Abandoned') {
+            $this->context->controller->errors[] = $this->l('Your selected payment method is currently not available. Please select another one.');
+        }
+        
         if (isset($this->context->cookie->amazonpay_errors_message)) {
             $this->context->controller->errors[] = $this->context->cookie->amazonpay_errors_message;
             unset($this->context->cookie->amazonpay_errors_message);
@@ -2517,7 +2526,7 @@ class AmzPayments extends PaymentModule
         $logout_str = '';
         if ($this->context->controller->php_self == 'guest-tracking' || isset($this->context->cookie->amz_logout)) {
             unset($this->context->cookie->amz_logout);
-            $logout_str .= '<script type="text/javascript"> amazonLogout(); </script>';
+            $logout_str .= '<script type="text/javascript"> setTimeout(function() { amazonLogout(); }, 1500); </script>';
         }
         
         $acc_tk = '';
@@ -3513,7 +3522,7 @@ class AmzPayments extends PaymentModule
         $url = 'https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Prestashop/json/' . Tools::strtolower($this->region) . '/PromoBanner.json';
         try {
             $c = curl_init();
-            curl_setopt($c,CURLOPT_URL, $url);
+            curl_setopt($c, CURLOPT_URL, $url);
             curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($c, CURLOPT_FRESH_CONNECT, true);
             $r = curl_exec($c);

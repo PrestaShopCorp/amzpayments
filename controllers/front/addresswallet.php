@@ -86,6 +86,19 @@ class AmzpaymentsAddresswalletModuleFrontController extends ModuleFrontControlle
         }
         if (Tools::getValue('amz')) {
             $this->context->smarty->assign('amz_session', Tools::getValue('amz'));
+        } elseif (Tools::getValue('AuthenticationStatus') == 'Abandoned' && isset($this->context->cookie->amazon_id)) {
+            $this->context->smarty->assign('amz_session', $this->context->cookie->amazon_id);
+            $this->context->smarty->assign('widgetreadonly', true);
+        } elseif (Tools::getValue('AuthenticationStatus') == 'Failure') {
+            $this->context->cookie->amz_logout = true;
+            unset(self::$amz_payments->cookie->amz_access_token);
+            unset(self::$amz_payments->cookie->amz_access_token_set_time);
+            unsetAmazonPayCookie();
+            unset($this->context->cookie->amazon_id);
+            unset($this->context->cookie->has_set_valid_amazon_address);
+            unset($this->context->cookie->setHadErrorNowWallet);
+            $this->context->cookie->amazonpay_errors_message = self::$amz_payments->l('Your selected payment method is currently not available. Please select another one.');
+            Tools::redirect($this->context->link->getPageLink('order'));
         }
         if (isset($this->context->cookie->setHadErrorNowWallet) && $this->context->cookie->setHadErrorNowWallet == '1') {
             $this->context->smarty->assign('widgetreadonly', true);

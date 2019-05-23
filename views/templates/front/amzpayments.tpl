@@ -57,7 +57,8 @@
 <script> 
 var amazonCarrierErrorMessage = '{/literal}{l s='There are no carriers that deliver to the address you selected in your address book, please select another one.' mod='amzpayments'}{literal}';
 var isFirstRun = true;
-var amazonOrderReferenceId = '{/literal}{$amz_session|escape:'htmlall':'UTF-8'}{literal}';	
+var amazonOrderReferenceId = '{/literal}{$amz_session|escape:'htmlall':'UTF-8'}{literal}';
+var amzWidgetReadonly = false;	
 jQuery(document).ready(function($) {
 	var amzAddressSelectCounter = 0;
 	
@@ -95,6 +96,9 @@ jQuery(document).ready(function($) {
 		design: {
 			designMode: 'responsive'
 		},
+		{/literal}{if $trigger_payment_change}{literal}
+		displayMode: "Read",		
+		{/literal}{/if}{literal}
 		onError: function(error) {
 			console.log(error.getErrorCode());
 			console.log(error.getErrorMessage());
@@ -144,7 +148,7 @@ function reCreateAddressBookWidget() {
 		onAddressSelect: function(orderReference) {
 			updateAddressSelection(amazonOrderReferenceId);			
 		},
-		displayMode: "Read",
+		displayMode: (amzWidgetReadonly ? "Read" : "Edit"),
 		design: {
 			designMode: 'responsive'
 		},

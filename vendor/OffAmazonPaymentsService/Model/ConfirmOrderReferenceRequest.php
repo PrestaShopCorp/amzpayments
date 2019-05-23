@@ -55,6 +55,10 @@ class OffAmazonPaymentsService_Model_ConfirmOrderReferenceRequest extends OffAma
         $this->_fields = array (
         'AmazonOrderReferenceId' => array('FieldValue' => null, 'FieldType' => 'string'),
         'SellerId' => array('FieldValue' => null, 'FieldType' => 'string'),
+        'SuccessUrl' => array('FieldValue' => null, 'FieldType' => 'string'),
+        'FailureUrl' => array('FieldValue' => null, 'FieldType' => 'string'),
+        'AuthorizationAmount.Amount' => array('FieldValue' => null, 'FieldType' => 'string'),
+        'AuthorizationAmount.CurrencyCode' => array('FieldValue' => null, 'FieldType' => 'string'),
         );
         parent::__construct($data);
     }
@@ -148,5 +152,191 @@ class OffAmazonPaymentsService_Model_ConfirmOrderReferenceRequest extends OffAma
     {
         return !is_null($this->_fields['SellerId']['FieldValue']);
     }
+    
+    
+    
+    /**
+     * Gets the value of the SuccessUrl property.
+     *
+     * @return string SuccessUrl
+     */
+    public function getSuccessUrl()
+    {
+        return $this->_fields['SuccessUrl']['FieldValue'];
+    }
+    
+    /**
+     * Sets the value of the SuccessUrl property.
+     *
+     * @param string SuccessUrl
+     * @return this instance
+     */
+    public function setSuccessUrl($value)
+    {
+        $this->_fields['SuccessUrl']['FieldValue'] = $value;
+        return $this;
+    }
+    
+    /**
+     * Sets the value of the SuccessUrl and returns this instance
+     *
+     * @param string $value SuccessUrl
+     * @return OffAmazonPaymentsService_Model_ConfirmOrderReferenceRequest instance
+     */
+    public function withSuccessUrl($value)
+    {
+        $this->setSuccessUrl($value);
+        return $this;
+    }
+    
+    
+    /**
+     * Checks if SuccessUrl is set
+     *
+     * @return bool true if SuccessUrl  is set
+     */
+    public function isSetSuccessUrl()
+    {
+        return !is_null($this->_fields['SuccessUrl']['FieldValue']);
+    }
+    
+    
+    /**
+     * Gets the value of the FailureUrl property.
+     *
+     * @return string FailureUrl
+     */
+    public function getFailureUrl()
+    {
+        return $this->_fields['FailureUrl']['FieldValue'];
+    }
+    
+    /**
+     * Sets the value of the FailureUrl property.
+     *
+     * @param string FailureUrl
+     * @return this instance
+     */
+    public function setFailureUrl($value)
+    {
+        $this->_fields['FailureUrl']['FieldValue'] = $value;
+        return $this;
+    }
+    
+    /**
+     * Sets the value of the FailureUrl and returns this instance
+     *
+     * @param string $value FailureUrl
+     * @return OffAmazonPaymentsService_Model_ConfirmOrderReferenceRequest instance
+     */
+    public function withFailureUrl($value)
+    {
+        $this->setFailureUrl($value);
+        return $this;
+    }
+    
+    
+    /**
+     * Checks if FailureUrl is set
+     *
+     * @return bool true if FailureUrl  is set
+     */
+    public function isSetFailureUrl()
+    {
+        return !is_null($this->_fields['FailureUrl']['FieldValue']);
+    }
+    
+    
+    /**
+     * Gets the value of the AuthorizationAmount.Amount property.
+     *
+     * @return string AuthorizationAmount.Amount
+     */
+    public function getAmount()
+    {
+        return $this->_fields['AuthorizationAmount.Amount']['FieldValue'];
+    }
+    
+    /**
+     * Sets the value of the AuthorizationAmount.Amount property.
+     *
+     * @param string AuthorizationAmount.Amount
+     * @return this instance
+     */
+    public function setAmount($value)
+    {
+        $this->_fields['AuthorizationAmount.Amount']['FieldValue'] = $value;
+        return $this;
+    }
+    
+    /**
+     * Sets the value of the AuthorizationAmount.Amount and returns this instance
+     *
+     * @param string $value AuthorizationAmount.Amount
+     * @return OffAmazonPaymentsService_Model_ConfirmOrderReferenceRequest instance
+     */
+    public function withAmount($value)
+    {
+        $this->setAmount($value);
+        return $this;
+    }
+    
+    
+    /**
+     * Checks if AuthorizationAmount.Amount is set
+     *
+     * @return bool true if AuthorizationAmount.Amount  is set
+     */
+    public function isSetAmount()
+    {
+        return !is_null($this->_fields['AuthorizationAmount.Amount']['FieldValue']);
+    }
+    
+    
+    /**
+     * Gets the value of the AuthorizationAmount.CurrencyCode property.
+     *
+     * @return string AuthorizationAmount.CurrencyCode
+     */
+    public function getCurrencyCode()
+    {
+        return $this->_fields['AuthorizationAmount.CurrencyCode']['FieldValue'];
+    }
+    
+    /**
+     * Sets the value of the AuthorizationAmount.CurrencyCode property.
+     *
+     * @param string AuthorizationAmount.CurrencyCode
+     * @return this instance
+     */
+    public function setCurrencyCode($value)
+    {
+        $this->_fields['AuthorizationAmount.CurrencyCode']['FieldValue'] = $value;
+        return $this;
+    }
+    
+    /**
+     * Sets the value of the AuthorizationAmount.CurrencyCode and returns this instance
+     *
+     * @param string $value AuthorizationAmount.CurrencyCode
+     * @return OffAmazonPaymentsService_Model_ConfirmOrderReferenceRequest instance
+     */
+    public function withCurrencyCode($value)
+    {
+        $this->setCurrencyCode($value);
+        return $this;
+    }
+    
+    
+    /**
+     * Checks if AuthorizationAmount.CurrencyCode is set
+     *
+     * @return bool true if AuthorizationAmount.CurrencyCode  is set
+     */
+    public function isSetCurrencyCode()
+    {
+        return !is_null($this->_fields['AuthorizationAmount.CurrencyCode']['FieldValue']);
+    }
+    
 }
 ?>

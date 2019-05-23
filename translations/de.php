@@ -303,11 +303,11 @@ $_MODULE['<{amzpayments}prestashop>amzpayments_fa31ce6046882558f0637d428a96abeb'
 $_MODULE['<{amzpayments}prestashop>amzpayments_9a1ff3881b92951d9663aaef38e8b637'] = 'Sie müssen nichts weiter hierfür tun, es werden die Daten auf Ihrer aktuellen Bestellung verwendet, um das Konto zu erstellen.';
 $_MODULE['<{amzpayments}prestashop>amzpayments_eeceac1af4e7620894d6d2083921bb73'] = 'Jetzt kaufen!';
 $_MODULE['<{amzpayments}prestashop>amzpayments_ed2d210dda2538d57f8f3a455fbf54ef'] = 'Es tut uns leid, die von Ihnen ausgewählte Adresse wird von uns nicht beliefert. Bitte wählen Sie eine andere Adresse aus.';
-$_MODULE['<{amzpayments}prestashop>amzpayments_bs_c9cc8cce247e49bae79f15173ce97354'] = 'Speichern';
-$_MODULE['<{amzpayments}prestashop>amzpayments_bs_fa31ce6046882558f0637d428a96abeb'] = 'Ich möchte ein Kundenkonto erstellen.';
-$_MODULE['<{amzpayments}prestashop>amzpayments_bs_9a1ff3881b92951d9663aaef38e8b637'] = 'Sie müssen nichts weiter hierfür tun, es werden die Daten auf Ihrer aktuellen Bestellung verwendet, um das Konto zu erstellen.';
-$_MODULE['<{amzpayments}prestashop>amzpayments_bs_eeceac1af4e7620894d6d2083921bb73'] = 'Jetzt kaufen!';
-$_MODULE['<{amzpayments}prestashop>amzpayments_bs_ed2d210dda2538d57f8f3a455fbf54ef'] = 'Es tut uns leid, die von Ihnen ausgewählte Adresse wird von uns nicht beliefert. Bitte wählen Sie eine andere Adresse aus.';
+$_MODULE['<{amzpayments}prestashop>amzpayments_checkout_bs_c9cc8cce247e49bae79f15173ce97354'] = 'Speichern';
+$_MODULE['<{amzpayments}prestashop>amzpayments_checkout_bs_fa31ce6046882558f0637d428a96abeb'] = 'Ich möchte ein Kundenkonto erstellen.';
+$_MODULE['<{amzpayments}prestashop>amzpayments_checkout_bs_9a1ff3881b92951d9663aaef38e8b637'] = 'Sie müssen nichts weiter hierfür tun, es werden die Daten auf Ihrer aktuellen Bestellung verwendet, um das Konto zu erstellen.';
+$_MODULE['<{amzpayments}prestashop>amzpayments_checkout_bs_eeceac1af4e7620894d6d2083921bb73'] = 'Jetzt kaufen!';
+$_MODULE['<{amzpayments}prestashop>amzpayments_checkout_bs_ed2d210dda2538d57f8f3a455fbf54ef'] = 'Es tut uns leid, die von Ihnen ausgewählte Adresse wird von uns nicht beliefert. Bitte wählen Sie eine andere Adresse aus.';
 $_MODULE['<{amzpayments}prestashop>amzpayments_orderdetails_summary_deb10517653c255364175796ace3553f'] = 'Product';
 $_MODULE['<{amzpayments}prestashop>amzpayments_orderdetails_summary_b5a7adde1af5c87d7fd797b6245c2a39'] = 'Description';
 $_MODULE['<{amzpayments}prestashop>amzpayments_orderdetails_summary_9ff9c46512c186ebae182519a55dc6a9'] = 'Avail.';

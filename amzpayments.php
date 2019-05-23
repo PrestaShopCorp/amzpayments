@@ -202,7 +202,7 @@ class AmzPayments extends PaymentModule
     {
         $this->name = 'amzpayments';
         $this->tab = 'payments_gateways';
-        $this->version = '3.2.8';
+        $this->version = '3.2.9';
         $this->author = 'patworx multimedia GmbH';
         $this->need_instance = 1;
         
@@ -611,6 +611,11 @@ class AmzPayments extends PaymentModule
         );
         
         return $helper->generateAmazonForm($this->context->smarty, $this->getConfigForm());
+    }
+    
+    public function isNoPSD2Region()
+    {
+        return $this->region == 'US' || $this->region == 'JP';
     }
     
     protected function getPossibleRegionEntries()

@@ -780,6 +780,8 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                 $this->context->cart->save();
 
                                 die(Tools::jsonEncode(array(
+                                    'isNoPSD2' => self::$amz_payments->isNoPSD2Region(),
+                                    'redirection' => self::$amz_payments->isNoPSD2Region() ? $this->context->link->getModuleLink('amzpayments', 'processpayment', array('AuthenticationStatus' => 'Success')) : '',
                                     'confirmOrderReferenceSucceeded' => true
                                 )));
                             }

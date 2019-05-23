@@ -131,8 +131,11 @@ function placeAmazonPayOrder(confirmationFlow, connectRequest)
             else
             {
                 orderExecutionIsRunning = false;
-                confirmationFlow.success();
-                //window.location.href = jsonData.redirection;
+                if (jsonData.isNoPSD2) {
+                	window.location.href = jsonData.redirection;
+                } else {
+                	confirmationFlow.success();	
+                }
             }
         },
         error: function(XMLHttpRequest, textStatus, errorThrown) {

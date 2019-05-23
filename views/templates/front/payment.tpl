@@ -19,7 +19,11 @@
             '{/literal}{$sellerId}{literal}',
             '{/literal}{$orderReferenceId}{literal}',
             function(confirmationFlow) {
+            	{/literal}{if $isNoPSD2}{literal}
+            	window.location.href = '{/literal}{$redirection}{literal}';
+            	{/literal}{else}{literal}
 				confirmationFlow.success();
+				{/literal}{/if}{literal}
             }
         );
         {/literal}

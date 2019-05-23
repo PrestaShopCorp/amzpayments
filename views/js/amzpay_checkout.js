@@ -36,7 +36,6 @@ $(document).ready(function() {
 			return;
 		}
 		orderExecutionIsRunning = true;
-		
 		var redirectURL = LOGINREDIRECTAMZ;	
 		
 		$('#amzOverlay').fadeIn('slow');
@@ -65,63 +64,89 @@ $(document).ready(function() {
 						connectRequest = '&connect_amz_account=' + $("#connect_amz_account").val();
 					}
 				}
-				
-				$.ajax({
-					type: 'POST',
-					headers: { "cache-control": "no-cache" },
-					url: REDIRECTAMZ + '?rand=' + new Date().getTime(),
-					async: true,
-					cache: false,
-					dataType : "json",
-					data: 'amazonOrderReferenceId=' + amazonOrderReferenceId + '&allow_refresh=1&ajax=true&method=executeOrder&confirm=1&' + connectRequest,
-					success: function(jsonData)
-					{
-						if (jsonData.hasError)
-						{
-							var errors = '';
-							for(var error in jsonData.errors)
 
-								if(error !== 'indexOf')
-									errors += $('<div />').html(jsonData.errors[error]).text() + "\n";
-							alert(errors);
-							
-							if (typeof jsonData.redirection !== 'undefined') {
-								if (jsonData.redirection.length > 0) {
-									window.location.href = jsonData.redirection;
-									orderExecutionIsRunning = false;
-									return;
-								}
-							}
-							$('#amzOverlay, #opc_delivery_methods-overlay, #opc_payment_methods-overlay').fadeOut('slow');
-							$("form#voucher, .ajax_cart_block_remove_link, .cart_quantity_up, .cart_quantity_down, .cart_quantity_delete").remove();
-							
-							$("#opc_delivery_methods-overlay").css("height", $("#opc_delivery_methods").outerHeight()).css("width",  $("#opc_delivery_methods").outerWidth()).css("background", "none repeat scroll 0 0 rgba(99, 99, 99, 0.5)").css("position","absolute").css("z-index","1000").fadeIn();
-							/* $("#amz_execute_order").attr("disabled","disabled").addClass("disabled"); */ 
-							$('#gift, .delivery_option_radio, #recyclable').click(function(){
-							    return false;
-							});
-							reCreateWalletWidget();
-							reCreateAddressBookWidget();
-							orderExecutionIsRunning = false;
-						}
-						else
-						{
-							orderExecutionIsRunning = false;
-							window.location.href = jsonData.redirection;
-						}
-					},
-					error: function(XMLHttpRequest, textStatus, errorThrown) {
-						if (textStatus !== 'abort')
-							alert("TECHNICAL ERROR: unable to save adresses \n\nDetails:\nError thrown: " + XMLHttpRequest + "\n" + 'Text status: ' + textStatus);
-						$('#amzOverlay, #opc_account-overlay, #opc_delivery_methods-overlay, #opc_payment_methods-overlay').fadeOut('slow');
-						orderExecutionIsRunning = false;
-					}
-				});
+                OffAmazonPayments.initConfirmationFlow(
+                    AMZSELLERID,
+                    amazonOrderReferenceId,
+                    function(confirmationFlow) {
+                        placeAmazonPayOrder(confirmationFlow, connectRequest);
+                    }
+                );
+                return;
 			}
 		});
 	});
 	
 });
+
+function placeAmazonPayOrder(confirmationFlow, connectRequest)
+{
+    $.ajax({
+        type: 'POST',
+        headers: { "cache-control": "no-cache" },
+        url: REDIRECTAMZ + '?rand=' + new Date().getTime(),
+        async: true,
+        cache: false,
+        dataType : "json",
+        data: 'amazonOrderReferenceId=' + amazonOrderReferenceId + '&allow_refresh=1&ajax=true&method=executeOrder&confirm=1&' + connectRequest,
+        success: function(jsonData)
+        {
+            if (jsonData.hasError)
+            {
+                var errors = '';
+                for(var error in jsonData.errors)
+
+                    if(error !== 'indexOf')
+                        errors += $('<div />').html(jsonData.errors[error]).text() + "\n";
+                alert(errors);
+
+                if (typeof jsonData.redirection !== 'undefined') {
+                    if (jsonData.redirection.length > 0) {
+                        window.location.href = jsonData.redirection;
+                        orderExecutionIsRunning = false;
+                        return;
+                    }
+                }
+                $('#amzOverlay, #opc_delivery_methods-overlay, #opc_payment_methods-overlay').fadeOut('slow');
+                $("form#voucher, .ajax_cart_block_remove_link, .cart_quantity_up, .cart_quantity_down, .cart_quantity_delete").remove();
+
+                $("#opc_delivery_methods-overlay").css("height", $("#opc_delivery_methods").outerHeight()).css("width",  $("#opc_delivery_methods").outerWidth()).css("background", "none repeat scroll 0 0 rgba(99, 99, 99, 0.5)").css("position","absolute").css("z-index","1000").fadeIn();
+                /* $("#amz_execute_order").attr("disabled","disabled").addClass("disabled"); */
+                $('#gift, .delivery_option_radio, #recyclable').click(function(){
+                    return false;
+                });
+				
+				if (typeof jsonData.amzWidgetReadonly !== 'undefined') {
+					if (jsonData.amzWidgetReadonly == '1') {
+						amzWidgetReadonly = true;
+					}
+				}
+				
+                reCreateWalletWidget();
+                reCreateAddressBookWidget();
+                confirmationFlow.error();
+				amzWidgetReadonly = false;
+                orderExecutionIsRunning = false;
+            }
+            else
+            {
+                orderExecutionIsRunning = false;
+                if (jsonData.isNoPSD2) {
+                	window.location.href = jsonData.redirection;
+                } else {
+                	confirmationFlow.success();	
+                }
+            }
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+            if (textStatus !== 'abort')
+                alert("TECHNICAL ERROR: unable to save adresses \n\nDetails:\nError thrown: " + XMLHttpRequest + "\n" + 'Text status: ' + textStatus);
+            $('#amzOverlay, #opc_account-overlay, #opc_delivery_methods-overlay, #opc_payment_methods-overlay').fadeOut('slow');
+            orderExecutionIsRunning = false;
+        }
+    });
+}
+
 
 function updateCarrierSelectionAndGift()
 {

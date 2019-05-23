@@ -315,7 +315,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                             }
                             
                             $fields_to_set = array();
-                            if ($address_delivery->id_state > 0 && !AmazonPaymentsAddressHelper::stateBelongsToCountry($address_delivery->id_state, (int)Country::getByIso($iso_code))) {                                
+                            if ($address_delivery->id_state > 0 && !AmazonPaymentsAddressHelper::stateBelongsToCountry($address_delivery->id_state, (int)Country::getByIso($iso_code))) {
                                 $address_delivery->id_state = 0;
                             }
                             if ($address_delivery->id_state == 0) {
@@ -465,13 +465,15 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                 
                                 if (!AmazonTransactions::isAlreadyConfirmedOrder(Tools::getValue('amazonOrderReferenceId'))) {
                                     $requestParameters['amount'] = $total;
+                                    $requestParameters['authorization_amount'] = $total;
                                     $requestParameters['currency_code'] = $currency_code;
                                     $requestParameters['seller_order_id'] = self::$amz_payments->createUniqueOrderId((int) $this->context->cart->id);
                                     $requestParameters['store_name'] = Configuration::get('PS_SHOP_NAME');
                                     $requestParameters['custom_information'] = 'Prestashop,Patworx,' . self::$amz_payments->version;
+                                    $requestParameters['success_url'] = $this->context->link->getModuleLink('amzpayments', 'processpayment');
+                                    $requestParameters['failure_url'] = $this->context->link->getModuleLink('amzpayments', 'amzpayments');
                                     
                                     $response = $service->SetOrderReferenceDetails($requestParameters);
-                                    
                                     try {
                                         $response = $service->confirmOrderReference($requestParameters);
                                     } catch (OffAmazonPaymentsService_Exception $e) {
@@ -484,10 +486,11 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                         $response = $service->GetOrderReferenceDetails($requestParameters);
                                         $responsearray['getorderreference'] = $response->toArray();
                                     }
-                                    
+
                                     if (!isset($responsearray['getorderreference'])) {
                                         die(Tools::jsonEncode(array(
                                             'hasError' => true,
+                                            'amzWidgetReadonly' => (isset($responsearray['confirm']['Error']['Message']) && Tools::strpos($responsearray['confirm']['Error']['Message'], 'PaymentMethodNotAllowed') > -1) ? '0': '1',
                                             'errors' => array(
                                                 self::$amz_payments->l('Your selected payment method is currently not available. Please select another one.')
                                             )
@@ -511,13 +514,18 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                     $responsearray['getorderreference'] = $response->toArray();
                                     
                                     if (isset($responsearray['getorderreference']['GetOrderReferenceDetailsResult']['OrderReferenceDetails']['OrderReferenceStatus']['ReasonCode']) &&
-                                        $responsearray['getorderreference']['GetOrderReferenceDetailsResult']['OrderReferenceDetails']['OrderReferenceStatus']['ReasonCode'] == 'InvalidPaymentMethod') {
+                                        (
+                                            $responsearray['getorderreference']['GetOrderReferenceDetailsResult']['OrderReferenceDetails']['OrderReferenceStatus']['ReasonCode'] == 'InvalidPaymentMethod' ||
+                                            $responsearray['getorderreference']['GetOrderReferenceDetailsResult']['OrderReferenceDetails']['OrderReferenceStatus']['ReasonCode'] == 'PaymentAuthorizationRequired'
+                                        )) {
                                         $requestParameters['amount'] = $total;
+                                        $requestParameters['authorization_amount'] = $total;
                                         $requestParameters['currency_code'] = $currency_code;
                                         $requestParameters['seller_order_id'] = self::$amz_payments->createUniqueOrderId((int) $this->context->cart->id);
                                         $requestParameters['store_name'] = Configuration::get('PS_SHOP_NAME');
                                         $requestParameters['custom_information'] = 'Prestashop,Patworx,' . self::$amz_payments->version;
-                                        
+                                        $requestParameters['success_url'] = $this->context->link->getModuleLink('amzpayments', 'processpayment');
+                                        $requestParameters['failure_url'] = $this->context->link->getModuleLink('amzpayments', 'amzpayments');
                                         $response = $service->SetOrderReferenceDetails($requestParameters);
                                         
                                         try {
@@ -535,7 +543,9 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                         
                                         if (!isset($responsearray['getorderreference']) ||
                                             (isset($responsearray['getorderreference']['GetOrderReferenceDetailsResult']['OrderReferenceDetails']['OrderReferenceStatus']['ReasonCode']) &&
-                                                $responsearray['getorderreference']['GetOrderReferenceDetailsResult']['OrderReferenceDetails']['OrderReferenceStatus']['ReasonCode'] == 'InvalidPaymentMethod')
+                                                $responsearray['getorderreference']['GetOrderReferenceDetailsResult']['OrderReferenceDetails']['OrderReferenceStatus']['ReasonCode'] == 'InvalidPaymentMethod' &&
+                                             isset($responsearray['getorderreference']['GetOrderReferenceDetailsResult']['OrderReferenceDetails']['OrderReferenceStatus']['State']) &&
+                                                $responsearray['getorderreference']['GetOrderReferenceDetailsResult']['OrderReferenceDetails']['OrderReferenceStatus']['State'] != 'Open')
                                             ) {
                                                 die(Tools::jsonEncode(array(
                                                     'hasError' => true,
@@ -559,7 +569,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                         Db::getInstance()->insert('amz_transactions', $sql_arr);
                                     }
                                 }
-                                                                
+
                                 $physical_destination = $responsearray['getorderreference']['GetOrderReferenceDetailsResult']['OrderReferenceDetails']['Destination']['PhysicalDestination'];
 
                                 $iso_code = (string) AmzPayments::getFromArray($physical_destination, 'CountryCode');
@@ -769,131 +779,10 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                             
                                 $this->context->cart->save();
 
-                                if (self::$amz_payments->authorization_mode == 'fast_auth' || self::$amz_payments->authorization_mode == 'auto') {
-                                    $authorization_reference_id = Tools::getValue('amazonOrderReferenceId');
-                                    
-                                    $authorization_response_wrapper = AmazonTransactions::fastAuth(self::$amz_payments, $this->service, $authorization_reference_id, $total, $currency_code);
-                                    if (is_array($authorization_response_wrapper)) {
-                                        $details = $authorization_response_wrapper['AuthorizeResult']['AuthorizationDetails'];
-                                        $status = $details['AuthorizationStatus']['State'];
-                                        
-                                        if ($status == 'Declined') {
-                                            $reason = $details['AuthorizationStatus']['ReasonCode'];
-                                            if ($reason == 'InvalidPaymentMethod') {
-                                                die(Tools::jsonEncode(array(
-                                                    'hasError' => true,
-                                                    'errors' => array(
-                                                        self::$amz_payments->l('Your selected payment method is currently not available. Please select another one.')
-                                                    )
-                                                )));
-                                            } elseif (($reason == 'TransactionTimedOut' || $reason == 'TransactionTimeout' || $reason == 'AmazonRejected') && self::$amz_payments->authorization_mode == 'auto') {
-                                                $jump_to_async = true;
-                                            } else {
-                                                die(Tools::jsonEncode(array(
-                                                    'hasError' => true,
-                                                    'redirection' => 'index.php?controller=cart',
-                                                    'errors' => array(
-                                                        self::$amz_payments->l('Your selected payment method has been declined. Please chose another one or use a different Amazon account.')
-                                                    )
-                                                )));
-                                            }
-                                        }
-                                        
-                                        if (!isset($jump_to_async)) {
-                                            $amazon_authorization_id = $details['AmazonAuthorizationId'];
-                                        }
-                                    }
-                                }
-
-                                if ($this->context->cart->secure_key == '') {
-                                    $this->context->cart->secure_key = $customer->secure_key;
-                                    $this->context->cart->save();
-                                }
-
-                                $new_order_status_id = (int)Configuration::get('PS_OS_PREPARATION');
-                                if ((int)Configuration::get('AMZ_ORDER_STATUS_ID') > 0) {
-                                    $new_order_status_id = Configuration::get('AMZ_ORDER_STATUS_ID');
-                                }
-                                $this->module->validateOrder((int) $this->context->cart->id, $new_order_status_id, $total, $this->module->displayName, null, array(), null, false, $customer->secure_key);
-                                
-                                self::$amz_payments->setOrderReferenceAtAmazonPay($this->module->currentOrder, Tools::getValue('amazonOrderReferenceId'), $total, $currency_code);
-                                
-                                if (self::$amz_payments->authorization_mode == 'after_checkout' || isset($jump_to_async)) {
-                                    $authorization_reference_id = Tools::getValue('amazonOrderReferenceId');
-                                    $authorization_response_wrapper = AmazonTransactions::authorize(self::$amz_payments, $this->service, $authorization_reference_id, $total, $currency_code);
-                                    $authorization_response_wrapper['AuthorizeResult']['AuthorizationDetails']['AmazonAuthorizationId'];
-                                }
-                                
-                                self::$amz_payments->setAmazonReferenceIdForOrderId(Tools::getValue('amazonOrderReferenceId'), $this->module->currentOrder);
-                                self::$amz_payments->setAmazonReferenceIdForOrderTransactionId(Tools::getValue('amazonOrderReferenceId'), $this->module->currentOrder);
-                                if (isset($authorization_reference_id)) {
-                                    self::$amz_payments->setAmazonAuthorizationReferenceIdForOrderId($authorization_reference_id, $this->module->currentOrder);
-                                }
-                                if (isset($amazon_authorization_id)) {
-                                    self::$amz_payments->setAmazonAuthorizationIdForOrderId($amazon_authorization_id, $this->module->currentOrder);
-                                }
-
-                                if (isset($this->context->cookie->amzSetStatusAuthorized)) {
-                                    $tmpOrderRefs = Tools::unSerialize($this->context->cookie->amzSetStatusAuthorized);
-                                    if (is_array($tmpOrderRefs)) {
-                                        foreach ($tmpOrderRefs as $order_ref) {
-                                            AmazonTransactions::setOrderStatusAuthorized($order_ref);
-                                        }
-                                    }
-                                    unset($this->context->cookie->amzSetStatusAuthorized);
-                                }
-                                if (isset($this->context->cookie->amzSetStatusCaptured)) {
-                                    $tmpOrderRefs = Tools::unSerialize($this->context->cookie->amzSetStatusCaptured);
-                                    if (is_array($tmpOrderRefs)) {
-                                        foreach ($tmpOrderRefs as $order_ref) {
-                                            AmazonTransactions::setOrderStatusCaptured($order_ref);
-                                        }
-                                    }
-                                    unset($this->context->cookie->amzSetStatusCaptured);
-                                }
-                                
-                                if (Tools::getValue('connect_amz_account') == '1') {
-                                    $this->context->cookie->amz_connect_order = $this->module->currentOrder;
-                                    $this->context->cookie->amz_payments_address_id = $address_delivery->id;
-                                    $this->context->cookie->amz_payments_invoice_address_id = $address_invoice->id;
-                                    $login_redirect = $this->context->link->getModuleLink('amzpayments', 'processlogin');
-                                    $login_redirect = str_replace('http://', 'https://', $login_redirect);
-                                    $login_redirect .= '?fromCheckout=1&access_token=' . self::$amz_payments->cookie->amz_access_token;
-                                    die(Tools::jsonEncode(array(
-                                        'orderSucceed' => true,
-                                        'redirection' => $login_redirect
-                                    )));
-                                }
-                                
-                                if (!$customer->is_guest) {
-                                    if (!AmzPayments::addressAlreadyExists($address_delivery, $customer)) {
-                                        $address_delivery->id_customer = $customer->id;
-                                        $address_delivery->save();
-                                    }
-                                    if (!AmzPayments::addressAlreadyExists($address_invoice, $customer)) {
-                                        $address_invoice->id_customer = $customer->id;
-                                        $address_invoice->save();
-                                    }
-                                } else {
-                                    if ($registered_customer = AmazonPaymentsCustomerHelper::findByEmailAddress($customer->email)) {
-                                        if (!AmzPayments::addressAlreadyExists($address_delivery, $registered_customer)) {
-                                            $address_delivery->id_customer = $registered_customer->id;
-                                            $address_delivery->save();
-                                        }
-                                        if (!AmzPayments::addressAlreadyExists($address_invoice, $registered_customer)) {
-                                            $address_invoice->id_customer = $registered_customer->id;
-                                            $address_invoice->save();
-                                        }
-                                        $this->context->customer = $registered_customer;
-                                        $this->context->cookie->id_customer = (int) $registered_customer->id;
-                                    } else {
-                                        $this->context->customer = $customer;
-                                        $this->context->cookie->id_customer = (int) $customer->id;
-                                    }
-                                }
                                 die(Tools::jsonEncode(array(
-                                    'orderSucceed' => true,
-                                    'redirection' => __PS_BASE_URI__ . 'index.php?controller=order-confirmation&id_cart=' . (int) $this->context->cart->id . '&id_module=' . $this->module->id . '&id_order=' . $this->module->currentOrder . '&key=' . $customer->secure_key
+                                    'isNoPSD2' => self::$amz_payments->isNoPSD2Region(),
+                                    'redirection' => self::$amz_payments->isNoPSD2Region() ? $this->context->link->getModuleLink('amzpayments', 'processpayment', array('AuthenticationStatus' => 'Success')) : '',
+                                    'confirmOrderReferenceSucceeded' => true
                                 )));
                             }
                             die();
@@ -912,11 +801,30 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
 
     public function initContent()
     {
-        $this->context->controller->addJS(self::$amz_payments->getPathUri() . 'views/js/amzpayments_checkout.js');
+        $this->context->controller->addJS(self::$amz_payments->getPathUri() . 'views/js/amzpay_checkout.js');
         
         $this->context->cart->id_address_delivery = null;
         $this->context->cart->id_address_invoice = null;
-        
+
+        $this->context->smarty->assign('trigger_payment_change', false);
+
+        if (Tools::getValue('AuthenticationStatus') == 'Failure') {
+            $this->context->cookie->amz_logout = true;
+            unset(self::$amz_payments->cookie->amz_access_token);
+            unset(self::$amz_payments->cookie->amz_access_token_set_time);
+            unsetAmazonPayCookie();
+            unset($this->context->cookie->amazon_id);
+            unset($this->context->cookie->has_set_valid_amazon_address);
+            unset($this->context->cookie->setHadErrorNowWallet);
+            $this->context->cookie->amazonpay_errors_message = self::$amz_payments->l('Your selected payment method is currently not available. Please select another one.');
+            Tools::redirect($this->context->link->getPageLink('order'));
+        } elseif (Tools::getValue('AuthenticationStatus') == 'Abandoned' ||
+                  Tools::getValue('ErrorCode') == 'InvalidIdStatus') {
+            $this->context->smarty->assign('trigger_payment_change', true);
+        } elseif (Tools::getValue('ro') == '1') {
+            $this->context->smarty->assign('trigger_payment_change', true);
+        }
+
         parent::initContent();
         
         if (empty($this->context->cart->id_carrier)) {
@@ -969,7 +877,7 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
         $this->context->smarty->assign('force_account_creation', Configuration::get('FORCE_ACCOUNT_CREATION') == 1);
         $this->context->smarty->assign('tpl_dir', _THEME_DIR_);
         
-        $this->setTemplate('module:amzpayments/views/templates/front/amzpayments_bs.tpl');
+        $this->setTemplate('module:amzpayments/views/templates/front/amzpayments_checkout.tpl');
     }
 
     private function getCheckoutSession()

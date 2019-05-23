@@ -300,10 +300,10 @@ $_MODULE['<{amzpayments}prestashop>address_field_ea318a4ad37f0c2d2c368e6c958ed55
 $_MODULE['<{amzpayments}prestashop>address_field_fe66abce284ec8589e7d791185b5c442'] = 'Telefono';
 $_MODULE['<{amzpayments}prestashop>address_field_41c2fff4867cc204120f001e7af20f7a'] = 'Cellulare';
 $_MODULE['<{amzpayments}prestashop>address_field_46a2a41cc6e552044816a2d04634545d'] = 'Regione';
-$_MODULE['<{amzpayments}prestashop>amzpayments_bs_ed20689b0d8d53ec534166a88b67f259'] = 'Pagare con Amazon';
-$_MODULE['<{amzpayments}prestashop>amzpayments_bs_c9cc8cce247e49bae79f15173ce97354'] = 'Continua';
-$_MODULE['<{amzpayments}prestashop>amzpayments_bs_fa31ce6046882558f0637d428a96abeb'] = 'Crea account cliente.';
-$_MODULE['<{amzpayments}prestashop>amzpayments_bs_9a1ff3881b92951d9663aaef38e8b637'] = 'Non devi fare nulla. L’account verrà creato con i dati del tuo ordine attuale.';
+$_MODULE['<{amzpayments}prestashop>amzpayments_checkout_ed20689b0d8d53ec534166a88b67f259'] = 'Pagare con Amazon';
+$_MODULE['<{amzpayments}prestashop>amzpayments_checkout_c9cc8cce247e49bae79f15173ce97354'] = 'Continua';
+$_MODULE['<{amzpayments}prestashop>amzpayments_checkout_fa31ce6046882558f0637d428a96abeb'] = 'Crea account cliente.';
+$_MODULE['<{amzpayments}prestashop>amzpayments_checkout_9a1ff3881b92951d9663aaef38e8b637'] = 'Non devi fare nulla. L’account verrà creato con i dati del tuo ordine attuale.';
 $_MODULE['<{amzpayments}prestashop>_carriers_bf26b8c68f58863f5e2b39b5628fc1a9'] = 'Scegli il metodo di spedizione';
 $_MODULE['<{amzpayments}prestashop>_carriers_25e8f2fd2871c8423bbe4e254066cd98'] = 'Un Attimo...';
 $_MODULE['<{amzpayments}prestashop>process_login_599100c527155892f4359effc359a76b'] = 'Grazie. Il tuo ordine è stato inviato. Ora verrà creato il tuo account.';

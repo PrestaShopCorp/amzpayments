@@ -160,7 +160,7 @@ function checkForAmazonListButton() {
 	if (jQuery("#HOOK_ADVANCED_PAYMENT").length > 0) {		
 		if (jQuery("#payWithAmazonListDiv").length == 0) {
 			if (AMZ_SHOW_AS_PAYMENT_METHOD == '1') {
-				jQuery('<div class="col-xs-6 col-md-6" id="amzRowElement"><span id="payWithAmazonListDiv" class="' + (AMZ_CREATE_ACCOUNT_EXP == '1' ? 'amz_create_account' : null) + '"></span></div>').appendTo("#HOOK_ADVANCED_PAYMENT .row");
+				jQuery('<div class="col-xs-6 col-md-6" id="amzRowElement"><span id="payWithAmazonListDiv" class="' + (AMZ_CREATE_ACCOUNT_EXP == '1' ? 'amz_create_account' : null) + '"></span></div>').appendTo("#HOOK_ADVANCED_PAYMENT .row:first");
 				bindCartButton('payWithAmazonListDiv');
 			}
 		}

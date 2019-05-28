@@ -76,6 +76,10 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                 $params['session'] = Tools::getValue('amazon_id');
             }
             Tools::redirect($this->context->link->getModuleLink('amzpayments', 'addresswallet', $params));
+        } else {
+            if (Tools::getValue('amazonOrderReferenceId') != '') {
+                $this->context->cookie->amazon_id = Tools::getValue('amazonOrderReferenceId');
+            }
         }
         
         $this->nbProducts = $this->context->cart->nbProducts();

@@ -4,7 +4,7 @@
 *
 *  @author patworx multimedia GmbH <service@patworx.de>
 *  In collaboration with alkim media
-*  @copyright  2013-2018 patworx multimedia GmbH
+*  @copyright  2013-2019 patworx multimedia GmbH
 *  @license    Released under the GNU General Public License
 */
 
@@ -43,7 +43,10 @@ $(document).ready(function(){
 		if ($(buttons_area).length < 1) { buttons_area = '#fieldset_8'; }
 		
 		enhancement_area = '#fieldset_9_9';
-		if ($(enhancement_area).length < 1) { buttons_area = '#fieldset_9'; }
+		if ($(enhancement_area).length < 1) { enhancement_area = '#fieldset_9'; }
+
+        alexa_area = '#fieldset_10_10';
+        if ($(alexa_area).length < 1) { alexa_area = '#fieldset_10'; }
 		
 		$(connect_area).detach().appendTo('#amzconnect #amzconnectform').show();
 		$(config_area).detach().prependTo('#amzconfiguration').show();
@@ -52,6 +55,7 @@ $(document).ready(function(){
 		$(buttons_area).detach().prependTo('#amzpromote').show();
 		$(banners_area).detach().prependTo('#amzpromote').show();
 		$(enhancement_area).detach().prependTo('#amzpromote').show();
+        $(alexa_area).detach().prependTo('#amzalexa').show();
 		
 		$("#returnedurl").detach().appendTo($("#POPUP_on").closest('.form-group')).show();
 		$("button[name=submitAmzpaymentsModule]").first().clone().attr('name','submitAmzpaymentsModuleConnect').appendTo($("#REGION").parent());
@@ -60,6 +64,20 @@ $(document).ready(function(){
 		$("#payment_states").detach().prependTo($("#AMZ_ORDER_STATUS_ID").closest('.form-group'));
 		$("#email_state").detach().prependTo($("#SEND_MAILS_ON_DECLINE_on").closest('.form-group'));
 		$("#amazon_notification").detach().prependTo($("#IPN_STATUS_on").closest('.form-group'));
+
+        $("#carriers_mapping_alexa").detach().appendTo($(alexa_area));
+
+        $("#AMZ_ALEXA_DELIVERY_NOTIFICATIONS_on").closest('.col-lg-9').append($('<p class="help-block">' + $("#alexa_hint").html() + '</p>'));
+        $("#AMZ_PUBLIC_KEY_ID").closest('.col-lg-3').append($('<p class="help-block">' + $("#public_key_mail_init_span").html() + '</p>'));
+
+        $("#public_key_mail_init, #public_key_mail_init_2").on('click', function() {
+        	window.open('mailto:amazon-pay-delivery-notifications@amazon.com?subject=' + $("#alexa_mail_subject").html() + " " + $("#AMZ_MERCHANT_ID").val() + '&body=' + $("#alexa_mail_body").html() + " " + $("#AMZ_MERCHANT_ID").val() + "%0D%0A%0D%0A" + "Public key: " + "%0D%0A%0D%0A" +  $("#alexa_public_key").html());
+        });
+
+        $("#create_keypair_link").detach().appendTo($("#AMZ_PRIVATE_KEY").closest('.form-group').parent());
+        if ($("#download_pubkey_link").length > 0) {
+            $("#download_pubkey_link").detach().appendTo($("#AMZ_PRIVATE_KEY").closest('.form-group').parent());
+        }
 		
 		$("#restorehooks").detach().appendTo($("#AMZ_ORDER_PROCESS_TYPE").closest('div'));
 				

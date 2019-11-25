@@ -427,6 +427,9 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                 if (!$state_id) {
                                     $state_id = AmazonPostalCodesHelper::getIdByPostalCodeAndCountry($postcode, $iso_code);
                                 }
+                                if (!$state_id) {
+                                    $state_id = AmazonPostalCodesHelper::getIdByFuzzyName($state);
+                                }
                                 if ($state_id) {
                                     $address_delivery->id_state = $state_id;
                                 }
@@ -721,11 +724,11 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                     $confirm_order_reference_request = new OffAmazonPaymentsService_Model_ConfirmOrderReferenceRequest();
                                     $confirm_order_reference_request->setAmazonOrderReferenceId(Tools::getValue('amazonOrderReferenceId'));
                                     $confirm_order_reference_request->setSellerId(self::$amz_payments->merchant_id);
-                                    
+                                                                        
                                     if (Tools::getValue('connect_amz_account') == '1') {
-                                        $confirm_order_reference_request->setSuccessUrl($this->context->link->getModuleLink('amzpayments', 'processpayment', array('connect' => '1')));
+                                        $confirm_order_reference_request->setSuccessUrl($this->context->link->getModuleLink('amzpayments', 'processpayment', array('connect' => '1', 'amzref' => Tools::getValue('amazonOrderReferenceId'))));
                                     } else {
-                                        $confirm_order_reference_request->setSuccessUrl($this->context->link->getModuleLink('amzpayments', 'processpayment'));
+                                        $confirm_order_reference_request->setSuccessUrl($this->context->link->getModuleLink('amzpayments', 'processpayment', array('amzref' => Tools::getValue('amazonOrderReferenceId'))));
                                     }
                                     
                                     $confirm_order_reference_request->setFailureUrl($this->context->link->getModuleLink('amzpayments', 'amzpayments'));
@@ -1009,6 +1012,16 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                     $address_invoice = $address_delivery;
                                 }
                                 $this->context->cart->save();
+                                
+                                if (Configuration::get('AMZ_EXTENDED_LOGGING') == '1') {
+                                    self::$amz_payments->validateOrderLog(
+                                        Tools::getValue('amazonOrderReferenceId'),
+                                        array('cookie' => $this->context->cookie),
+                                        $this->context->cart,
+                                        $address_delivery,
+                                        $address_invoice
+                                    );
+                                }
                                 
                                 die(Tools::jsonEncode(array(
                                     'isNoPSD2' => self::$amz_payments->isNoPSD2Region(),

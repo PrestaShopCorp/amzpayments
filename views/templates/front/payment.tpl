@@ -4,7 +4,7 @@
 *
 *  @author patworx multimedia GmbH <service@patworx.de>
 *  In collaboration with alkim media
-*  @copyright  2013-2015 patworx multimedia GmbH
+*  @copyright  2013-2019 patworx multimedia GmbH
 *  @license    Released under the GNU General Public License
 *}
 {nocache}
@@ -18,7 +18,7 @@
             '{/literal}{$orderReferenceId|escape:'htmlall':'UTF-8'}{literal}',
             function(confirmationFlow) {
             	{/literal}{if $isNoPSD2}{literal}
-            	window.location.href = '{/literal}{$redirection}{literal}';
+            	window.location.href = '{/literal}{$redirection|escape:'htmlall':'UTF-8'}{literal}';
             	{/literal}{else}{literal}
 				confirmationFlow.success();
 				{/literal}{/if}{literal}

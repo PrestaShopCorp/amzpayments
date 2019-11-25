@@ -4,7 +4,7 @@
 *
 *  @author patworx multimedia GmbH <service@patworx.de>
 *  In collaboration with alkim media
-*  @copyright  2013-2015 patworx multimedia GmbH
+*  @copyright  2013-2019 patworx multimedia GmbH
 *  @license    Released under the GNU General Public License
 */
 
@@ -47,7 +47,7 @@ function initAmazon() {
 		if ($("body#authentication").length > 0 && $("#order_step").length == 0) {
 			$("#authentication #SubmitCreate").parent().append('<div class="amazonLoginToPay amazonLoginWr" id="jsLoginAmazonPay">' + buildAmazonButtonContainer() + '</div>');			
 		} else {
-			$("#authentication #SubmitCreate").parent().append('<div class="amazonLoginToPay" id="jsLoginAmazonPay">' + buildAmazonButtonContainer() + '</div>');
+			$("#authentication #SubmitCreate").parent().append('<div class="amazonLoginToPay ' + (AMZ_CREATE_ACCOUNT_EXP == '1' ? 'amz_create_account' : null) + '" id="jsLoginAmazonPay">' + buildAmazonButtonContainer() + '</div>');
 			bindCartButton('jsLoginAmazonPay');			
 		}
 	}
@@ -160,7 +160,7 @@ function checkForAmazonListButton() {
 	if (jQuery("#HOOK_ADVANCED_PAYMENT").length > 0) {		
 		if (jQuery("#payWithAmazonListDiv").length == 0) {
 			if (AMZ_SHOW_AS_PAYMENT_METHOD == '1') {
-				jQuery('<div class="col-xs-6 col-md-6" id="amzRowElement"><span id="payWithAmazonListDiv" class="' + (AMZ_CREATE_ACCOUNT_EXP == '1' ? 'amz_create_account' : null) + '"></span></div>').appendTo("#HOOK_ADVANCED_PAYMENT .row:first");
+				jQuery('<div class="col-xs-12 col-md-6" id="amzRowElement"><span id="payWithAmazonListDiv" class="' + (AMZ_CREATE_ACCOUNT_EXP == '1' ? 'amz_create_account' : null) + '"></span></div>').appendTo("#HOOK_ADVANCED_PAYMENT .row:first");
 				bindCartButton('payWithAmazonListDiv');
 			}
 		}

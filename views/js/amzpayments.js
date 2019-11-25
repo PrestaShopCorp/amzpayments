@@ -4,7 +4,7 @@
 *
 *  @author patworx multimedia GmbH <service@patworx.de>
 *  In collaboration with alkim media
-*  @copyright  2013-2016 patworx multimedia GmbH
+*  @copyright  2013-2019 patworx multimedia GmbH
 *  @license    Released under the GNU General Public License
 */
 
@@ -28,11 +28,11 @@ jQuery(document).ready(function($){
 		$("#authentication #customer-form button[type=submit]").parent().append('<div class="amazonLoginWr" id="jsLoginAuthCreationPage">' + buildAmazonButtonContainer() + '</div>');
 	}
 	if ($("#checkout #customer-form button[type=submit]").length > 0 && AMZ_SHOW_REGISTRATION_PAGE == '1') {
-		$("#checkout #customer-form button[type=submit]").parent().append('<div class="" id="jsLoginAuthCreationPage">' + buildAmazonButtonContainer() + '</div>');
+		$("#checkout #customer-form button[type=submit]").parent().append('<div class="' + (AMZ_CREATE_ACCOUNT_EXP == '1' ? 'amz_create_account' : null) + '" id="jsLoginAuthCreationPage">' + buildAmazonButtonContainer() + '</div>');
 		bindCartButton("jsLoginAuthCreationPage");
 	}
 	if ($("#checkout #login-form button[type=submit]").length > 0 && AMZ_SHOW_REGISTRATION_PAGE == '1') {
-		$("#checkout #login-form button[type=submit]").parent().append('<div class="" id="jsLoginAuthPage">' + buildAmazonButtonContainer() + '</div>');
+		$("#checkout #login-form button[type=submit]").parent().append('<div class="' + (AMZ_CREATE_ACCOUNT_EXP == '1' ? 'amz_create_account' : null) + '" id="jsLoginAuthPage">' + buildAmazonButtonContainer() + '</div>');
 		bindCartButton("jsLoginAuthPage");
 	}
 	if ($("#amazonLoginFormButton").length > 0) {

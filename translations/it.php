@@ -91,6 +91,7 @@ $_MODULE['<{amzpayments}prestashop>amzpayments_e5aa509fc8131f4d092d58ef0c9daea4'
 $_MODULE['<{amzpayments}prestashop>amzpayments_4b19de37f0204163761bcf4435178d56'] = 'Abilita ordini ospite';
 $_MODULE['<{amzpayments}prestashop>amzpayments_5888d955c80e69785c17b835f181d50b'] = 'Forza il nome completo del cliente';
 $_MODULE['<{amzpayments}prestashop>amzpayments_0cbe75adc382e023f5fa5544a51145bc'] = 'Questa opzione richiede al cliente di inserire il suo nome completo in caso mancasse un elemento';
+$_MODULE['<{amzpayments}prestashop>amzpayments_8439b82e513aa8d7f83b09b1381fc87d'] = 'Abilita le notifiche di consegna Alexa';
 $_MODULE['<{amzpayments}prestashop>amzpayments_387baf0199e7c9cc944fae94e96448fa'] = 'Varie';
 $_MODULE['<{amzpayments}prestashop>amzpayments_9233b06e263b73ee7d54d16ce806c9b6'] = 'I metodi di spedizione esclusi vengono rimossi dall’elenco di opzioni disponibili quando utilizzi Amazon Pay. ';
 $_MODULE['<{amzpayments}prestashop>amzpayments_0ec127d9128034c9a7d984e0c65a4695'] = 'Escludi metodi di spedizione';
@@ -130,6 +131,7 @@ $_MODULE['<{amzpayments}prestashop>amzpayments_31a2f49179703a2e9762d620044dde00'
 $_MODULE['<{amzpayments}prestashop>amzpayments_da3d3cfa54113652c31233de9d533637'] = 'Tipo pulsante';
 $_MODULE['<{amzpayments}prestashop>amzpayments_25e29d9c17462795383c7c21c965ad99'] = 'Accedi con Amazon';
 $_MODULE['<{amzpayments}prestashop>amzpayments_d25049d11b906ba02e4c2722968afd2e'] = 'Conferma il tuo nome e cognome per completare la creazione del tuo account cliente sul nostro sito.';
+$_MODULE['<{amzpayments}prestashop>amzpayments_5aa818b1473c50ce1b40bf66663182c6'] = 'Il metodo di pagamento selezionato non è al momento disponibile. Scegline un altro.';
 $_MODULE['<{amzpayments}prestashop>amzpayments_fd20a3421f9b2eed6160a6f205a2fe5f'] = 'Usa il tuo account Amazon';
 $_MODULE['<{amzpayments}prestashop>amzpayments_199e2d807b95e60a52e5f7ced76be321'] = 'Con Amazon Pay e Accedi con Amazon, puoi effettuare l’accesso e utilizzare i dati di spedizione e pagamento memorizzati nel tuo account Amazon per effettuare un ordine su questo negozio.';
 $_MODULE['<{amzpayments}prestashop>amzpayments_f8928b5290746aa6041f3caa35d3e182'] = 'Autorizzazione';
@@ -143,11 +145,8 @@ $_MODULE['<{amzpayments}prestashop>amazonpaymentstroubleshooter_c7f8dbfa93bdf269
 $_MODULE['<{amzpayments}prestashop>amazonpaymentstroubleshooter_5d320e08200c693789dd7f90552b8433'] = 'Informazioni dettagliate';
 $_MODULE['<{amzpayments}prestashop>payment_e2b7dec8fa4b498156dfee6e4c84b156'] = 'Il metodo di pagamento selezionato non è al momento disponibile.';
 $_MODULE['<{amzpayments}prestashop>payment_5aa818b1473c50ce1b40bf66663182c6'] = 'Il metodo di pagamento selezionato non è al momento disponibile. Scegline un altro.';
-$_MODULE['<{amzpayments}prestashop>payment_a2af94a3e3857e4903cf97df11fd9440'] = 'Il metodo di pagamento selezionato è stato rifiutato. Scegli un metodo diverso.';
 $_MODULE['<{amzpayments}prestashop>amzpayments_7de64f538bdd7057ea1bbf5b46572d67'] = 'Per favore completa i campi mancanti per salvare il tuo indirizzo';
 $_MODULE['<{amzpayments}prestashop>amzpayments_d4d4963bbe007c6fb6d58aca97588f83'] = 'Il tuo ordine è già stato effettuato.';
-$_MODULE['<{amzpayments}prestashop>amzpayments_5aa818b1473c50ce1b40bf66663182c6'] = 'Il metodo di pagamento selezionato non è al momento disponibile. Scegline un altro.';
-$_MODULE['<{amzpayments}prestashop>amzpayments_d9d5eafae1a4bbddd5b81c4d6ca255d1'] = 'Il metodo di pagamento selezionato è stato rifiutato. Sceglierne un altro o utilizzare un altro account Amazon.';
 $_MODULE['<{amzpayments}prestashop>select_address_7de64f538bdd7057ea1bbf5b46572d67'] = 'Per favore completa i campi mancanti per salvare il tuo indirizzo';
 $_MODULE['<{amzpayments}prestashop>order_actions_06df33001c1d7187fdd81ea1f5b277aa'] = 'Azioni Amazon';
 $_MODULE['<{amzpayments}prestashop>order_actions_5a23e3ba7a2dceee4399422463690019'] = 'Acquisisci pagamenti autorizzati';
@@ -169,11 +168,16 @@ $_MODULE['<{amzpayments}prestashop>order_actions_2e57a5e4cfc4babee6620ca92ef603e
 $_MODULE['<{amzpayments}prestashop>order_actions_1b8858b68405caa612a275b1a808da38'] = 'Emetti rimborso completo';
 $_MODULE['<{amzpayments}prestashop>order_actions_4107cda935fb202a071f9d5a7f060164'] = 'Emetti rimborso parziale';
 $_MODULE['<{amzpayments}prestashop>order_actions_c1f55441110885bb936d34fe27eff263'] = 'Rimborsa di più';
+$_MODULE['<{amzpayments}prestashop>configuration_ac68f0e462d24fadb4d82e712fec7a73'] = 'Per maggiori informazioni sulle notifiche di consegna Alexa, visita il [1]blog di Amazon Pay[/1].';
+$_MODULE['<{amzpayments}prestashop>configuration_b7b42202aa67c2f44a1dc80fc188bda7'] = '[1]Richiedi l\'ID chiave pubblica[/1]';
 $_MODULE['<{amzpayments}prestashop>configuration_d4ac586eb2ff19ecdfc3f10a4f5d3a36'] = 'Se necessiti aiuto, [1]contatta il nostro supporto[/1] per favore';
 $_MODULE['<{amzpayments}prestashop>configuration_fa834776c3045f5610c85a9faffe5f65'] = 'Importante: Se stai usando la cache lato server (ad esempio in combinazione con nginx), ricordati di svuotarla dopo aver salvato la configurazione.';
+$_MODULE['<{amzpayments}prestashop>configuration_9f320e5c44827bf3628a2c088af45d8f'] = 'Generazione della chiave completata. [1]Richiedi l’ID chiave pubblica[/1]. Amazon Pay ti invierà l’ID chiave pubblica all\'indirizzo e-mail associato al tuo account venditore Amazon Pay. Verifica che nella tua casella di posta elettronica sia arrivata un\' e-mail da Amazon Pay con l’ID chiave pubblica e inseriscila nel campo [2]ID chiave pubblica[/2].';
+$_MODULE['<{amzpayments}prestashop>configuration_315b299fa2df0253202f82d74cd7bc2c'] = 'Generazione della chiave non riuscita. Per generare manualmente le chiavi, segui la procedura descritta nella guida all\'integrazione di Amazon Pay:';
 $_MODULE['<{amzpayments}prestashop>configuration_0f98b7f230f3c91292f0de4c99e263f2'] = 'Registrazione';
 $_MODULE['<{amzpayments}prestashop>configuration_c2cc7082a89c1ad6631a2f66af5f00c0'] = 'Collegamento';
 $_MODULE['<{amzpayments}prestashop>configuration_254f642527b45bc260048e30704edb39'] = 'Configurazione';
+$_MODULE['<{amzpayments}prestashop>configuration_695316b621678ee5ff2cccc798c34dc5'] = 'Notifiche di consegna Alexa';
 $_MODULE['<{amzpayments}prestashop>configuration_db5eb84117d06047c97c9a0191b5fffe'] = 'Supporto';
 $_MODULE['<{amzpayments}prestashop>configuration_626a54d37d402d449d6d7541911e0952'] = 'Promozione';
 $_MODULE['<{amzpayments}prestashop>configuration_02d4482d332e1aef3437cd61c9bcc624'] = 'Contattaci';
@@ -248,6 +252,10 @@ $_MODULE['<{amzpayments}prestashop>configuration_c216609c5554c1232b908a10570de05
 $_MODULE['<{amzpayments}prestashop>configuration_13c051309993039f29fadf07172c6f63'] = 'Sei sicuro di confermare?';
 $_MODULE['<{amzpayments}prestashop>configuration_11147f7b7be2edc7d0eece039692df11'] = 'Imposta Amazon Pay come metodo di pagamento principale';
 $_MODULE['<{amzpayments}prestashop>configuration_c9cc8cce247e49bae79f15173ce97354'] = 'Salva';
+$_MODULE['<{amzpayments}prestashop>configuration_69334e3bcd16f32ab7a0a2e75e471421'] = 'Scarica la chiave pubblica';
+$_MODULE['<{amzpayments}prestashop>configuration_da34de4b4d80a6444e5ea37a3983e82c'] = 'Genera la coppia di chiavi';
+$_MODULE['<{amzpayments}prestashop>configuration_cbbd3439308c58e0773f34e9f9954a9b'] = 'Associazione corrieri';
+$_MODULE['<{amzpayments}prestashop>configuration_aeef94d83ed9af32b63155da42c5a429'] = 'Associa i corrieri ai relativi nomi. Nota: Se non viene assegnato alcun corriere, non verrà inviata una notifica di consegna.';
 $_MODULE['<{amzpayments}prestashop>configuration_2e54d6f49e322ad0895a2f329dc61780'] = 'Procedura guidata per la risoluzione dei problemi';
 $_MODULE['<{amzpayments}prestashop>configuration_9ab3fb437ac02370c7a82025d3603ad3'] = 'Esegui la risoluzione dei problemi';
 $_MODULE['<{amzpayments}prestashop>configuration_d4ad91cdb2e7241ce282f4f3ff7145db'] = 'Problemi conosciuti';
@@ -283,6 +291,7 @@ $_MODULE['<{amzpayments}prestashop>order_summary_3da897917815714364886cd0764aa22
 $_MODULE['<{amzpayments}prestashop>order_summary_f53c1ebef1d12dafe0e228236c393be7'] = 'Importo prelevato';
 $_MODULE['<{amzpayments}prestashop>order_summary_9f8c310d4b0402a61723b22c34fbd31c'] = 'Importo rimborsato';
 $_MODULE['<{amzpayments}prestashop>embedded_payment_option_b060b34f618bd9d3e0bde29b705603f2'] = 'Utilizza le tue credenziali Amazon per pagare';
+$_MODULE['<{amzpayments}prestashop>_tooltip_0f5b2c5d07a33dc481cb9ecc8f7bb232'] = 'Sei un cliente Amazon? Paga ora utilizzando l’indirizzo e i dati di pagamento memorizzati nel tuo account Amazon.';
 $_MODULE['<{amzpayments}prestashop>confirmation_2e2117b7c81aa9ea6931641ea2c6499f'] = 'Il tuo ordine su';
 $_MODULE['<{amzpayments}prestashop>confirmation_75fbf512d744977d62599cc3f0ae2bb4'] = 'è completato.';
 $_MODULE['<{amzpayments}prestashop>confirmation_fb4ea5a18e5f77bece3219a4171320a9'] = 'Hai scelto Amazon Pay per il tuo pagamento.';
@@ -321,4 +330,3 @@ $_MODULE['<{amzpayments}prestashop>connect_accounts_eafa313a0fc72443ff59653adb7f
 $_MODULE['<{amzpayments}prestashop>connect_accounts_dc647eb65e6711e155375218212b3964'] = 'Password';
 $_MODULE['<{amzpayments}prestashop>connect_accounts_98980b642469e6353fda51e7c25ee66e'] = 'Associa account';
 $_MODULE['<{amzpayments}prestashop>_coupon_9997b10756737c1a044f3f691394d5b9'] = 'Riscatta il Tuo Buono';
-$_MODULE['<{amzpayments}prestashop>_tooltip_0f5b2c5d07a33dc481cb9ecc8f7bb232'] = 'Sei un cliente Amazon? Paga ora utilizzando l’indirizzo e i dati di pagamento memorizzati nel tuo account Amazon.';

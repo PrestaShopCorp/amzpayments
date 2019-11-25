@@ -29,6 +29,8 @@ class AmzpaymentsResetpaymentsModuleFrontController extends ModuleFrontControlle
     public $display_column_left = false;
 
     public $display_column_right = false;
+    
+    protected static $amzpayments = '';
 
     public function __construct()
     {

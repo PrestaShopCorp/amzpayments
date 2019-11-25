@@ -40,6 +40,9 @@
 	display: none;
 }
 
+#create_keypair_link {
+	margin-left: 38px !important;
+}
 #returnedurl {
 	margin-left: 45px;
 }

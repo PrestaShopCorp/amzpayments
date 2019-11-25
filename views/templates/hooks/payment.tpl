@@ -4,7 +4,7 @@
 *
 *  @author patworx multimedia GmbH <service@patworx.de>
 *  In collaboration with alkim media
-*  @copyright  2013-2016 patworx multimedia GmbH
+*  @copyright  2013-2019 patworx multimedia GmbH
 *  @license    Released under the GNU General Public License
 *}
 <div class="row"{if $this_hide_button} style="display:none;"{/if}>

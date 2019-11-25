@@ -4,7 +4,7 @@
 *
 *  @author patworx multimedia GmbH <service@patworx.de>
 *  In collaboration with alkim media
-*  @copyright  2013-2015 patworx multimedia GmbH
+*  @copyright  2013-2019 patworx multimedia GmbH
 *  @license    Released under the GNU General Public License
 *}
 
@@ -12,6 +12,9 @@
 {capture name=videodir_assign assign=videodir}https://m.media-amazon.com/images/G/01/EPSDocumentation/AmazonPay/Prestashop/video/{/capture}
 {capture name=langdir_assign assign=langdir}{if !$language_code|in_array:['de', 'es', 'fr', 'it', 'uk', 'us']}uk{else}{$language_code|escape:'htmlall':'UTF-8'}{/if}{/capture}
 {capture name=button_lang_var_assign assign=button_lang_var}{if !$language_code|in_array:['de', 'es', 'fr', 'it']}UK{else}{$language_code|escape:'htmlall':'UTF-8'|strtoupper}{/if}{/capture}
+{capture name=blog_link_assign assign=blog_link}<a href="{$blog_link}" target="_blank">{/capture}
+{capture name=alexa_hint_assign assign=alexa_hint}{l s='To learn more about Alexa delivery notifications, visit the [1]Amazon Pay blog[/1].' tags=[$blog_link] mod='amzpayments'}{/capture}
+{capture name=public_key_mail_assign assign=public_key_mail}{l s='[1]Request your Public Key ID[/1]' tags=['<a href="JavaScript:void(0)" id="public_key_mail_init">'] mod='amzpayments'}{/capture}
 
 {if isset($postSuccess)}
 	{foreach from=$postSuccess item=ps}
@@ -31,6 +34,11 @@
 	<div class="alert alert-warning" role="alert">
 		{l s='Please note: if you use server side caching (for example in combination with nginx), remember to empty it after saving the configuration.' mod='amzpayments'}				
 	</div>				
+{/if}
+{if isset($keygen_success)}
+	<div class="alert alert-success">{l s='Key generation successful. [1]Request your Public Key ID[/1]. Amazon Pay will send your Public Key ID to the email address associated with your Amazon Pay merchant account. Check your inbox for an email from Amazon Pay with your [2]Public Key ID[/2], and then enter it to the Public Key ID field.' tags=['<a href="JavaScript:void(0)" id="public_key_mail_init_2">', '<b>']  mod='amzpayments'}</div>
+{elseif isset($keygen_error)}
+	<div class="alert alert-warning" role="alert">{l s='Key generation failed. To generate your keys manually, follow the steps in the Amazon Pay integration guide: ' mod='amzpayments'} <a href="https://developer.amazon.com/docs/amazon-pay-automatic/delivery-notifications.html#keys" target="_blank">https://developer.amazon.com/docs/amazon-pay-automatic/delivery-notifications.html</a></div>
 {/if}
 
 {if $promotional_banner}
@@ -74,6 +82,7 @@
 		<li class="active"><a href="#amzregistration" data-toggle="tab">{l s='Registration' mod='amzpayments'}</a></li>
 		<li><a href="#amzconnect" data-toggle="tab">{l s='Connection' mod='amzpayments'}</a></li>
 		<li><a href="#amzconfiguration" data-toggle="tab">{l s='Configuration' mod='amzpayments'}</a></li>
+		<li><a href="#amzalexa" data-toggle="tab">{l s='Alexa Delivery Notifications' mod='amzpayments'}</a></li>
 		<li><a href="#amzsupport" data-toggle="tab">{l s='Support' mod='amzpayments'}</a></li>
 		<li><a href="#amzpromote" data-toggle="tab">{l s='Promotion' mod='amzpayments'}</a></li>
 		<li><a href="#amzcontactus" data-toggle="tab">{l s='Contact us' mod='amzpayments'}</a></li>
@@ -522,6 +531,55 @@
 					<i class="process-icon-save"></i> {l s='Save' mod='amzpayments'}
 				</button>
 			</div>			
+		</div>
+		<div id="amzalexa" class="tab-pane">
+
+			<span id="alexa_hint" style="display:none;">{$alexa_hint}</span>
+			<span id="public_key_mail_init_span" style="display:none;">{$public_key_mail}</span>
+			<span id="alexa_mail_subject" style="display:none">[{$alexa_region|escape:'htmlall':'UTF-8'}] {l s='Request for Amazon Pay Public Key ID for' mod='amzpayments'}</span>
+			<span id="alexa_mail_body" style="display:none">{l s='Merchant ID:' mod='amzpayments'}</span>
+			<span id="alexa_public_key" style="display:none">{$alexa_public_key|escape:'htmlall':'UTF-8'|replace:"\n":"%0D%0A"}</span>
+
+			{if $pubkey_link}
+				<button id="download_pubkey_link" class="btn btn-warning btn-sm" style="margin:10px 10px 10px 0px;" type="button" aria-expanded="false" aria-controls="collapseExample" onclick="location.href='{$get_pubkey_link|escape:'htmlall':'UTF-8'}'">
+					<strong><i class="fa fa-undo" aria-hidden="true"></i>&nbsp;{l s='Download public key' mod='amzpayments'}</strong>
+				</button>
+			{/if}
+
+			<button id="create_keypair_link" class="btn btn-warning btn-sm" style="margin:10px 10px 10px 0px;" type="button" aria-expanded="false" aria-controls="collapseExample" onclick="if (confirm('{l s='Do you confirm?' mod='amzpayments'}')) { location.href='{$create_keypair_link|escape:'htmlall':'UTF-8'}'; }">
+				<strong><i class="fa fa-undo" aria-hidden="true"></i>&nbsp;{l s='Generate key pair' mod='amzpayments'}</strong>
+			</button>
+
+			<div id="carriers_mapping_alexa">
+				<div class="form-group">
+					<label class="control-label col-lg-3">
+						{l s='Carrier mapping' mod='amzpayments'}
+					</label>
+					<div class="col-lg-9">
+						{foreach from=$amz_carrier_options item=co}
+							<div class="row">
+								<label class="col-lg-3">{$co.label}:</label>
+								<select name="AMZ_CARRIERS_MAPPING[{$co.val}]" class="col-lg-9">
+									<option value="">---</option>
+									{foreach from=$amazon_carriers item=ac}
+										<option value="{$ac.1}"{if isset($mapped_carriers[$co.val]) && $mapped_carriers[$co.val] == {$ac.1}} selected{/if}>{$ac.0}</option>
+									{/foreach}
+								</select>
+							</div>
+						{/foreach}
+
+						<p class="help-block">{l s='Map the carriers to your carrier names. Note: If no carrier is assigned, a delivery notification will not be sent.' mod='amzpayments'}</p>
+
+					</div>
+				</div>
+			</div>
+
+			<div class="text-right">
+				<hr />
+				<button type="submit" value="1" name="submitAmzpaymentsModule" class="btn btn-default">
+					<i class="process-icon-save"></i> {l s='Save' mod='amzpayments'}
+				</button>
+			</div>
 		</div>
 		<div id="amzsupport" class="tab-pane">
 			<div class="panel">

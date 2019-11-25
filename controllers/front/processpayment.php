@@ -60,6 +60,9 @@ class AmzpaymentsProcesspaymentModuleFrontController extends ModuleFrontControll
         $service = $this->service;
         
         $cart = $this->context->cart;
+        if ($cart->id_address_invoice == 0) {
+            $cart->id_address_invoice = $cart->id_address_delivery;
+        }
         
         if ($cart->id_customer == 0 || $cart->id_address_delivery == 0 || $cart->id_address_invoice == 0 || !$this->module->active || !isset($this->context->cookie->amazon_id)) {
             Tools::redirect('index.php?controller=order&step=1');
@@ -135,7 +138,7 @@ class AmzpaymentsProcesspaymentModuleFrontController extends ModuleFrontControll
                         unset($this->context->cookie->amazon_id);
                         unset($this->context->cookie->has_set_valid_amazon_address);
                         unset($this->context->cookie->setHadErrorNowWallet);
-                        Tools::redirect($this->context->link->getPageLink('order'));                        
+                        Tools::redirect($this->context->link->getPageLink('order'));
                     } else {
                         $this->context->cookie->setHadErrorNowWallet = 1;
                         $this->context->cookie->amazonpay_errors_message = self::$amz_payments->l('Your selected payment method has been declined. Please chose another one.');

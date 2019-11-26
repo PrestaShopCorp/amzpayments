@@ -58,8 +58,17 @@ class AmzpaymentsProcesspaymentModuleFrontController extends ModuleFrontControll
         self::$amz_payments = new AmzPayments();
         $this->service = self::$amz_payments->getService();
         $service = $this->service;
-        
+
         $cart = $this->context->cart;
+
+        if (Configuration::get('AMZ_EXTENDED_LOGGING') == '1' && Tools::getValue('amzref') != '') {
+            self::$amz_payments->validateOrderLog(
+                Tools::getValue('amzref'),
+                array('cookie' => $this->context->cookie),
+                $cart
+            );
+        }
+
         if ($cart->id_address_invoice == 0) {
             $cart->id_address_invoice = $cart->id_address_delivery;
         }

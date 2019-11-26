@@ -4020,4 +4020,33 @@ class AmzPayments extends PaymentModule
         }
         file_put_contents($this->getLogFileName(), $logstr, $append ? FILE_APPEND : 0);
     }
+
+    public function validateOrderLog($amazon_reference_id, $arguments = array(), $cart_object = false, $address_delivery = false, $address_invoice = false)
+    {
+        $filename = CURRENT_MODULE_DIR . '/logs/' . $amazon_reference_id . '___' . date('Ymd-His') . '.txt';
+        $logstr = date("Y-m-d H:i:s") . ' validateOrder logging: ' . "\r\n\r\n";
+
+        foreach ($arguments as $ag => $argument) {
+            $logstr.= "Argument [" . $ag . "]: \r\n";
+            $logstr.= print_r($argument, true);
+            $logstr.= "\r\n\r\n";
+        }
+        if ($cart_object) {
+            $logstr.= "[Cart Object in PrestaShop Context]: \r\n";
+            $logstr.= print_r($cart_object, true);
+            $logstr.= "\r\n\r\n";
+        }
+        if ($address_delivery) {
+            $logstr.= "[address_delivery Object in PrestaShop Context]: \r\n";
+            $logstr.= print_r($address_delivery, true);
+            $logstr.= "\r\n\r\n";
+        }
+        if ($address_invoice) {
+            $logstr.= "[address_invoice Object in PrestaShop Context]: \r\n";
+            $logstr.= print_r($address_invoice, true);
+            $logstr.= "\r\n\r\n";
+        }
+        $logstr.= "\r\n\r\n";
+        file_put_contents($filename, $logstr, 0);
+    }
 }

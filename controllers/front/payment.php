@@ -221,7 +221,7 @@ class AmzpaymentsPaymentModuleFrontController extends ModuleFrontController
         $this->context->smarty->assign('sellerId', self::$amz_payments->merchant_id);
         $this->context->smarty->assign('orderReferenceId', $order_reference_id);
         $this->context->smarty->assign('isNoPSD2', self::$amz_payments->isNoPSD2Region());
-        $this->context->smarty->assign('redirection',  self::$amz_payments->isNoPSD2Region() ? $this->context->link->getModuleLink('amzpayments', 'processpayment', array('AuthenticationStatus' => 'Success')) : '');    
+        $this->context->smarty->assign('redirection', self::$amz_payments->isNoPSD2Region() ? $this->context->link->getModuleLink('amzpayments', 'processpayment', array('AuthenticationStatus' => 'Success')) : '');
     }
     
     public function initContent()

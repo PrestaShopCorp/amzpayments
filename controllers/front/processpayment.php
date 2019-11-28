@@ -59,6 +59,17 @@ class AmzpaymentsProcesspaymentModuleFrontController extends ModuleFrontControll
         $this->service = self::$amz_payments->getService();
         $cart = $this->context->cart;
         
+        if (Configuration::get('AMZ_EXTENDED_LOGGING') == '1' && Tools::getValue('amzref') != '') {
+            self::$amz_payments->validateOrderLog(
+                Tools::getValue('amzref'),
+                array('cookie' => $this->context->cookie),
+                $cart
+            );
+        }
+        
+        if ($cart->id_address_invoice == 0) {
+            $cart->id_address_invoice = $cart->id_address_delivery;
+        }
         if ($cart->id_customer == 0 || $cart->id_address_delivery == 0 || $cart->id_address_invoice == 0 || !$this->module->active || !isset($this->context->cookie->amazon_id)) {
             Tools::redirect('index.php?controller=order&step=1');
         }
@@ -74,7 +85,7 @@ class AmzpaymentsProcesspaymentModuleFrontController extends ModuleFrontControll
                 Tools::redirect($this->context->link->getPageLink('order'));
             }
             Tools::redirect('index.php?controller=order&step=1');
-        }        
+        }
         $customer = new Customer((int) $this->context->cart->id_customer);
         if ($this->context->customer->id == '') {
             $this->context->customer = $customer;
@@ -272,7 +283,7 @@ class AmzpaymentsProcesspaymentModuleFrontController extends ModuleFrontControll
                         }
                     }
                 }
-            }            
+            }
             if (Tools::getValue('connect') == '1') {
                  $this->context->cookie->amz_connect_order = $this->module->currentOrder;
                  $this->context->cookie->amz_payments_address_id = $address_delivery->id;
@@ -284,7 +295,7 @@ class AmzpaymentsProcesspaymentModuleFrontController extends ModuleFrontControll
             }
         }
         
-        unset($this->context->cookie->amazon_id); 
+        unset($this->context->cookie->amazon_id);
         Tools::redirect('index.php?controller=order-confirmation&id_cart='.(int)$this->context->cart->id.'&id_module='.(int)$this->module->id.'&id_order='.$this->module->currentOrder.'&key='.$customer->secure_key);
     }
     

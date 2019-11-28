@@ -132,6 +132,8 @@ class AmzPayments extends PaymentModule
     public $promo_product = 1;
     
     public $promo_footer = 1;
+
+    public $extended_logging = 0;
     
     public $ca_bundle_file;
 
@@ -196,6 +198,7 @@ class AmzPayments extends PaymentModule
         'promo_product_style' => 'AMZ_PROMO_PRODUCT_STYLE',
         'promo_footer' => 'AMZ_PROMO_FOOTER',
         'promo_footer_style' => 'AMZ_PROMO_FOOTER_STYLE',
+        'extended_logging' => 'AMZ_EXTENDED_LOGGING',
         'alexa_delivery_notifications' => 'AMZ_ALEXA_DELIVERY_NOTIFICATIONS',
         'private_key' => 'AMZ_PRIVATE_KEY',
         'public_key_id' => 'AMZ_PUBLIC_KEY_ID',
@@ -1347,6 +1350,24 @@ class AmzPayments extends PaymentModule
                             ),
                             'id' => 'id_order_process_type',
                             'name' => 'name'
+                        )
+                    ),
+                    array(
+                        'type' => 'switch',
+                        'label' => $this->l('Extended logging'),
+                        'name' => 'AMZ_EXTENDED_LOGGING',
+                        'is_bool' => true,
+                        'values' => array(
+                            array(
+                                'id' => 'extended_logging_on',
+                                'value' => true,
+                                'label' => $this->l('Enabled')
+                            ),
+                            array(
+                                'id' => 'extended_logging_off',
+                                'value' => '0',
+                                'label' => $this->l('Disabled')
+                            )
                         )
                     ),
                 )
@@ -2855,6 +2876,7 @@ class AmzPayments extends PaymentModule
     public function hookActionCustomerLogoutAfter($params)
     {
         $this->context->cookie->amz_logout = true;
+        $this->context->cookie->__unset('amazon_id');
     }
 
     public function hookActionAdminOrdersTrackingNumberUpdate($params)

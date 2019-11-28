@@ -1058,6 +1058,9 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
         $this->context->smarty->assign('totals', $presentedCart['totals']);
         $this->context->smarty->assign('labels', $presentedCart['labels']);
         $this->context->smarty->assign('add_product_link', true);
+        if (method_exists($this, 'getTemplateVarConfiguration')) {
+            $this->context->smarty->assign('configuration', $this->getTemplateVarConfiguration());
+        }
         
         $table = $this->context->smarty->fetch('checkout/_partials/order-confirmation-table.tpl');
         $this->context->smarty->assign('summary_table', $table);

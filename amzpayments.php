@@ -4045,7 +4045,7 @@ class AmzPayments extends PaymentModule
 
     public function validateOrderLog($amazon_reference_id, $arguments = array(), $cart_object = false, $address_delivery = false, $address_invoice = false)
     {
-        $filename = CURRENT_MODULE_DIR . '/logs/' . $amazon_reference_id . '___' . date('Ymd-His') . '.txt';
+        $filename = CURRENT_AMZ_MODULE_DIR . '/logs/' . $amazon_reference_id . '___' . date('Ymd-His') . '.txt';
         $logstr = date("Y-m-d H:i:s") . ' validateOrder logging: ' . "\r\n\r\n";
 
         foreach ($arguments as $ag => $argument) {

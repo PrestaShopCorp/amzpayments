@@ -76,6 +76,10 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                 $params['session'] = Tools::getValue('amazon_id');
             }
             Tools::redirect($this->context->link->getModuleLink('amzpayments', 'addresswallet', $params));
+        } else {
+            if (Tools::getValue('amazonOrderReferenceId') != '') {
+                $this->context->cookie->amazon_id = Tools::getValue('amazonOrderReferenceId');
+            }
         }
         
         $this->nbProducts = $this->context->cart->nbProducts();
@@ -470,8 +474,8 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                                     $requestParameters['seller_order_id'] = self::$amz_payments->createUniqueOrderId((int) $this->context->cart->id);
                                     $requestParameters['store_name'] = Configuration::get('PS_SHOP_NAME');
                                     $requestParameters['custom_information'] = 'Prestashop,Patworx,' . self::$amz_payments->version;
-                                    $requestParameters['success_url'] = $this->context->link->getModuleLink('amzpayments', 'processpayment');
-                                    $requestParameters['failure_url'] = $this->context->link->getModuleLink('amzpayments', 'amzpayments');
+                                    $requestParameters['success_url'] = $this->context->link->getModuleLink('amzpayments', 'processpayment', array('amzref' => Tools::getValue('amazonOrderReferenceId')));
+                                    $requestParameters['failure_url'] = $this->context->link->getModuleLink('amzpayments', 'amzpayments', array('amzref' => Tools::getValue('amazonOrderReferenceId')));
                                     
                                     $response = $service->SetOrderReferenceDetails($requestParameters);
                                     try {
@@ -779,6 +783,16 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
                             
                                 $this->context->cart->save();
 
+                                if (Configuration::get('AMZ_EXTENDED_LOGGING') == '1') {
+                                    self::$amz_payments->validateOrderLog(
+                                        Tools::getValue('amazonOrderReferenceId'),
+                                        array('cookie' => $this->context->cookie),
+                                        $this->context->cart,
+                                        $address_delivery,
+                                        $address_invoice
+                                    );
+                                }
+
                                 die(Tools::jsonEncode(array(
                                     'isNoPSD2' => self::$amz_payments->isNoPSD2Region(),
                                     'redirection' => self::$amz_payments->isNoPSD2Region() ? $this->context->link->getModuleLink('amzpayments', 'processpayment', array('AuthenticationStatus' => 'Success')) : '',
@@ -1044,6 +1058,9 @@ class AmzpaymentsAmzpaymentsModuleFrontController extends ModuleFrontController
         $this->context->smarty->assign('totals', $presentedCart['totals']);
         $this->context->smarty->assign('labels', $presentedCart['labels']);
         $this->context->smarty->assign('add_product_link', true);
+        if (method_exists($this, 'getTemplateVarConfiguration')) {
+            $this->context->smarty->assign('configuration', $this->getTemplateVarConfiguration());
+        }
         
         $table = $this->context->smarty->fetch('checkout/_partials/order-confirmation-table.tpl');
         $this->context->smarty->assign('summary_table', $table);
